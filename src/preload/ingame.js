@@ -26,7 +26,7 @@ try {
 let permCrosshair = !!settings.get('permCrosshair');
 let noLoadingTimes = true;
 let customCss = !!settings.get('customCss');
-let hpNumber = true;
+//let hpNumber = true;
 let hideWeaponsAds = !!settings.get('hideWeaponsAds');
 let hideArms = !!settings.get('hideArms');
 let playerHighLight = !!settings.get('playerHighLight');
@@ -134,7 +134,7 @@ new MutationObserver(mutationRecords => {
                         "    text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 1px 1px rgba(0,0,0,.486)!important;" +
                         "    width: 150px;" +
                         "    height: 50px;" +
-                        "    bottom: 0px;" +
+                        "    bottom: 20px;" +
                         "    right: 100%;" +
                         "    margin-right: 10px;" +
                         "    font-size: 20px;";
@@ -161,11 +161,12 @@ new MutationObserver(mutationRecords => {
                 }
                 if (el.classList?.contains("game-interface")) {
                     crosshair = document.getElementById("crosshair-static");
-                    let hpElem = document.getElementsByClassName("hp-progress")[0];
+                    //health number default ingame now
+                    /*let hpElem = document.getElementsByClassName("hp-progress")[0];
                     document.getElementsByClassName('hp-title')[0].innerText = hpElem.style.width.slice(0, -1);
                     observer.observe(hpElem, {
                         attributeFilter: ["style"],
-                    });
+                    });*/
                 }
                 if(el.classList?.contains("settings") && !settingsButtonsAdded){
 
@@ -717,11 +718,12 @@ window.addEventListener("mouseup", (e) => {
         e.preventDefault();
 });
 
-const observer = new MutationObserver(function (mutations) {
+//hp numbers default ingame now
+/*const observer = new MutationObserver(function (mutations) {
     mutations.forEach(function (mutation) {
         document.getElementsByClassName('hp-title')[0].innerText = hpNumber ? mutation.target.style.width.slice(0, -1) : "HP";
     });
-});
+});*/
 
 let scoped = false;
 
