@@ -29,6 +29,7 @@ let customCss = !!settings.get('customCss');
 //let hpNumber = true;
 let hideWeaponsAds = !!settings.get('hideWeaponsAds');
 let hideArms = !!settings.get('hideArms');
+let hideFlagAds = !!settings.get('hideFlagAds');
 let playerHighLight = !!settings.get('playerHighLight');
 let fullBlack = !!settings.get('fullBlack');
 let wireframeWeapons = !!settings.get('wireframeWeapons');
@@ -36,8 +37,8 @@ let wireframeArms = !!settings.get('wireframeArms');
 let rainbow = !!settings.get('rainbow');
 let adspower = !!settings.get('adspower');
 let autoJoin = !!settings.get('autoJoin');
-let fpsCap  = typeof settings.get('fpsCap') == 'undefined' ? false : settings.get('fpsCap');
-let capture  = typeof settings.get('capture') == 'undefined' ? false : settings.get('capture');
+let fpsCap = typeof settings.get('fpsCap') == 'undefined' ? false : settings.get('fpsCap');
+let capture = typeof settings.get('capture') == 'undefined' ? false : settings.get('capture');
 
 
 let inspecting = false;
@@ -80,12 +81,21 @@ let minTimeLeftLab;
 let settingsButtonsAdded = false;
 
 let scene;
+let flagMaterial;
 
 WeakMap.prototype.set = new Proxy(WeakMap.prototype.set, {
     apply(target, thisArg, argArray) {
 
         if (argArray[0] && argArray[0].type === 'Scene' && argArray[0].children[0].type === 'AmbientLight') {
             scene = argArray[0];
+
+            setTimeout(() => {
+                scene.children.forEach((e) => {
+                    if (e.type === "Sprite" && !e.material.depthTest && e.material.map?.image?.width === 149) {
+                        flagMaterial = e.material;
+                    }
+                })
+            }, 1000)
         }
 
         return Reflect.apply(...arguments);
@@ -168,7 +178,7 @@ new MutationObserver(mutationRecords => {
                         attributeFilter: ["style"],
                     });*/
                 }
-                if(el.classList?.contains("settings") && !settingsButtonsAdded){
+                if (el.classList?.contains("settings") && !settingsButtonsAdded) {
 
                     let exportBtn = document.createElement('div');
 
@@ -195,11 +205,11 @@ new MutationObserver(mutationRecords => {
                         "justify-content: center;\n" +
                         "align-items: center;"
 
-                    exportBtn.onmouseover = () =>{
+                    exportBtn.onmouseover = () => {
                         exportBtn.style.color = "#ffd500";
                     }
 
-                    exportBtn.onmouseout = () =>{
+                    exportBtn.onmouseout = () => {
                         exportBtn.style.color = "#ffffff";
                     }
 
@@ -208,11 +218,11 @@ new MutationObserver(mutationRecords => {
                     exportBtn.onclick = () => {
                         let gameSettingsObj = {};
 
-                        for (let key in localStorage){
-                            if(key.startsWith("m")){
-                                if(localStorage[key].startsWith('"') && localStorage[key].endsWith('"')){
+                        for (let key in localStorage) {
+                            if (key.startsWith("m")) {
+                                if (localStorage[key].startsWith('"') && localStorage[key].endsWith('"')) {
                                     gameSettingsObj[key] = localStorage[key].slice(1, -1);
-                                }else{
+                                } else {
                                     gameSettingsObj[key] = localStorage[key];
                                 }
                             }
@@ -246,11 +256,11 @@ new MutationObserver(mutationRecords => {
                         "justify-content: center;\n" +
                         "align-items: center;"
 
-                    importBtn.onmouseover = () =>{
+                    importBtn.onmouseover = () => {
                         importBtn.style.color = "#ffd500";
                     }
 
-                    importBtn.onmouseout = () =>{
+                    importBtn.onmouseout = () => {
                         importBtn.style.color = "#ffffff";
                     }
 
@@ -277,7 +287,7 @@ new MutationObserver(mutationRecords => {
 let oldLog = console.log;
 
 console.log = (...arguments) => {
-    if (typeof arguments[0] == "string" && arguments[0].includes("refresh") && arguments[0].includes("ad") && !arguments[0].includes("added")) {
+    if (typeof arguments[0] == "string" && arguments[0].startsWith("window.aiptag.cmd")) {
         throw "ad's blocked by overengineered ad block " + Math.random().toString().split(".")[1];
     }
     oldLog(...arguments);
@@ -380,6 +390,11 @@ document.addEventListener("DOMContentLoaded", () => {
         "    <div class=\"module\">\n" +
         "        <input type=\"checkbox\" id=\"arms\" name=\"arms\">\n" +
         "        <label for=\"arms\">Hide Arms</label>\n" +
+        "    </div>\n" +
+        "\n" +
+        "    <div class=\"module\">\n" +
+        "        <input type=\"checkbox\" id=\"hideflag\" name=\"hideflag\">\n" +
+        "        <label for=\"hideflag\">Hide Flag ADS</label>\n" +
         "    </div>\n" +
         "\n" +
         "    <div class=\"module\">\n" +
@@ -520,6 +535,11 @@ document.addEventListener("DOMContentLoaded", () => {
             settings.set('hideArms', hideArms);
         }
 
+        if (e.target.id === "hideflag") {
+            hideFlagAds = e.target.checked;
+            settings.set('hideFlagAds', hideFlagAds);
+        }
+
         if (e.target.id === "highlight") {
             playerHighLight = e.target.checked;
             settings.set('playerHighLight', playerHighLight);
@@ -619,6 +639,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("customCSS").checked = customCss;
     document.getElementById("hideweap").checked = hideWeaponsAds;
     document.getElementById("arms").checked = hideArms;
+    document.getElementById("hideflag").checked = hideFlagAds;
     document.getElementById("highlight").checked = playerHighLight;
     document.getElementById("black").checked = fullBlack;
     document.getElementById("wireframeWeapons").checked = wireframeWeapons;
@@ -763,7 +784,9 @@ let g = 0;
 let b = 0;
 
 function animate() {
+
     window.requestAnimationFrame(animate);
+
     if (rainbow) {
         if (r > 0 && b === 0) {
             r--;
@@ -797,6 +820,14 @@ function animate() {
         if (minTimeLeftSlider) {
             minTimeLeft = Number.parseInt(minTimeLeftSlider.value);
             minTimeLeftLab.innerText = minTimeLeftSlider.value + " min. Time Left";
+        }
+    }
+
+    if (flagMaterial) {
+        if (hideFlagAds) {
+            flagMaterial.visible = !scoped;
+        } else {
+            flagMaterial.visible = true;
         }
     }
 
@@ -927,11 +958,6 @@ animate();
 
 XMLHttpRequest = class extends XMLHttpRequest {
 
-    open(method, url) {
-        if (url === "https://api.kirka.io/api/inventory") this.invReq = true;
-        return super.open(...arguments);
-    }
-
     get responseText() {
         if (this.invReq) {
             this.invReq = false;
@@ -951,6 +977,11 @@ XMLHttpRequest = class extends XMLHttpRequest {
         }
 
         return super.responseText;
+    }
+
+    open(method, url) {
+        if (url === "https://api.kirka.io/api/inventory") this.invReq = true;
+        return super.open(...arguments);
     }
 }
 
