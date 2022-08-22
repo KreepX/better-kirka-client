@@ -283,15 +283,21 @@ new MutationObserver(mutationRecords => {
     }
 }).observe(document, {childList: true, subtree: true});
 
-
-let oldLog = console.log;
+//old adblock
+/*let oldLog = console.log;
 
 console.log = (...arguments) => {
     if (typeof arguments[0] == "string" && arguments[0].startsWith("window.aiptag.cmd")) {
         throw "ad's blocked by overengineered ad block " + Math.random().toString().split(".")[1];
     }
     oldLog(...arguments);
-};
+};*/
+
+//new adblock
+Object.defineProperty(window, 'aiptag', {
+    set(v){},
+    get(){}
+});
 
 
 document.addEventListener("DOMContentLoaded", () => {
