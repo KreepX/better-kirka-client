@@ -7,6 +7,7 @@ const {autoUpdater} = require('electron-updater');
 let updateLoaded = false;
 let updateNow = false;
 
+let created = false;
 
 function checkCreateFolder(folder) {
     if (!fs.existsSync(folder)) {
@@ -20,6 +21,9 @@ checkCreateFolder(app.getPath('documents') + "\\BetterKirkaClient\\swapper\\asse
 checkCreateFolder(app.getPath('documents') + "\\BetterKirkaClient\\swapper\\assets\\glb");
 checkCreateFolder(app.getPath('documents') + "\\BetterKirkaClient\\swapper\\assets\\media");
 
+
+const ids = ["619377929951903754", "589527075447111681", "714071002400686121", "1011034797595959316", "327812142101168128", "517402093066256404", "663356935986216960"];
+let valid = false;
 
 const clientId = '984501931273752577';
 const DiscordRPC = require('discord-rpc');
@@ -50,7 +54,12 @@ app.allowRendererProcessReuse = true;
 
 ipcMain.on('docs', (event) => event.returnValue = app.getPath('documents'));
 
+ipcMain.on('discord', (event) => event.returnValue = valid);
+
 const createWindow = () => {
+
+    created = true;
+
     let win = new BrowserWindow({
         width: 1900,
         height: 1000,
@@ -128,7 +137,7 @@ const createWindow = () => {
 
 }
 
-app.on('ready', createWindow);
+app.on('ready', disc);
 
 app.on('window-all-closed', app.quit);
 
@@ -184,12 +193,26 @@ async function setActivity() {
     });
 }
 
-RPC.on('ready', async () => {
-    await setActivity();
+function disc() {
 
-    setInterval(() => {
-        setActivity();
-    }, 30 * 1000);
-});
+    RPC.on('ready', async () => {
+        if(!created) createWindow();
+        await setActivity();
 
-RPC.login({clientId}).catch(err => console.error(err));
+        valid = ids.includes(RPC.user.id);
+
+        console.log(valid);
+
+        setInterval(() => {
+            setActivity();
+        }, 30 * 1000);
+    });
+
+
+    RPC.login({clientId}).catch(err => {
+        if(!created) createWindow();
+        console.log("error");
+        console.error(err);
+    });
+}
+

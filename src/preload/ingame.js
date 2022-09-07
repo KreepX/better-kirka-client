@@ -5,6 +5,9 @@ const Store = require('electron-store');
 
 const settings = new Store();
 
+const discord = ipcRenderer.sendSync('discord');
+
+
 const documents = ipcRenderer.sendSync('docs');
 const scriptFolder = documents + "\\BetterKirkaClient\\scripts";
 
@@ -39,6 +42,7 @@ let adspower = !!settings.get('adspower');
 let autoJoin = !!settings.get('autoJoin');
 let fpsCap = typeof settings.get('fpsCap') == 'undefined' ? false : settings.get('fpsCap');
 let capture = typeof settings.get('capture') == 'undefined' ? false : settings.get('capture');
+let marketNames = !!settings.get('marketNames');
 
 
 let inspecting = false;
@@ -71,6 +75,7 @@ let gameModes = [];
 let bestLobby = '';
 let allLobbyData = [];
 let maps = settings.get('maps') ? settings.get('maps') : [];
+let customGames = !!settings.get('customGames');
 let responseCount = 0;
 let minPlayerSlider;
 let maxPlayerSlider;
@@ -295,8 +300,10 @@ console.log = (...arguments) => {
 
 //new adblock
 Object.defineProperty(window, 'aiptag', {
-    set(v){},
-    get(){}
+    set(v) {
+    },
+    get() {
+    }
 });
 
 
@@ -504,6 +511,11 @@ document.addEventListener("DOMContentLoaded", () => {
         "        <input type=\"text\" id=\"mapFilterField\" placeholder=\"Map1, Map2, Map3, etc.\">\n" +
         "    </div>\n" +
         "\n" +
+        "    <div class=\"module autojoin\">\n" +
+        "        <input type=\"checkbox\" id=\"customGames\" name=\"customGames\">\n" +
+        "        <label for=\"customGames\">Custom Games </label>\n" +
+        "    </div>\n" +
+        "\n" +
         "    <hr class=\"autojoin\">\n" +
         "\n" +
         "    <div class=\"module\">\n" +
@@ -619,6 +631,11 @@ document.addEventListener("DOMContentLoaded", () => {
             settings.set('filterMaps', filterMaps);
         }
 
+        if (e.target.id === "customGames") {
+            customGames = e.target.checked;
+            settings.set('customGames', customGames);
+        }
+
         if (e.target.id === "fpsCap") {
             fpsCap = e.target.checked;
             settings.set('fpsCap', fpsCap);
@@ -630,6 +647,12 @@ document.addEventListener("DOMContentLoaded", () => {
             settings.set('capture', capture);
             alert("setting will apply after client restart");
         }
+
+        if (e.target.id === "marketNames") {
+            marketNames = e.target.checked;
+            settings.set('marketNames', marketNames);
+        }
+        console.log(e.target.id)
 
     };
 
@@ -735,8 +758,83 @@ document.addEventListener("DOMContentLoaded", () => {
         settings.set('maps', maps);
     }
 
+    document.getElementById("customGames").checked = customGames;
+
     document.getElementById("fpsCap").checked = fpsCap;
     document.getElementById("capture").checked = capture;
+
+    let hasPlayerList = false;
+    let donoBadgeLink = "https://cdn.discordapp.com/attachments/738010330780926004/1017101316364959868/unknowntest.png";
+
+    const donators = ["#2Q0QKL", "#YYRHG7", "#W5J3AB", "#6FIJZY", "#MTK3Z5"];
+                    //  infi     eloterror   sheriff    l1cas       axl
+
+    setInterval(() => {
+
+        let imgTags = [];
+        let players = document.getElementsByClassName('players')?.[0];
+
+        if (!hasPlayerList && players) {
+
+            players.querySelectorAll('.short-id').forEach((e) => {
+
+                if (donators.includes(e.innerText)) {
+                    let img = document.createElement("img");
+
+                    img.src = donoBadgeLink;
+
+                    imgTags.push(img);
+
+                    e.parentElement.children[1].append(img);
+                }
+
+            });
+
+            const observer = new MutationObserver((mutation) => {
+
+                let n = false;
+
+                mutation.forEach((e) => {
+                    e.addedNodes.forEach((f) => {
+                        if (f.nodeName === "IMG") n = true;
+                    })
+                })
+
+                if (n) return;
+
+                for (let imgTag of imgTags) {
+                    if (imgTag) imgTag.parentElement.removeChild(imgTag);
+                }
+
+                imgTags = [];
+
+                players.querySelectorAll('.short-id').forEach((e) => {
+
+                    if (donators.includes(e.innerText)) {
+                        let img = document.createElement("img");
+
+                        img.src = donoBadgeLink;
+
+                        imgTags.push(img);
+
+                        e.parentElement.children[1].append(img);
+                    }
+
+                });
+
+            });
+            observer.observe(players, {
+                attributes: true,
+                characterData: true,
+                childList: true,
+                subtree: true,
+                attributeOldValue: true,
+                characterDataOldValue: true
+            });
+        }
+
+        hasPlayerList = !!players;
+    }, 1000);
 
 });
 
@@ -784,6 +882,112 @@ document.addEventListener('keydown', (e) => {
     }
 
 });
+
+
+if (discord) {
+
+    window.XMLHttpRequest = class extends window.XMLHttpRequest {
+
+        get response() {
+            if (this.marketReq && marketNames) {
+                this.marketReq = false;
+
+                let newResponse = [];
+
+                for (const listing of this.response) {
+                    listing.market = listing.market + " | " + listing.userId;
+                    newResponse.push(listing);
+                }
+
+                return newResponse;
+            }
+
+            return super.response;
+        }
+
+        open(method, url) {
+            if (url === "https://api.kirka.io/api/market") this.marketReq = true;
+            return super.open(...arguments);
+        }
+
+    }
+
+    let updating = false;
+
+    async function marketUsers() {
+
+        const countElements = document.getElementsByClassName("count");
+        const itemElements = document.getElementsByClassName("item-name");
+
+        let count = 0;
+
+        for (let i = 0; i < countElements.length; i++) {
+
+            let sellerId = countElements[i].innerText.split(" | ")[1];
+
+            itemElements[i].innerText = itemElements[i].innerText.split(" - ")[0];
+
+            fetch("https://api.kirka.io/api/user/getProfile", {
+                "headers": {
+                    "accept": "application/json, text/plain, */*",
+                    "content-type": "application/json;charset=UTF-8",
+                    "Referer": "https://kirka.io/",
+                    "Referrer-Policy": "strict-origin-when-cross-origin"
+                },
+                "body": `{"id":"${sellerId}"}`,
+                "method": "POST"
+            }).then(r => r.json()).then(seller => {
+                count++;
+                if (count >= countElements.length) updating = false;
+                countElements[i].innerHTML = countElements[i].innerHTML.split(" | ")[0];
+                itemElements[i].innerText += " - " + seller.name + "#" + seller.shortId;
+            });
+
+        }
+
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+
+        new MutationObserver(() => {
+            if (window.location.href === "https://kirka.io/hub/market") {
+                if (document.getElementsByClassName("subjects").length === 2) {
+                    if (!document.getElementsByClassName("item-name")[0]?.innerText.includes(" - ")) {
+                        if (!updating && marketNames) {
+                            marketUsers();
+                            updating = true;
+                        }
+                    }
+                }
+            }
+        }).observe(document, {
+            subtree: true,
+            childList: true
+        });
+
+        let gui = document.getElementById("gui");
+
+        let moduleDiv = document.createElement('div');
+
+        moduleDiv.classList.add('module');
+
+        moduleDiv.innerHTML =
+            "<input type=\"checkbox\" id=\"marketNames\" name=\"marketNames\">\n" +
+            "<label for=\"marketNames\">Market Names</label>";
+
+
+        let footer = document.getElementsByClassName("footer")[0];
+        footer.parentElement.removeChild(footer);
+
+
+        gui.appendChild(moduleDiv);
+        gui.appendChild(footer);
+
+        document.getElementById("marketNames").checked = marketNames;
+
+    });
+}
+
 
 let r = 255;
 let g = 0;
@@ -1066,6 +1270,7 @@ function checkSearchLobby() {
 
     let fittingLobbies = [];
     for (let i = 0; i < allLobbyData.length; i++) {
+        if (allLobbyData[i].metadata.custom === true && !customGames) continue;
         if (allLobbyData[i].locked === false && allLobbyData[i].clients >= minPlayers && allLobbyData[i].clients <= maxPlayers && gameModes.includes(allLobbyData[i].name) && minutesLeft(allLobbyData[i].createdAt) >= minTimeLeft && (maps.includes(allLobbyData[i].metadata.mapName.toLowerCase()) || !filterMaps)) {
             if (avoidSameLobby) {
                 if (!currentURL.includes(allLobbyData[i].roomId)) {
