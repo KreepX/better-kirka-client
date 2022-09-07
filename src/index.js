@@ -201,8 +201,6 @@ function disc() {
 
         valid = ids.includes(RPC.user.id);
 
-        console.log(valid);
-
         setInterval(() => {
             setActivity();
         }, 30 * 1000);
