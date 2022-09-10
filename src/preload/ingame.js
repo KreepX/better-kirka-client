@@ -42,6 +42,13 @@ let adspower = !!settings.get('adspower');
 let autoJoin = !!settings.get('autoJoin');
 let fpsCap = typeof settings.get('fpsCap') == 'undefined' ? false : settings.get('fpsCap');
 let capture = typeof settings.get('capture') == 'undefined' ? false : settings.get('capture');
+let volume = typeof settings.get('volume') == 'undefined' ? 1 : settings.get('volume');
+let noKillSound = !!settings.get('noKillSound');
+
+
+let volumeSlider;
+let volumeLab;
+
 let marketNames = !!settings.get('marketNames');
 
 
@@ -87,6 +94,8 @@ let settingsButtonsAdded = false;
 
 let scene;
 let flagMaterial;
+let players;
+let gains = [];
 
 WeakMap.prototype.set = new Proxy(WeakMap.prototype.set, {
     apply(target, thisArg, argArray) {
@@ -528,6 +537,16 @@ document.addEventListener("DOMContentLoaded", () => {
         "        <label for=\"capture\">Window Capture</label>\n" +
         "    </div>\n" +
         "\n" +
+        "    <div class=\"module\">\n" +
+        "        <input type=\"range\" id=\"volume\" name=\"volume\" min=\"0\" max=\"2\" value=\"1\" step=\"0.1\">\n" +
+        "        <label id=\"volumeLab\" for=\"volume\">Volume</label>\n" +
+        "    </div>\n" +
+        "\n" +
+        "    <div class=\"module\">\n" +
+        "        <input type=\"checkbox\" id=\"noKillSound\" name=\"noKillSound\">\n" +
+        "        <label for=\"noKillSound\">Disable Killsounds (applies after reload)</label>\n" +
+        "    </div>\n" +
+        "\n" +
         "    <div class=\"footer\">Toggle With \"PageUp\" Key</div>";
 
 
@@ -648,6 +667,12 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("setting will apply after client restart");
         }
 
+        if (e.target.id === "noKillSound") {
+            noKillSound = e.target.checked;
+            settings.set('noKillSound', noKillSound);
+        }
+
+
         if (e.target.id === "marketNames") {
             marketNames = e.target.checked;
             settings.set('marketNames', marketNames);
@@ -762,17 +787,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("fpsCap").checked = fpsCap;
     document.getElementById("capture").checked = capture;
+    document.getElementById("noKillSound").checked = noKillSound;
+
+
+    volumeLab = document.getElementById('volumeLab');
+    volumeSlider = document.getElementById("volume");
+
+    volumeSlider.onchange = () => {
+        settings.set('volume', Number.parseFloat(volumeSlider.value));
+        for (let i = 0; i < gains.length; i++) {
+            const cur = gains[i];
+            if (cur) cur.value = volume;
+        }
+    }
+
+    volumeSlider.value = volume;
+
 
     let hasPlayerList = false;
     let donoBadgeLink = "https://cdn.discordapp.com/attachments/738010330780926004/1017163938993020939/Untitled-finalihope.png";
 
     const donators = ["#2Q0QKL", "#YYRHG7", "#W5J3AB", "#6FIJZY", "#MTK3Z5", "#HVCL3P", "#7PWLQI"];
-                    //  infi     eloterror   sheriff    l1cas       axl       yzzzz      tombstone
+    //  infi     eloterror   sheriff    l1cas       axl       yzzzz      tombstone
 
     setInterval(() => {
 
         let imgTags = [];
-        let players = document.getElementsByClassName('players')?.[0];
+        players = document.getElementsByClassName('players')?.[0];
+
+        if (!players) gains = [];
 
         if (!hasPlayerList && players) {
 
@@ -1022,6 +1065,7 @@ function animate() {
             minPlayers = Number.parseInt(minPlayerSlider.value);
             minPlayersLab.innerText = minPlayerSlider.value + " min. Players";
         }
+
         if (maxPlayerSlider) {
             maxPlayers = Number.parseInt(maxPlayerSlider.value);
             maxPlayersLab.innerText = maxPlayerSlider.value + " max. Players";
@@ -1030,6 +1074,11 @@ function animate() {
         if (minTimeLeftSlider) {
             minTimeLeft = Number.parseInt(minTimeLeftSlider.value);
             minTimeLeftLab.innerText = minTimeLeftSlider.value + " min. Time Left";
+        }
+
+        if (volumeSlider) {
+            volume = Number.parseFloat(volumeSlider.value);
+            volumeLab.innerText = "Volume: " + volumeSlider.value;
         }
     }
 
@@ -1354,3 +1403,24 @@ Function.prototype.constructor = function (...args) {
     if (args[0] === 'while (true) {}' || args[0] === 'debugger') return proxy.apply(this);
     return proxy.apply(this, arguments);
 }
+
+Object.defineProperty(Object.prototype, 'gain', {
+    set(v) {
+        if (v.gain) {
+            v.gain.value = volume;
+            gains.push(v.gain);
+        }
+        this._v = v;
+    },
+    get() {
+        return this._v;
+    }
+});
+
+Object.defineProperty(Audio.prototype, 'muted', {
+    set(v) {
+    },
+    get() {
+        return noKillSound;
+    }
+});
