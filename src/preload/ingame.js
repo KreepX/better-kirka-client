@@ -62,8 +62,10 @@ let prevWireframeArms = false;
 let gui = document.createElement("div");
 let menuVisible = false;
 
-let listening = false;
+let inspectListening = false;
 if (!settings.get('inspectKey')) settings.set('inspectKey', "j");
+
+let menuListening = false;
 
 let euLobbies = !!settings.get('euLobbies');
 let naLobbies = !!settings.get('naLobbies');
@@ -446,7 +448,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "\n" +
         "    <div class=\"module\">\n" +
         "        Inspect Key\n" +
-        "        <button id=\"bindButton\" style=\"width: 100px\">click to bind</button>\n" +
+        "        <button id=\"inspBindButton\" style=\"width: 100px\">click to bind</button>\n" +
         "    </div>\n" +
         "\n" +
         "    <div class=\"module\">\n" +
@@ -535,6 +537,11 @@ document.addEventListener("DOMContentLoaded", () => {
         "    <div class=\"module\">\n" +
         "        <input type=\"checkbox\" id=\"capture\" name=\"capture\">\n" +
         "        <label for=\"capture\">Window Capture</label>\n" +
+        "    </div>\n" +
+        "\n" +
+        "    <div class=\"module\">\n" +
+        "        Menu Toggle Key\n" +
+        "        <button id=\"menuBindButton\" style=\"width: 100px\">click to bind</button>\n" +
         "    </div>\n" +
         "\n" +
         "    <div class=\"module\">\n" +
@@ -739,14 +746,14 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("tdmLobbies").checked = tdmLobbies;
     document.getElementById("parkourLobbies").checked = parkourLobbies;
 
-    let button = document.getElementById("bindButton");
-    button.style.fontWeight = "800";
-    button.onclick = () => {
-        listening = true;
-        button.innerText = "Press a Key"
+    let inspectBindButton = document.getElementById("inspBindButton");
+    inspectBindButton.style.fontWeight = "800";
+    inspectBindButton.onclick = () => {
+        inspectListening = true;
+        inspectBindButton.innerText = "Press a Key"
     }
 
-    button.innerText = settings.get('inspectKey').toUpperCase();
+    inspectBindButton.innerText = settings.get('inspectKey').toUpperCase();
 
     let cssField = document.getElementById('cssLink');
 
@@ -787,6 +794,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("fpsCap").checked = fpsCap;
     document.getElementById("capture").checked = capture;
+
+    let menuBindButton = document.getElementById("menuBindButton");
+    menuBindButton.style.fontWeight = "800";
+    menuBindButton.onclick = () => {
+        menuListening = true;
+        menuBindButton.innerText = "Press a Key"
+    }
+
+    menuBindButton.innerText = settings.get("menuKey") !== undefined ? settings.get("menuKey").toUpperCase() : "click to bind";
+
+
     document.getElementById("noKillSound").checked = noKillSound;
 
 
@@ -907,10 +925,17 @@ let inspectedWeapon;
 
 document.addEventListener('keydown', (e) => {
 
-    if (listening) {
+    if (inspectListening) {
         settings.set('inspectKey', e.key);
-        document.getElementById("bindButton").innerText = e.key.toUpperCase();
-        listening = false;
+        document.getElementById("inspBindButton").innerText = e.key.toUpperCase();
+        inspectListening = false;
+    }
+
+    if (menuListening) {
+        settings.set('menuKey', e.key);
+        document.getElementById("menuBindButton").innerText = e.key.toUpperCase();
+        menuListening = false;
+        toggleGui();
     }
 
     if (e.key === settings.get("inspectKey").toLowerCase()) {
@@ -920,7 +945,7 @@ document.addEventListener('keydown', (e) => {
         }, 3000);
     }
 
-    if (e.code === "PageUp") {
+    if (e.key.toLowerCase() === settings.get("menuKey")?.toLowerCase() || e.key === "PageUp") {
         toggleGui();
     }
 
@@ -929,7 +954,7 @@ document.addEventListener('keydown', (e) => {
 
 if (discord) {
 
-    window.XMLHttpRequest = class extends window.XMLHttpRequest {
+    XMLHttpRequest = class extends XMLHttpRequest {
 
         get response() {
             if (this.marketReq && marketNames) {
