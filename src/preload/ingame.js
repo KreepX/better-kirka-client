@@ -112,6 +112,16 @@ WeakMap.prototype.set = new Proxy(WeakMap.prototype.set, {
                     }
                 })
             }, 1000)
+
+        } else if (argArray[0] && argArray[0].type === 'Scene' && argArray[0].children[0].type === 'DirectionalLight') {
+
+            if (argArray[0].children[3]?.children[0]?.children[5]) {
+                const t = setInterval(() => {
+                    argArray[0].children[3].children[0].children[6].scale.x = -1;
+                    clearInterval(t);
+                });
+            }
+
         }
 
         return Reflect.apply(...arguments);
@@ -826,7 +836,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let donoBadgeLink = "https://cdn.discordapp.com/attachments/738010330780926004/1017163938993020939/Untitled-finalihope.png";
 
     const donators = ["#2Q0QKL", "#YYRHG7", "#W5J3AB", "#6FIJZY", "#MTK3Z5", "#HVCL3P", "#7PWLQI"];
-    //  infi     eloterror   sheriff    l1cas       axl       yzzzz      tombstone
+    //                 infi     eloterror   sheriff    l1cas       axl       yzzzz      tombstone
 
     setInterval(() => {
 
