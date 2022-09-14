@@ -32,6 +32,7 @@ let customCss = !!settings.get('customCss');
 //let hpNumber = true;
 let hideWeaponsAds = !!settings.get('hideWeaponsAds');
 let hideArms = !!settings.get('hideArms');
+let leftHanded = !!settings.get('leftHanded');
 let hideFlagAds = !!settings.get('hideFlagAds');
 let playerHighLight = !!settings.get('playerHighLight');
 let fullBlack = !!settings.get('fullBlack');
@@ -98,30 +99,36 @@ let scene;
 let flagMaterial;
 let players;
 let gains = [];
+let overlayModel;
 
 WeakMap.prototype.set = new Proxy(WeakMap.prototype.set, {
     apply(target, thisArg, argArray) {
 
-        if (argArray[0] && argArray[0].type === 'Scene' && argArray[0].children[0].type === 'AmbientLight') {
-            scene = argArray[0];
+        if (argArray[0] && argArray[0].type === 'Scene') {
+            if (argArray[0].children[0].type === 'AmbientLight') {
+                scene = argArray[0];
 
-            setTimeout(() => {
-                scene.children.forEach((e) => {
-                    if (e.type === "Sprite" && !e.material.depthTest && e.material.map?.image?.width === 149) {
-                        flagMaterial = e.material;
-                    }
-                })
-            }, 1000)
+                setTimeout(() => {
+                    scene.children.forEach((e) => {
+                        if (e.type === "Sprite" && !e.material.depthTest && e.material.map?.image?.width === 149) {
+                            flagMaterial = e.material;
+                        }
+                    })
+                }, 1000);
 
-        } else if (argArray[0] && argArray[0].type === 'Scene' && argArray[0].children[0].type === 'DirectionalLight') {
+            } else if (argArray[0].children[0].type === 'DirectionalLight') {
 
-            if (argArray[0].children[3]?.children[0]?.children[5]) {
-                const t = setInterval(() => {
-                    argArray[0].children[3].children[0].children[6].scale.x = -1;
-                    clearInterval(t);
-                });
+                if (argArray[0].children[3]?.children[0]?.children[5]) {
+                    const t = setInterval(() => {
+                        try {
+                            overlayModel = argArray[0].children[3].children[0].children[6];
+                        } catch {
+                        }
+                        if (argArray[0].children[3].children[0].children[6]) clearInterval(t);
+                    });
+                }
+
             }
-
         }
 
         return Reflect.apply(...arguments);
@@ -348,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
         "            box-shadow: 0 0 8px 2px #000000;\n" +
         "            position: absolute;\n" +
         "            left: 200px;\n" +
-        "            top: 100px;\n" +
+        "            top: 60px;\n" +
         "            z-index: 300;\n" +
         "            color: rgb(255, 255, 255);\n" +
         "            padding: 6px;\n" +
@@ -424,6 +431,11 @@ document.addEventListener("DOMContentLoaded", () => {
         "    <div class=\"module\">\n" +
         "        <input type=\"checkbox\" id=\"arms\" name=\"arms\">\n" +
         "        <label for=\"arms\">Hide Arms</label>\n" +
+        "    </div>\n" +
+        "\n" +
+        "    <div class=\"module\">\n" +
+        "        <input type=\"checkbox\" id=\"leftHanded\" name=\"leftHanded\">\n" +
+        "        <label for=\"leftHanded\">Left Handed</label>\n" +
         "    </div>\n" +
         "\n" +
         "    <div class=\"module\">\n" +
@@ -589,6 +601,11 @@ document.addEventListener("DOMContentLoaded", () => {
             settings.set('hideArms', hideArms);
         }
 
+        if (e.target.id === "leftHanded") {
+            leftHanded = e.target.checked;
+            settings.set('leftHanded', leftHanded);
+        }
+
         if (e.target.id === "hideflag") {
             hideFlagAds = e.target.checked;
             settings.set('hideFlagAds', hideFlagAds);
@@ -710,6 +727,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("customCSS").checked = customCss;
     document.getElementById("hideweap").checked = hideWeaponsAds;
     document.getElementById("arms").checked = hideArms;
+    document.getElementById("leftHanded").checked = leftHanded;
     document.getElementById("hideflag").checked = hideFlagAds;
     document.getElementById("highlight").checked = playerHighLight;
     document.getElementById("black").checked = fullBlack;
@@ -868,8 +886,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 mutation.forEach((e) => {
                     e.addedNodes.forEach((f) => {
                         if (f.nodeName === "IMG") n = true;
-                    })
-                })
+                    });
+                });
 
                 if (n) return;
 
@@ -1122,6 +1140,14 @@ function animate() {
             flagMaterial.visible = !scoped;
         } else {
             flagMaterial.visible = true;
+        }
+    }
+
+    if (overlayModel) {
+        if (leftHanded) {
+            overlayModel.scale.x = -1;
+        } else {
+            overlayModel.scale.x = 1;
         }
     }
 
