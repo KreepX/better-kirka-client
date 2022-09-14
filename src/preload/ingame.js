@@ -117,14 +117,16 @@ WeakMap.prototype.set = new Proxy(WeakMap.prototype.set, {
                 }, 1000);
 
             } else if (argArray[0].children[0].type === 'DirectionalLight') {
-
-                if (argArray[0].children[3]?.children[0]?.children[5]) {
+                if (argArray[0].children[3]?.children[0]?.children[0]) {
+                    overlayModel = null;
                     const t = setInterval(() => {
                         try {
-                            overlayModel = argArray[0].children[3].children[0].children[6];
+                            for (let i = 0; i < argArray[0].children[3].children[0].children.length; i++) {
+                                if (argArray[0].children[3].children[0].children[i].type === "Object3D") overlayModel = argArray[0].children[3].children[0].children[i];
+                            }
                         } catch {
                         }
-                        if (argArray[0].children[3].children[0].children[6]) clearInterval(t);
+                        if (overlayModel) clearInterval(t);
                     });
                 }
 
