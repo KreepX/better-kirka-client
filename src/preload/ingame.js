@@ -854,8 +854,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let hasPlayerList = false;
     let donoBadgeLink = "https://cdn.discordapp.com/attachments/738010330780926004/1017163938993020939/Untitled-finalihope.png";
 
-    const donators = ["#2Q0QKL", "#YYRHG7", "#W5J3AB", "#6FIJZY", "#MTK3Z5", "#HVCL3P", "#7PWLQI"];
-    //                 infi     eloterror   sheriff    l1cas       axl       yzzzz      tombstone
+    const donators = ["#2Q0QKL", "#YYRHG7", "#W5J3AB", "#6FIJZY", "#MTK3Z5", "#HVCL3P", "#7PWLQI", "#FAYQ0E"];
+    //                 infi     eloterror   sheriff    l1cas       axl       yzzzz      tombstone    zerg
 
     setInterval(() => {
 
