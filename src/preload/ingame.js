@@ -928,7 +928,10 @@ document.addEventListener("DOMContentLoaded", () => {
 let scoped = false;
 
 document.addEventListener('mousedown', (e) => {
-    if (e.button === 2) scoped = true;
+    if (e.button === 2) {
+        scoped = true;
+        inspecting = false;
+    }
 });
 
 document.addEventListener('mouseup', (e) => {
