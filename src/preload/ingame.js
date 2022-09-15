@@ -6,6 +6,8 @@ const Store = require('electron-store');
 const settings = new Store();
 
 const discord = ipcRenderer.sendSync('discord');
+const ingameIds = ipcRenderer.sendSync('ids');
+const badgeLinks = ipcRenderer.sendSync('badges');
 
 
 const documents = ipcRenderer.sendSync('docs');
@@ -850,35 +852,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     volumeSlider.value = volume;
 
-
+    let imgTags = [];
     let hasPlayerList = false;
-    let donoBadgeLink = "https://cdn.discordapp.com/attachments/738010330780926004/1017163938993020939/Untitled-finalihope.png";
 
-    const donators = ["#2Q0QKL", "#YYRHG7", "#W5J3AB", "#6FIJZY", "#MTK3Z5", "#HVCL3P", "#7PWLQI", "#FAYQ0E"];
-    //                 infi     eloterror   sheriff    l1cas       axl       yzzzz      tombstone    zerg
+    function appendBadges(){
+        players.querySelectorAll('.short-id').forEach((e) => {
+
+            if (ingameIds.includes(e.innerText)) {
+                let img = document.createElement("img");
+
+                img.src = badgeLinks[e.innerText] !== '' ? badgeLinks[e.innerText] : badgeLinks.default;
+
+                imgTags.push(img);
+
+                e.parentElement.children[1].append(img);
+            }
+
+        });
+    }
 
     setInterval(() => {
 
-        let imgTags = [];
+
         players = document.getElementsByClassName('players')?.[0];
 
         if (!players) gains = [];
 
         if (!hasPlayerList && players) {
 
-            players.querySelectorAll('.short-id').forEach((e) => {
-
-                if (donators.includes(e.innerText)) {
-                    let img = document.createElement("img");
-
-                    img.src = donoBadgeLink;
-
-                    imgTags.push(img);
-
-                    e.parentElement.children[1].append(img);
-                }
-
-            });
+            appendBadges();
 
             const observer = new MutationObserver((mutation) => {
 
@@ -898,19 +900,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 imgTags = [];
 
-                players.querySelectorAll('.short-id').forEach((e) => {
-
-                    if (donators.includes(e.innerText)) {
-                        let img = document.createElement("img");
-
-                        img.src = donoBadgeLink;
-
-                        imgTags.push(img);
-
-                        e.parentElement.children[1].append(img);
-                    }
-
-                });
+                appendBadges();
 
             });
             observer.observe(players, {
@@ -928,11 +918,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 });
 
-window.addEventListener("mouseup", (e) => {
-    if (e.button === 3 || e.button === 4)
-        e.preventDefault();
-});
-
 //hp numbers default ingame now
 /*const observer = new MutationObserver(function (mutations) {
     mutations.forEach(function (mutation) {
@@ -948,6 +933,7 @@ document.addEventListener('mousedown', (e) => {
 
 document.addEventListener('mouseup', (e) => {
     if (e.button === 2) scoped = false;
+    if (e.button === 3 || e.button === 4) e.preventDefault();
 });
 
 let inspectedWeapon;

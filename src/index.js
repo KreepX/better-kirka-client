@@ -3,6 +3,7 @@ const fs = require('fs');
 const shortcuts = require('electron-localshortcut');
 const Store = require('electron-store');
 const {autoUpdater} = require('electron-updater');
+const fetch = require('node-fetch');
 
 let updateLoaded = false;
 let updateNow = false;
@@ -22,8 +23,8 @@ checkCreateFolder(app.getPath('documents') + "\\BetterKirkaClient\\swapper\\asse
 checkCreateFolder(app.getPath('documents') + "\\BetterKirkaClient\\swapper\\assets\\media");
 
 
-const ids = ["619377929951903754", "589527075447111681", "714071002400686121", "1011034797595959316", "327812142101168128",
-    "517402093066256404", "663356935986216960", "863284501202731008", "817265111144071188", "823888160886358056"];
+const ingameIds = [];
+const badgeLinks = {default: "https://cdn.discordapp.com/attachments/738010330780926004/1017163938993020939/Untitled-finalihope.png"};
 
 let valid = false;
 
@@ -55,8 +56,9 @@ app.allowRendererProcessReuse = true;
 
 
 ipcMain.on('docs', (event) => event.returnValue = app.getPath('documents'));
-
 ipcMain.on('discord', (event) => event.returnValue = valid);
+ipcMain.on('ids', (event) => event.returnValue = ingameIds);
+ipcMain.on('badges', (event) => event.returnValue = badgeLinks);
 
 const createWindow = () => {
 
@@ -199,12 +201,42 @@ function discRpc() {
 
     RPC.on('ready', async () => {
 
+        let donatorJson;
+        const discordIds = [];
 
+        try {
 
-        if(!created) createWindow();
+            donatorJson = await fetch('https://raw.githubusercontent.com/42infi/better-kirka-client/master/donators.json', {
+                method: 'GET',
+                cache: 'no-cache',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                referrerPolicy: 'no-referrer'
+            });
+
+            donatorJson = await donatorJson.json();
+
+            for (let donator of donatorJson.donators) {
+                if (donator.tier > 1) {
+                    discordIds.push(donator.discordId);
+
+                    for (let ingameId of donator.ids) {
+                        badgeLinks[ingameId] = donator.customBadge;
+                        ingameIds.push(ingameId);
+                    }
+                }
+            }
+
+        } catch (e) {
+            console.log(e);
+            if (!created) createWindow();
+        }
+
+        valid = discordIds.includes(RPC.user.id);
+
+        if (!created) createWindow();
         await setActivity();
-
-        valid = ids.includes(RPC.user.id);
 
         setInterval(() => {
             setActivity();
@@ -213,7 +245,7 @@ function discRpc() {
 
 
     RPC.login({clientId}).catch(err => {
-        if(!created) createWindow();
+        if (!created) createWindow();
         console.log("error");
         console.error(err);
     });
