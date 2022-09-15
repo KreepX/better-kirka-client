@@ -815,7 +815,7 @@ document.addEventListener("DOMContentLoaded", () => {
     mapField.value = mapString.slice(0, -2);
 
     mapField.oninput = () => {
-        maps = mapField.value.replaceAll(' ', '').toLowerCase().split(',');
+        maps = mapField.value.replace(/ /g, '').toLowerCase().split(',');
         settings.set('maps', maps);
     }
 
