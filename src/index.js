@@ -64,13 +64,15 @@ ipcMain.on('badges', (event) => event.returnValue = badgeLinks);
 ipcMain.on('pricePrompt', async (event) => {
     event.returnValue = await prompt({
         title: 'Custom List Price',
-        label: 'Enter custom price (leave blank, hit close or cancel to use pre selected price)',
+        label: 'Enter custom price (leave blank for previously selected price)',
         inputAttrs: {
             type: 'text'
         },
         type: 'input',
         icon: __dirname + "/icon.ico",
-        width: 600
+        width: 500,
+        height: 180,
+        alwaysOnTop: true,
     });
 });
 

@@ -1008,13 +1008,18 @@ if (discord) {
                 let json = JSON.parse(data);
                 if (json.price > 0) {
 
-                    let customPrice = Number.parseInt(await ipcRenderer.sendSync('pricePrompt'));
+                    let result = await ipcRenderer.sendSync('pricePrompt');
 
-                    if (!isNaN(customPrice)) {
-                        json.price = customPrice;
-                        data = JSON.stringify(json);
+                    if (result == null) {
+                        json.price = -1;
+                    } else if (result !== '') {
+                        let customPrice = Number.parseInt(result);
+                        if (!isNaN(customPrice)) {
+                            json.price = customPrice;
+                        }
                     }
 
+                    data = JSON.stringify(json);
                 }
             }
 
