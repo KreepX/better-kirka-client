@@ -1,0 +1,67 @@
+{
+  "donators": [
+    {
+      "name": "Axl",
+      "ids": ["#MTK3Z5"],
+      "discordId": "589527075447111681",
+      "tier": 3,
+      "customBadge": "https://cdn.discordapp.com/attachments/1010612280775422093/1019727079320854528/rsz_2667.png"
+    },
+    {
+      "name": "Prod",
+      "ids": ["#4DD3XZ"],
+      "discordId": "1011555673915531314",
+      "tier": 3,
+      "customBadge": ""
+    },
+    {
+      "name": "infi",
+      "ids": ["#2Q0QKL"],
+      "discordId": "327812142101168128",
+      "tier": 3,
+      "customBadge": ""
+    },
+    {
+      "name": "EloTerror",
+      "ids": ["#YYRHG7"],
+      "discordId": "517402093066256404",
+      "tier": 3,
+      "customBadge": ""
+    },
+    {
+      "name": "SheriffCarry",
+      "ids": ["#W5J3AB"],
+      "discordId": "619377929951903754",
+      "tier": 3,
+      "customBadge": ""
+    },
+    {
+      "name": "l1cas",
+      "ids": ["#6FIJZY"],
+      "discordId": "714071002400686121",
+      "tier": 1,
+      "customBadge": ""
+    },
+    {
+      "name": "yzzz",
+      "ids": ["#HVCL3P"],
+      "discordId": "863284501202731008",
+      "tier": 2,
+      "customBadge": ""
+    },
+    {
+      "name": "tay-k",
+      "ids": ["#7PWLQI"],
+      "discordId": "817265111144071188",
+      "tier": 2,
+      "customBadge": ""
+    },
+    {
+      "name": "zerg",
+      "ids": ["#FAYQ0E"],
+      "discordId": "823888160886358056",
+      "tier": 2,
+      "customBadge": ""
+    }
+  ]
+}

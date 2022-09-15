@@ -139,7 +139,7 @@ const createWindow = () => {
 
 }
 
-app.on('ready', disc);
+app.on('ready', discRpc);
 
 app.on('window-all-closed', app.quit);
 
@@ -195,9 +195,12 @@ async function setActivity() {
     });
 }
 
-function disc() {
+function discRpc() {
 
     RPC.on('ready', async () => {
+
+
+
         if(!created) createWindow();
         await setActivity();
 
