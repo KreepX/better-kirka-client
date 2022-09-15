@@ -53,6 +53,7 @@ let volumeSlider;
 let volumeLab;
 
 let marketNames = !!settings.get('marketNames');
+let customPrice = !!settings.get('customPrice');
 
 
 let inspecting = false;
@@ -714,7 +715,11 @@ document.addEventListener("DOMContentLoaded", () => {
             marketNames = e.target.checked;
             settings.set('marketNames', marketNames);
         }
-        console.log(e.target.id)
+
+        if (e.target.id === "customPrice") {
+            customPrice = e.target.checked;
+            settings.set('customPrice', customPrice);
+        }
 
     };
 
@@ -855,7 +860,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let imgTags = [];
     let hasPlayerList = false;
 
-    function appendBadges(){
+    function appendBadges() {
         players.querySelectorAll('.short-id').forEach((e) => {
 
             if (ingameIds.includes(e.innerText)) {
@@ -992,8 +997,28 @@ if (discord) {
         }
 
         open(method, url) {
+            this.url = url;
             if (url === "https://api.kirka.io/api/market") this.marketReq = true;
             return super.open(...arguments);
+        }
+
+        async send(data) {
+
+            if (this.url === "https://api.kirka.io/api/inventory/market" && customPrice) {
+                let json = JSON.parse(data);
+                if (json.price > 0) {
+
+                    let customPrice = Number.parseInt(await ipcRenderer.sendSync('pricePrompt'));
+
+                    if (!isNaN(customPrice)) {
+                        json.price = customPrice;
+                        data = JSON.stringify(json);
+                    }
+
+                }
+            }
+
+            return super.send(data);
         }
 
     }
@@ -1053,23 +1078,32 @@ if (discord) {
 
         let gui = document.getElementById("gui");
 
-        let moduleDiv = document.createElement('div');
-
-        moduleDiv.classList.add('module');
-
-        moduleDiv.innerHTML =
-            "<input type=\"checkbox\" id=\"marketNames\" name=\"marketNames\">\n" +
-            "<label for=\"marketNames\">Market Names</label>";
-
-
         let footer = document.getElementsByClassName("footer")[0];
         footer.parentElement.removeChild(footer);
 
 
-        gui.appendChild(moduleDiv);
-        gui.appendChild(footer);
+        let marketNamesDiv = document.createElement('div');
+        marketNamesDiv.classList.add('module');
 
+        marketNamesDiv.innerHTML =
+            "<input type=\"checkbox\" id=\"marketNames\" name=\"marketNames\">\n" +
+            "<label for=\"marketNames\">Market Names</label>";
+
+        gui.appendChild(marketNamesDiv);
         document.getElementById("marketNames").checked = marketNames;
+
+
+        let customPriceDiv = document.createElement('div');
+        customPriceDiv.classList.add('module');
+
+        customPriceDiv.innerHTML =
+            "<input type=\"checkbox\" id=\"customPrice\" name=\"customPrice\">\n" +
+            "<label for=\"customPrice\">Custom List Price</label>";
+
+        gui.appendChild(customPriceDiv);
+        document.getElementById("customPrice").checked = customPrice;
+
+        gui.appendChild(footer);
 
     });
 }
@@ -1079,10 +1113,7 @@ let r = 255;
 let g = 0;
 let b = 0;
 
-function animate() {
-
-    window.requestAnimationFrame(animate);
-
+setInterval(() => {
     if (rainbow) {
         if (r > 0 && b === 0) {
             r--;
@@ -1102,6 +1133,11 @@ function animate() {
         g = color.g;
         b = color.b;
     }
+}, 4);
+
+function animate() {
+
+    window.requestAnimationFrame(animate);
 
     if (menuVisible) {
         if (minPlayerSlider) {

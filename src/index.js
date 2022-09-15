@@ -4,6 +4,7 @@ const shortcuts = require('electron-localshortcut');
 const Store = require('electron-store');
 const {autoUpdater} = require('electron-updater');
 const fetch = require('node-fetch');
+const prompt = require('electron-prompt');
 
 let updateLoaded = false;
 let updateNow = false;
@@ -59,6 +60,19 @@ ipcMain.on('docs', (event) => event.returnValue = app.getPath('documents'));
 ipcMain.on('discord', (event) => event.returnValue = valid);
 ipcMain.on('ids', (event) => event.returnValue = ingameIds);
 ipcMain.on('badges', (event) => event.returnValue = badgeLinks);
+
+ipcMain.on('pricePrompt', async (event) => {
+    event.returnValue = await prompt({
+        title: 'Custom List Price',
+        label: 'Enter custom price (leave blank, hit close or cancel to use pre selected price)',
+        inputAttrs: {
+            type: 'text'
+        },
+        type: 'input',
+        icon: __dirname + "/icon.ico",
+        width: 600
+    });
+});
 
 const createWindow = () => {
 
