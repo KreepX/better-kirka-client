@@ -62,6 +62,13 @@
       "discordId": "823888160886358056",
       "tier": 2,
       "customBadge": ""
+    },
+    {
+      "name": "OniBeast",
+      "ids": ["#QCZSZK"],
+      "discordId": "663356370740838400",
+      "tier": 2,
+      "customBadge": ""
     }
   ]
 }
