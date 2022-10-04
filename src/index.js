@@ -1,3 +1,10 @@
+/* eslint-disable semi */
+/* eslint-disable no-shadow */
+/* eslint-disable no-path-concat */
+/* eslint-disable no-return-assign */
+/* eslint-disable no-promise-executor-return */
+/* eslint-disable arrow-parens */
+/* eslint-disable no-confusing-arrow */
 const {app, BrowserWindow, clipboard, ipcMain, dialog, session, protocol} = require('electron');
 const fs = require('fs');
 const shortcuts = require('electron-localshortcut');
@@ -25,7 +32,6 @@ checkCreateFolder(app.getPath('documents') + "\\BetterKirkaClient\\swapper\\asse
 checkCreateFolder(app.getPath('documents') + "\\BetterKirkaClient\\swapper\\assets\\glb");
 checkCreateFolder(app.getPath('documents') + "\\BetterKirkaClient\\swapper\\assets\\media");
 
-
 const ingameIds = [];
 const badgeLinks = {default: "https://cdn.discordapp.com/attachments/738010330780926004/1017163938993020939/Untitled-finalihope.png"};
 
@@ -34,6 +40,7 @@ let valid = false;
 const clientId = '984501931273752577';
 const DiscordRPC = require('discord-rpc');
 const url = require("url");
+
 const RPC = new DiscordRPC.Client({transport: 'ipc'});
 
 DiscordRPC.register(clientId);
@@ -164,7 +171,6 @@ app.on('ready', discRpc);
 
 app.on('window-all-closed', app.quit);
 
-
 //improved swapper from here https://github.com/McSkinnerOG/Min-Client/blob/main/src/main.js#L194
 const initResourceSwapper = () => {
     let swap = {filter: {urls: []}, files: {}};
@@ -193,7 +199,6 @@ const initResourceSwapper = () => {
         });
     }
 }
-
 
 let startTime = Date.now();
 
@@ -262,11 +267,9 @@ function discRpc() {
         }, 30 * 1000);
     });
 
-
     RPC.login({clientId}).catch(err => {
         if (!created) createWindow();
         console.log("error");
         console.error(err);
     });
 }
-
