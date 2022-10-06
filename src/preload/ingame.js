@@ -1,15 +1,21 @@
+/* eslint-disable no-nested-ternary */
+/* eslint-disable eqeqeq */
 const { clipboard, ipcRenderer } = require('electron');
 const fs = require('fs');
 const path = require('path');
 const Store = require('electron-store');
 
-const settings = new Store();
+/*
+changes 
 
+added physics to hide gamemodes
+
+*/
+
+const settings = new Store();
 const discord = ipcRenderer.sendSync('discord');
 const ingameIds = ipcRenderer.sendSync('ids');
 const badgeLinks = ipcRenderer.sendSync('badges');
-
-
 const documents = ipcRenderer.sendSync('docs');
 const scriptFolder = documents + "\\BetterKirkaClient\\scripts";
 
@@ -17,6 +23,7 @@ if (!fs.existsSync(scriptFolder)) {
     fs.mkdirSync(scriptFolder, {recursive: true});
 }
 try {
+    // eslint-disable-next-line arrow-parens
     fs.readdirSync(scriptFolder).filter(file => path.extname(file).toLowerCase() === '.js').forEach(filename => {
         try {
             require(`${scriptFolder}/${filename}`);
@@ -26,6 +33,14 @@ try {
     });
 } catch (e) {
     console.error("an error occurred while loading userscripts: " + e);
+}
+
+function clearTip(id) {
+  try {
+    let g = document.getElementById(id);
+    g.parentElement.removeChild(g);
+  } catch {}
+}
 
 function ShowDevTip(Msg) {
   let tipchilds = document.querySelectorAll('.vue-notification-wrapper');
@@ -158,7 +173,6 @@ function hslToHex(h, s, l) {
 function componentToHex(c) {
   let hex = c.toString(16);
   // prettier-ignore
-  // eslint-disable-next-line eqeqeq
   return hex.length == 1 ? "0" + hex : hex;
 }
 
@@ -285,10 +299,9 @@ function playerHighLightFunc() {
   if (ShouldHiglight) {
     let localPlayerClass = scene['children']['0']['parent']['entity']['_entityManager']['mWnwM']['systemManager']['_systems']['0']['_queries']['player']['entities']['0']['_components']['38'].wnWmN;
 
-    for (let i = 0; i < scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems']['2']['_queries']['animationEntities']['entities'].length; i++) {
-      let player = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems']['2']['_queries']['animationEntities']['entities'][i]['_components'];
-      let mat = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems']['2']['_queries']['animationEntities']['entities'][i]['_components'][0].value.children[0].children[0].children[1].material;
-
+    for (let i = 0; i < scene["entity"]["_entityManager"]["mWnwM"]["systemManager"]["_systems"]["2"]["_queries"].players.entities.length; i++) {
+        let player = scene["entity"]["_entityManager"]["mWnwM"]["systemManager"]["_systems"]["2"]["_queries"].players.entities[i]["_components"];
+        let mat = scene["entity"]["_entityManager"]["mWnwM"]["systemManager"]["_systems"]["2"]["_queries"].players.entities[i]["_components"][0].value.children[0].children[0].children[1].material;
       if (mat.color.r === 1 && mat.color.g < 1 && mat.color.b < 1) continue;
 
       if (!localPlayerClass.team || localPlayerClass.team !== player['50'].team) {
@@ -450,7 +463,13 @@ async function ShowHideGameModes() {
   let modecards = document.getElementsByClassName('list-cont')[0].getElementsByClassName('map');
   for (var i = 0; i < modecards.length; i++) {
     try {
-      if (modecards[i].innerText.match(/P[_]/g)) {
+      if (modecards[i].innerText.match(/PHY[_]/g)) {
+        if (GameModesShowPHY === false) {
+          modecards[i].parentElement.parentElement.style.display = "none";
+        } else {
+          modecards[i].parentElement.parentElement.style.display = "flex";
+        }
+      } else if (modecards[i].innerText.match(/P[_]/g)) {
         if (GameModesShowP === false) {
           modecards[i].parentElement.parentElement.style.display = 'none';
         } else {
@@ -510,6 +529,13 @@ function GameModesCheckBoxChangeHandler() {
       GameModesShowPOINT = false;
     }
     settings.set('GameModesShowPOINT', GameModesShowPOINT);
+  } else if (selectedmode === 'PHY') {
+    if (this.checked) {
+      GameModesShowPHY = true;
+    } else {
+      GameModesShowPHY = false;
+    }
+    settings.set('GameModesShowPHY', GameModesShowPHY);
   }
 
   ShowHideGameModes();
@@ -531,6 +557,7 @@ function SetGameModesCheckBoxes() {
       modesCont.getElementsByClassName('TDM-checkbox')[0].checked = GameModesShowTDM;
       modesCont.getElementsByClassName('P-checkbox')[0].checked = GameModesShowP;
       modesCont.getElementsByClassName('POINT-checkbox')[0].checked = GameModesShowPOINT;
+      modesCont.getElementsByClassName('PHY-checkbox')[0].checked = GameModesShowPHY;
       let modes = document.getElementsByClassName('servers')[0].getElementsByClassName('list-cont')[0].getElementsByClassName('mods')[0].getElementsByTagName('input');
       for (var i = 0; i < modes.length; i++) {
         modes[i].addEventListener('change', GameModesCheckBoxChangeHandler);
@@ -612,13 +639,19 @@ const modesContinner = `
     </label>
     </div>
     
+    <div class="PHY" style="margin-right:.5rem!important;height:3.1vh;margin:auto;">
+    <label class="custom-checkbox checkbox-size">
+    <input type="checkbox" class="PHY-checkbox">
+    <span> Physics </span>
+    </label>
+    </div>
+    
 `;
 
 let r = 255;
 let g = 0;
 let b = 0;
 let rainbowIntervId;
-const settings = new Store();
 let consolelogCnf = {
   icon: 'background:url("data:image/png;base64,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") center right / 10px 10px no-repeat;padding-top:0px;padding-left:5px;',
   origin: 'Better Kirka Client',
@@ -637,47 +670,21 @@ let weaponModel;
 let armsMaterial;
 let weaponMaterial;
 // prettier-ignore
-// eslint-disable-next-line eqeqeq
 let GameModesShowP = typeof settings.get('GameModesShowP') == 'undefined' ? settingsSetGit('GameModesShowP', true) : settings.get('GameModesShowP');
 // prettier-ignore
-// eslint-disable-next-line eqeqeq
 let GameModesShowTDM = typeof settings.get('GameModesShowTDM') == 'undefined' ? settingsSetGit('GameModesShowTDM', true) : settings.get('GameModesShowTDM');
 // prettier-ignore
-// eslint-disable-next-line eqeqeq
 let GameModesShowPOINT = typeof settings.get('GameModesShowPOINT') == 'undefined' ? settingsSetGit('GameModesShowPOINT', true) : settings.get('GameModesShowPOINT');
 // prettier-ignore
-// eslint-disable-next-line eqeqeq
 let GameModesShowDM = typeof settings.get('GameModesShowDM') == 'undefined' ? settingsSetGit('GameModesShowDM', true) : settings.get('GameModesShowDM');
+// prettier-ignore
+let GameModesShowPHY = typeof settings.get('GameModesShowPHY') == 'undefined' ? settingsSetGit('GameModesShowPHY', true) : settings.get('GameModesShowPHY');
+
 let imgTags = [];
 let hasPlayerList = false;
 // prettier-ignore
-// eslint-disable-next-line eqeqeq
 let ShowBadges = typeof settings.get('ShowBadges') == 'undefined' ? settingsSetGit('ShowBadges', true) : settings.get('ShowBadges');
 let frameFuncs = [];
-
-const discord = ipcRenderer.sendSync('discord');
-const ingameIds = ipcRenderer.sendSync('ids');
-const badgeLinks = ipcRenderer.sendSync('badges');
-
-const documents = ipcRenderer.sendSync('docs');
-const scriptFolder = documents + '\\BetterKirkaClient\\scripts';
-if (!fs.existsSync(scriptFolder)) {
-  fs.mkdirSync(scriptFolder, { recursive: true });
-}
-try {
-  fs.readdirSync(scriptFolder)
-    .filter((file) => path.extname(file).toLowerCase() === '.js')
-    .forEach((filename) => {
-      try {
-        require(`${scriptFolder}/${filename}`);
-      } catch (e) {
-        console.error('an error occurred while executing userscript: ' + filename + ' error: ' + e);
-      }
-    });
-} catch (e) {
-  console.error('an error occurred while loading userscripts: ' + e);
-}
-
 let permCrosshair = !!settings.get('permCrosshair');
 let noLoadingTimes = true;
 let customCss = !!settings.get('customCss');
@@ -693,13 +700,10 @@ let rainbow = !!settings.get('rainbow');
 let adspower = !!settings.get('adspower');
 let autoJoin = !!settings.get('autoJoin');
 // prettier-ignore
-// eslint-disable-next-line eqeqeq
 let fpsCap = typeof settings.get('fpsCap') == 'undefined' ? false : settings.get('fpsCap');
 // prettier-ignore
-// eslint-disable-next-line eqeqeq
 let capture = typeof settings.get('capture') == 'undefined' ? false : settings.get('capture');
 // prettier-ignore
-// eslint-disable-next-line eqeqeq
 let volume = typeof settings.get('volume') == 'undefined' ? 1 : settings.get('volume');
 let noKillSound = !!settings.get('noKillSound');
 let volumeSlider;
@@ -726,17 +730,13 @@ let ffaLobbies = !!settings.get('ffaLobbies');
 let tdmLobbies = !!settings.get('tdmLobbies');
 let parkourLobbies = !!settings.get('parkourLobbies');
 // prettier-ignore
-// eslint-disable-next-line eqeqeq
 let preferredFilter = typeof settings.get('preferredFilter') == 'undefined' ? 'Players' : settings.get('preferredFilter');
 // prettier-ignore
-// eslint-disable-next-line eqeqeq
 let minPlayers = typeof settings.get('minPlayers') == 'undefined' ? 4 : settings.get('minPlayers');
 let colorred = hexToRgb('#ff0000');
 // prettier-ignore
-// eslint-disable-next-line eqeqeq
 let maxPlayers = typeof settings.get('maxPlayers') == 'undefined' ? 8 : settings.get('maxPlayers');
 // prettier-ignore
-// eslint-disable-next-line eqeqeq
 let minTimeLeft = typeof settings.get('minTimeLeft') == 'undefined' ? 3 : settings.get('minTimeLeft');
 let filterMaps = !!settings.get('filterMaps');
 let avoidSameLobby = true;
@@ -782,13 +782,6 @@ if (rainbow) {
 if (ShowBadges) {
   ShowBadgesFunc();
 }
-
-/*
-if (permCrosshair) {
-  // frameFuncs.push(permCrosshairFunc);
-  // permCrosshairToggleFunc();
-}
-*/
 
 if (playerHighLight) {
   frameFuncs.push(playerHighLightFunc);
@@ -850,7 +843,7 @@ WeakMap.prototype.set = new Proxy(WeakMap.prototype.set, {
 
         const j = setInterval(() => {
           try {
-            if (scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems']['2']['_queries']['animationEntities']['entities']) {
+            if (scene["entity"]["_entityManager"]["mWnwM"]["systemManager"]["_systems"]["2"]["_queries"].players.entities[0]["_components"]) {
               ShouldHiglight = true;
             }
           } catch {}
@@ -982,12 +975,6 @@ new MutationObserver((mutationRecords) => {
             if (!el.classList?.contains("home") && !el.classList?.contains("moneys"))
               el.parentNode.removeChild(el);
           }
-          /*
-  
-          if (el.classList?.contains("game-interface")) {
-                      crosshair = document.getElementById("crosshair-static");
-                  }
-                  */
   
           if (el.classList?.contains("settings") && !settingsButtonsAdded) {
             let exportBtn = document.createElement("div");
@@ -1430,17 +1417,6 @@ guistyles +='.loading-scene{display:none!important;}';
     if (e.target.id === 'crosshair') {
       permCrosshair = e.target.checked;
       settings.set('permCrosshair', permCrosshair);
-
-      /*
-      if (permCrosshair) {
-        if (!frameFuncs.includes(permCrosshairFunc)) {
-          frameFuncs.push(permCrosshairFunc);
-        }
-      } else {
-        frameFuncsRemove(permCrosshairFunc);
-      }
-*/
-
       permCrosshairToggleFunc();
     }
 
@@ -1546,12 +1522,6 @@ guistyles +='.loading-scene{display:none!important;}';
         }, 100);
       }
     }
-    /*
-        if (e.target.id === "black") {
-            fullBlack = e.target.checked;
-            settings.set('fullBlack', fullBlack);
-        }
-        */
 
     if (e.target.id === 'wireframeWeapons') {
       wireframeWeapons = e.target.checked;
@@ -1709,7 +1679,6 @@ guistyles +='.loading-scene{display:none!important;}';
   document.getElementById('leftHanded').checked = leftHanded;
   document.getElementById('hideflag').checked = hideFlagAds;
   document.getElementById('highlight').checked = playerHighLight;
-  // document.getElementById("black").checked = fullBlack;
   document.getElementById('wireframeWeapons').checked = wireframeWeapons;
   document.getElementById('wireframeArms').checked = wireframeArms;
   document.getElementById('rainbow').checked = rainbow;
@@ -1750,7 +1719,6 @@ guistyles +='.loading-scene{display:none!important;}';
   document.getElementById('ffaLobbies').checked = ffaLobbies;
   document.getElementById('tdmLobbies').checked = tdmLobbies;
   document.getElementById('parkourLobbies').checked = parkourLobbies;
-
   let inspectBindButton = document.getElementById('inspBindButton');
   inspectBindButton.style.fontWeight = '800';
   inspectBindButton.onclick = () => {
@@ -1768,7 +1736,6 @@ guistyles +='.loading-scene{display:none!important;}';
   };
 
   let filter = document.getElementById('preferredFilter');
-
   filter.value = preferredFilter;
 
   filter.onchange = () => {
@@ -1800,14 +1767,17 @@ guistyles +='.loading-scene{display:none!important;}';
     if (a[0] !== a[1] && a[0] !== a[2] && a[1] !== a[0] && a[1] !== a[2]) {
       return hexToRgb(hslToHex(hexToH(rgbToHex(Number(a[0]), Number(a[1]), Number(a[2]))), 100, 50));
     }
-    return hexToRgb(rgbToHex(Number(a[0]), Number(a[1]), Number(a[2])));
+    return {
+      r: Number(a[0]),
+      g: Number(a[1]),
+      b: Number(a[2])
+    };
   }
 
   // Enemy color
   let EnemyhighlightColorString = document.getElementById('EnemyhighlightColorFilterField');
   let EnemyhighlightColorCard = document.getElementById('EnemyhighlightColorCard');
   // prettier-ignore
-  // eslint-disable-next-line no-shadow, no-nested-ternary, eqeqeq
   colorEnemy = typeof settings.get('EnemyhighlightColor') == 'undefined' ? (fullBlack ? settingsSetGit('EnemyhighlightColor','Black') : settingsSetGit('EnemyhighlightColor','Red')) : settings.get('EnemyhighlightColor');
   EnemyhighlightColorString.value = colorEnemy;
   EnemyhighlightColorCard.style = 'background-color:' + colorEnemy + ';';
@@ -1825,7 +1795,6 @@ guistyles +='.loading-scene{display:none!important;}';
       EnemyhighlightColorCard.style.backgroundColor = EnemyhighlightColorString.value;
       settings.set('EnemyhighlightColor', EnemyhighlightColorString.value);
     }
-
     colorEnemy = GetUsableColor(EnemyhighlightColorCard);
 
     /*
@@ -1839,7 +1808,6 @@ guistyles +='.loading-scene{display:none!important;}';
   let TeamhighlightColorString = document.getElementById('TeamhighlightColorFilterField');
   let TeamhighlightColorCard = document.getElementById('TeamhighlightColorCard');
   // prettier-ignore
-  // eslint-disable-next-line no-shadow, no-nested-ternary, eqeqeq
   colorTeam = typeof settings.get('TeamhighlightColor') == 'undefined' ? settingsSetGit('TeamhighlightColor','Blue') : settings.get('TeamhighlightColor');
   TeamhighlightColorString.value = colorTeam;
   TeamhighlightColorCard.style = 'background-color:' + colorTeam + ';';
@@ -1857,7 +1825,6 @@ guistyles +='.loading-scene{display:none!important;}';
       TeamhighlightColorCard.style.backgroundColor = TeamhighlightColorString.value;
       settings.set('TeamhighlightColor', TeamhighlightColorString.value);
     }
-
     colorTeam = GetUsableColor(TeamhighlightColorCard);
 
     /*
@@ -2258,7 +2225,6 @@ function toggleGui() {
   menuVisible = !menuVisible;
   if (menuVisible) {
     menuVisibleFunc();
-    // frameFuncs.push(menuVisibleFunc);
     document.exitPointerLock();
     gui.style.display = 'flex';
   } else {
@@ -2282,18 +2248,20 @@ let oldDefine = Object.defineProperty;
 Object.defineProperty = (...args) => {
   if (args[0] && args[1] && args[1] === 'renderer' && args[0].constructor.name.startsWith('_0x')) {
     if (args[0].WnNMwm) {
-      Object.defineProperty(args[0].camera, 'fov', {
-        get() {
-          // prettier-ignore
-          return adspower ? args[0].WnNMwm.fov : this.vFov;
-        },
-        set(v) {
-          this.vFov = v;
-        },
-      });
+        Object.defineProperty(args[0].camera, "fov", {
+            get() {
+                // eslint-disable-next-line radix
+                let returnValue = Number.parseInt(args[0].WnNMwm.fov);
+                if(!adspower && this.vFov) returnValue = this.vFov;
+                return returnValue;
+            },
+            set(v) {
+                this.vFov = v;
+            }
+        });
     }
-  }
-  return oldDefine(...args);
+}
+return oldDefine(...args);
 };
 
 const proxy = Function.prototype.constructor;
