@@ -6,9 +6,16 @@ const path = require('path');
 const Store = require('electron-store');
 
 /*
-changes 
 
-added physics to hide gamemodes
+changes:
+added custom wireframe Arms color
+added custom wireframe Weapons color
+added save gui size
+removed updater
+
+fixed:
+armsMaterial & weaponMaterial throwing errors while weapon is put away
+autojoin-hr changing color when hoverd on gui
 
 */
 
@@ -190,8 +197,8 @@ function frameFuncsRemove(pos) {
 function InitweaponFunc() {
   if (scene) {
     weaponModel = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems']['0']['_queries']['player']['entities']['0']['_components']['35']['weapons'][weap]['model'];
-    armsMaterial = weaponModel['parent']['children']['0']['material'];
-    weaponMaterial = weaponModel['children'][num]['material'];
+    armsMaterial = weaponModel?.['parent']?.['children']['0']['material'];
+    weaponMaterial = weaponModel?.['children'][num]['material'];
   }
 }
 
@@ -252,12 +259,12 @@ function wireframeArmsFunc() {
   if (armsMaterial) {
     if (wireframeArms) {
       armsMaterial.wireframe = true;
-      armsMaterial.color.r = r / 255;
-      armsMaterial.color.g = g / 255;
-      armsMaterial.color.b = b / 255;
-      armsMaterial.emissive.r = r / 255;
-      armsMaterial.emissive.g = g / 255;
-      armsMaterial.emissive.b = b / 255;
+      armsMaterial.color.r = WireFrameArmsColor.r / 255;
+      armsMaterial.color.g = WireFrameArmsColor.g / 255;
+      armsMaterial.color.b = WireFrameArmsColor.b / 255;
+      armsMaterial.emissive.r = WireFrameArmsColor.r / 255;
+      armsMaterial.emissive.g = WireFrameArmsColor.g / 255;
+      armsMaterial.emissive.b = WireFrameArmsColor.b / 255;
     } else if (prevWireframeArms) {
       armsMaterial.wireframe = false;
       armsMaterial.color.r = 1;
@@ -275,12 +282,12 @@ function wireframeWeaponsFunc() {
   if (weaponMaterial) {
     if (wireframeWeapons) {
       weaponMaterial.wireframe = true;
-      weaponMaterial.color.r = r / 255;
-      weaponMaterial.color.g = g / 255;
-      weaponMaterial.color.b = b / 255;
-      weaponMaterial.emissive.r = r / 255;
-      weaponMaterial.emissive.g = g / 255;
-      weaponMaterial.emissive.b = b / 255;
+      weaponMaterial.color.r = WireFrameWeapColor.r / 255;
+      weaponMaterial.color.g = WireFrameWeapColor.g / 255;
+      weaponMaterial.color.b = WireFrameWeapColor.b / 255;
+      weaponMaterial.emissive.r = WireFrameWeapColor.r / 255;
+      weaponMaterial.emissive.g = WireFrameWeapColor.g / 255;
+      weaponMaterial.emissive.b = WireFrameWeapColor.b / 255;
     } else if (prevWireframeWeapons) {
       weaponMaterial.wireframe = false;
       weaponMaterial.color.r = 1;
@@ -379,10 +386,9 @@ function rainbowFunc() {
         b--;
       }
     } else {
-      //color = colorred;
-      r = colorred.r;
-      g = colorred.g;
-      b = colorred.b;
+      r = WireFrameArmsColor.r;
+      g = WireFrameArmsColor.g;
+      b = WireFrameArmsColor.b;
       CleanweaponFunc();
       clearInterval(rainbowIntervId);
     }
@@ -696,6 +702,8 @@ let playerHighLight = !!settings.get('playerHighLight');
 let fullBlack = !!settings.get('fullBlack');
 let wireframeWeapons = !!settings.get('wireframeWeapons');
 let wireframeArms = !!settings.get('wireframeArms');
+let WireFrameArmsColor;
+let WireFrameWeapColor;
 let rainbow = !!settings.get('rainbow');
 let adspower = !!settings.get('adspower');
 let autoJoin = !!settings.get('autoJoin');
@@ -733,7 +741,7 @@ let parkourLobbies = !!settings.get('parkourLobbies');
 let preferredFilter = typeof settings.get('preferredFilter') == 'undefined' ? 'Players' : settings.get('preferredFilter');
 // prettier-ignore
 let minPlayers = typeof settings.get('minPlayers') == 'undefined' ? 4 : settings.get('minPlayers');
-let colorred = hexToRgb('#ff0000');
+//let colorred = hexToRgb('#ff0000');
 // prettier-ignore
 let maxPlayers = typeof settings.get('maxPlayers') == 'undefined' ? 8 : settings.get('maxPlayers');
 // prettier-ignore
@@ -1192,6 +1200,7 @@ document.addEventListener('DOMContentLoaded', () => {
   background-color: #8c8c8c;
   margin: .5rem 0;
   margin-right: .3rem;
+  pointer-events: none;
 }
 
 input:disabled {
@@ -1246,6 +1255,8 @@ guistyles +='.loading-scene{display:none!important;}';
                <input type="checkbox" id="hideflag" name="hideflag">
                <label for="hideflag">Hide Flag ADS</label>
            </div>
+
+           <div class="module autojoin autojoin-hr"></div>
        
            <div class="module">
                <input type="checkbox" id="highlight" name="highlight">
@@ -1264,16 +1275,34 @@ guistyles +='.loading-scene{display:none!important;}';
                <input type="text" class="colordemo" id="TeamhighlightColorCard">
                </div>
 
+           <div class="module autojoin autojoin-hr"></div>
+
            <div class="module">
                <input type="checkbox" id="wireframeWeapons" name="wireframeWeapons">
                <label for="wireframeWeapons">Wireframe Weapons</label>
            </div>
        
            <div class="module">
+               <label for="wireframeWeapClr">Custom Wireframe Weapon Color: </label>
+               <input type="text" title="Enter a Valid Color Value &#013; examples: &#013; Red &#013; Yellow &#013; DarkGoldenRod &#013; #000000 &#013; rgb(255,04,65)" id="wireframeWeapClrFilterField" placeholder="Red">
+               <input type="text" class="colordemo" id="wireframeWeapClrCard">
+               </div>
+
+           <div class="module autojoin autojoin-hr"></div>
+
+           <div class="module">
                <input type="checkbox" id="wireframeArms" name="wireframeArms">
                <label for="wireframeArms">Wireframe Arms</label>
            </div>
        
+           <div class="module">
+               <label for="wireframeArmsClr">Custom Wireframe Arms Color: </label>
+               <input type="text" title="Enter a Valid Color Value &#013; examples: &#013; Red &#013; Yellow &#013; DarkGoldenRod &#013; #000000 &#013; rgb(255,04,65)" id="wireframeArmsClrFilterField" placeholder="Red">
+               <input type="text" class="colordemo" id="wireframeArmsClrCard">
+               </div>
+
+           <div class="module autojoin autojoin-hr"></div>
+
            <div class="module">
                <input type="checkbox" id="rainbow" name="rainbow">
                <label for="rainbow">Rainbow Colors</label>
@@ -1664,7 +1693,10 @@ guistyles +='.loading-scene{display:none!important;}';
     }
   };
 
-  gui.style.display = 'none';
+  // gui.style.display = "none";
+  let guiWidth = typeof settings.get('guiWidth') == 'undefined' ? settingsSetGit('guiWidth','51%') : settings.get('guiWidth');
+  let guiHeight = typeof settings.get('guiHeight') == 'undefined' ? settingsSetGit('guiHeight','95%') : settings.get('guiHeight');
+  gui.style ='display:none;width:' + guiWidth + ';height:' + guiHeight + ';';
 
   document.body.appendChild(gui);
 
@@ -1672,6 +1704,16 @@ guistyles +='.loading-scene{display:none!important;}';
     toggleGui();
   }
 
+  let SaveGuiSize = () => {
+    if (guiWidth !== gui.style.width) {
+      guiWidth = settingsSetGit('guiWidth', gui.style.width);
+    }
+    if (guiHeight !== gui.style.height) {
+      guiHeight = settingsSetGit('guiHeight', gui.style.height);
+    }
+  };
+
+  new ResizeObserver(SaveGuiSize).observe(gui);
   document.getElementById('crosshair').checked = permCrosshair;
   document.getElementById('customCSS').checked = customCss;
   document.getElementById('hideweap').checked = hideWeaponsAds;
@@ -1774,6 +1816,15 @@ guistyles +='.loading-scene{display:none!important;}';
     };
   }
 
+  function GetRgbColor(Element) {
+    let a = window.getComputedStyle(Element).backgroundColor.replace(/rgb[(](.*)[)]/g, '$1').split(',');
+    return {
+      r: Number(a[0]),
+      g: Number(a[1]),
+      b: Number(a[2])
+    };
+  }
+
   // Enemy color
   let EnemyhighlightColorString = document.getElementById('EnemyhighlightColorFilterField');
   let EnemyhighlightColorCard = document.getElementById('EnemyhighlightColorCard');
@@ -1834,8 +1885,61 @@ setTimeout(() => {
 */
   };
 
-  document.getElementById('customGames').checked = customGames;
+// Custom WireFrame Arms Color
 
+WireFrameArmsColor = typeof settings.get("WireFrameArmsColor") == "undefined" ? settingsSetGit("WireFrameArmsColor", 'Red') : settings.get("WireFrameArmsColor");
+let WireFrameArmsClrString = document.getElementById('wireframeArmsClrFilterField');
+let WireFrameArmsClrCard = document.getElementById('wireframeArmsClrCard');
+WireFrameArmsClrString.value = WireFrameArmsColor;
+WireFrameArmsClrCard.style = 'background-color:' + WireFrameArmsColor + ';';
+WireFrameArmsColor = GetRgbColor(WireFrameArmsClrCard);
+
+if (WireFrameArmsClrString.value === 'Red') {
+  WireFrameArmsClrString.value = '';
+}
+
+WireFrameArmsClrString.oninput = () => {
+  if (WireFrameArmsClrString.value.length === 0) {
+    WireFrameArmsClrCard.style.backgroundColor = 'Red';
+    settings.set('WireFrameArmsColor', 'Red');
+  } else {
+    WireFrameArmsClrCard.style.backgroundColor = WireFrameArmsClrString.value;
+    settings.set('WireFrameArmsColor', WireFrameArmsClrString.value);
+  }
+  WireFrameArmsColor = GetRgbColor(WireFrameArmsClrCard);
+
+  // setTimeout(() => {consoledebug(WireFrameArmsColor,'debug','true');},1000);
+
+};
+
+// Custom WireFrame Weapons Color
+
+WireFrameWeapColor = typeof settings.get("WireFrameWeapColor") == "undefined" ? settingsSetGit("WireFrameWeapColor", 'Red') : settings.get("WireFrameWeapColor");
+let WireFrameWeapClrString = document.getElementById('wireframeWeapClrFilterField');
+let WireFrameWeapClrCard = document.getElementById('wireframeWeapClrCard');
+WireFrameWeapClrString.value = WireFrameWeapColor;
+WireFrameWeapClrCard.style = 'background-color:' + WireFrameWeapColor + ';';
+WireFrameWeapColor = GetRgbColor(WireFrameWeapClrCard);
+
+if (WireFrameWeapClrString.value === 'Red') {
+  WireFrameWeapClrString.value = '';
+}
+
+WireFrameWeapClrString.oninput = () => {
+  if (WireFrameWeapClrString.value.length === 0) {
+    WireFrameWeapClrCard.style.backgroundColor = 'Red';
+    settings.set('WireFrameWeapColor', 'Red');
+  } else {
+    WireFrameWeapClrCard.style.backgroundColor = WireFrameWeapClrString.value;
+    settings.set('WireFrameWeapColor', WireFrameWeapClrString.value);
+  }
+  WireFrameWeapColor = GetRgbColor(WireFrameWeapClrCard);
+  
+  // setTimeout(() => {consoledebug(WireFrameWeapColor,'debug','true');},1000);
+
+};
+
+  document.getElementById('customGames').checked = customGames;
   document.getElementById('fpsCap').checked = fpsCap;
   document.getElementById('capture').checked = capture;
   document.getElementById('marketNames').checked = marketNames;
