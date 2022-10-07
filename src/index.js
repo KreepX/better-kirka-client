@@ -5,16 +5,19 @@
 /* eslint-disable no-promise-executor-return */
 /* eslint-disable arrow-parens */
 /* eslint-disable no-confusing-arrow */
-const {app, BrowserWindow, clipboard, ipcMain, dialog, session, protocol} = require('electron');
+// const {app, BrowserWindow, clipboard, ipcMain, dialog, session, protocol} = require('electron');
+const {app, BrowserWindow, clipboard, ipcMain, session, protocol} = require('electron');
 const fs = require('fs');
 const shortcuts = require('electron-localshortcut');
 const Store = require('electron-store');
-const {autoUpdater} = require('electron-updater');
 let fetch = require('node-fetch');
-const prompt = require('electron-prompt');
+const prompt = require('electron-prompt'); 
+/*
+const {autoUpdater} = require('electron-updater');
 
 let updateLoaded = false;
 let updateNow = false;
+*/
 
 let created = false;
 
@@ -136,6 +139,7 @@ const createWindow = () => {
         e.preventDefault();
     });
 
+    /*
     autoUpdater.checkForUpdates();
 
     autoUpdater.on('update-available', () => {
@@ -164,6 +168,7 @@ const createWindow = () => {
             autoUpdater.quitAndInstall();
         }
     });
+    */
 
 }
 
