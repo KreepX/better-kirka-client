@@ -1,6 +1,6 @@
 /* eslint-disable no-nested-ternary */
 /* eslint-disable eqeqeq */
-const { clipboard, ipcRenderer } = require('electron');
+const { clipboard, ipcRenderer, shell } = require("electron");
 const fs = require('fs');
 const path = require('path');
 const Store = require('electron-store');
@@ -8,14 +8,7 @@ const Store = require('electron-store');
 /*
 
 changes:
-added custom wireframe Arms color
-added custom wireframe Weapons color
-added save gui size
-removed updater
-
-fixed:
-armsMaterial & weaponMaterial throwing errors while weapon is put away
-autojoin-hr changing color when hoverd on gui
+added show Live twitch streams 
 
 */
 
@@ -782,6 +775,32 @@ let num;
 let animate;
 let animateState;
 let scoped = false;
+let streamsmenu;
+let livestreamers;
+let TwitchTop =
+  typeof settings.get("TwitchTop") == "undefined"
+    ? settingsSetGit("TwitchTop", '40vw')
+    : settings.get("TwitchTop");
+
+let TwitchLeft =
+  typeof settings.get("TwitchLeft") == "undefined"
+    ? settingsSetGit("TwitchLeft", '-65vw')
+    : settings.get("TwitchLeft");
+
+let TwitchWidth =
+  typeof settings.get("TwitchWidth") == "undefined"
+    ? settingsSetGit("TwitchWidth", 'auto')
+    : settings.get("TwitchWidth");
+  
+let TwitchHeight =
+  typeof settings.get("TwitchHeight") == "undefined"
+    ? settingsSetGit("TwitchHeight", 'auto')
+    : settings.get("TwitchHeight");
+
+    let ShowTwitch =
+    typeof settings.get("ShowTwitch") == "undefined"
+      ? settingsSetGit("ShowTwitch", true)
+      : settings.get("ShowTwitch");
 
 if (rainbow) {
   rainbowFunc();
@@ -885,6 +904,122 @@ WeakMap.prototype.set = new Proxy(WeakMap.prototype.set, {
   },
 });
 
+function MoveTwitchMenu(TwitchHead) {
+  let lsmpos1 = 0;
+  let lsmpos2 = 0;
+  let lsmpos3 = 0;
+  let lsmpos4 = 0;
+
+  if (TwitchHead.getElementsByClassName('head')[0]) {
+    TwitchHead.getElementsByClassName('head')[0].onmousedown = TwitchDrag;
+  } else {
+    TwitchHead.onmousedown = TwitchDrag;
+  }
+
+  function TwitchDrag(peepoHappy) {
+    peepoHappy = peepoHappy || window.event;
+    peepoHappy.preventDefault();
+    lsmpos3 = peepoHappy.clientX;
+    lsmpos4 = peepoHappy.clientY;
+    document.onmouseup = TwitchStopDragPlz;
+    document.onmousemove = TwitchDragging;
+  }
+
+  function TwitchDragging(xip) {
+    xip = xip || window.event;
+    xip.preventDefault();
+    lsmpos1 = lsmpos3 - xip.clientX;
+    lsmpos2 = lsmpos4 - xip.clientY;
+    lsmpos3 = xip.clientX;
+    lsmpos4 = xip.clientY;
+    TwitchHead.style.top = TwitchHead.offsetTop - lsmpos2 + 'px';
+    TwitchHead.style.left = TwitchHead.offsetLeft - lsmpos1 + 'px';
+  }
+
+  function TwitchStopDragPlz() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+    TwitchTop = settingsSetGit('TwitchTop', TwitchHead.style.top);
+    TwitchLeft = settingsSetGit('TwitchLeft', TwitchHead.style.left);
+  }
+}
+
+function SaveTwitchSize() {
+  if (TwitchWidth !== streamsmenu.style.width) {
+    TwitchWidth = settingsSetGit('TwitchWidth', streamsmenu.style.width);
+  }
+  if (TwitchHeight !== streamsmenu.style.height) {
+    TwitchHeight = settingsSetGit('TwitchHeight', streamsmenu.style.height);
+  }
+}
+
+function twitchOpenStream(e) {
+  //consoledebug("https://www.twitch.tv/" + e.target.ariaLabel,'debug','true');
+  //window.open("https://www.twitch.tv/" + e.target.ariaLabel);
+  shell.openExternal('https://www.twitch.tv/' + e.target.ariaLabel);
+}
+
+function SetTwitchLinks() {
+  for (let link of streamsmenu.querySelectorAll('div.list>div.item')) {
+    if (link.querySelector('.content')) {
+      let labeltext = link.querySelector('div.content>div.name').innerText;
+      link.ariaLabel = labeltext;
+
+      try {
+        for (let childs of link.childNodes[1].children) {
+          childs.ariaLabel = labeltext;
+        }
+      } catch {}
+
+      try {
+        for (let childs of link.children) {
+          childs.ariaLabel = labeltext;
+        }
+      } catch {}
+      link.addEventListener('click', twitchOpenStream);
+    }
+  }
+}
+
+function ShowliveStreams() {
+  if (document.querySelector('.live-streams')) {
+    if (!document.querySelector('#live-streams-menu')) {
+      streamsmenu = document.getElementsByClassName('live-streams')[0].cloneNode(true);
+
+      let display = ShowTwitch ? 'display:block!important;' : 'display:none!important;';
+      // prettier-ignore
+      streamsmenu.style =`
+ position:absolute;
+ resize:both;
+ overflow: auto hidden!important;
+ opacity:1!important;
+ z-index:3!important;
+ min-height:5vh!important;
+ pointer-events:all!important;
+top:` + TwitchTop + ';left:' + TwitchLeft + ';width:' + TwitchWidth + ';height:' + TwitchHeight + ';' + display;
+
+      for (let crap of streamsmenu.getAttributeNames()) {
+        if (crap.match('data-v')) {
+          streamsmenu.removeAttribute(crap);
+        }
+      }
+
+      streamsmenu.id = 'live-streams-menu';
+      streamsmenu.innerHTML += '<style>div#live-streams-menu>div.list{max-height:95vh!important;overflow-x:hidden!important;overflow-y:hidden!important;}</style>';
+      document.querySelector('#right-interface').appendChild(streamsmenu);
+      livestreamers = document.querySelector('.live-streams').querySelectorAll('[target="_blank"]').length;
+      MoveTwitchMenu(document.querySelector('#live-streams-menu'));
+      new ResizeObserver(SaveTwitchSize).observe(streamsmenu);
+      SetTwitchLinks();
+    } else if (document.querySelector('.live-streams').querySelectorAll('[target="_blank"]').length > livestreamers) {
+      streamsmenu.innerHTML = document.querySelector('.live-streams').innerHTML + '<style>div#live-streams-menu>div.list{max-height:95vh!important;overflow-x:hidden!important;overflow-y:hidden!important;}</style>';
+      livestreamers = document.querySelector('.live-streams').querySelectorAll('[target="_blank"]').length;
+      MoveTwitchMenu(document.querySelector('#live-streams-menu'));
+      SetTwitchLinks();
+    }
+  }
+}
+
 new MutationObserver((mutationRecords) => {
     if (window.location.href.match(/kirka[.]io[/]game/g) !== null && !document.querySelector(".end-modal")) {
       if (!animate) {
@@ -910,7 +1045,9 @@ new MutationObserver((mutationRecords) => {
         animateState();
       }
   
-      if (window.location.href.match(/kirka[.]io[/]servers/g) !== null && !document.querySelector("#view > div > div > div.content > div.servers > div > div.list-cont > div.tabs > div.mods.tabmods")) {
+      if (window.location.href === 'https://kirka.io/') {
+        ShowliveStreams();
+      } else if (window.location.href.match(/kirka[.]io[/]servers/g) !== null && !document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div.tabs > div.mods.tabmods')) {
         SetGameModesCheckBoxes();
       }
     }
@@ -1110,7 +1247,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let guistyles = `
 
 #gui {
-  background-color: #18191c;
+  background-color: rgba(24,25,28,0.95);
   border: 5px solid #18191c;
   border-top: 0px;
   border-bottom: 0px;
@@ -1430,11 +1567,31 @@ guistyles +='.loading-scene{display:none!important;}';
            <label title="Show Custom Client Badges" for="ShowBadges">Show Custom Badges</label>
            </div>
 
+           <div class="module">
+           <input type="checkbox" id="ShowTwitch" name="ShowTwitch">
+           <label title="Show Live Kirka Twitch Streams &#013; Click And Drag The Titlebar To Move The Menu  &#013; Click And Drag The Bottom Right Corner To Resize The Menu" for="ShowTwitch">Show Live Kirka Twitch Streams Menu</label>
+           </div>
+
       </div><div class="footer">Toggle With "PageUp" Key</div>
 
 `;
 
   gui.onclick = (e) => {
+
+    if (e.target.id === 'ShowTwitch') {
+      ShowTwitch = e.target.checked;
+      settings.set('ShowTwitch', ShowTwitch);
+      if (document.querySelector('#live-streams-menu')) {
+        let style = document.querySelector('#live-streams-menu').getAttribute('style');
+        if (ShowTwitch) {
+          style = style.replace(/display.*none/g, 'display:block');
+        } else {
+          style = style.replace(/display.*block/g, 'display:none');
+        }
+        document.querySelector('#live-streams-menu').setAttribute('style', style);
+      }
+    }
+
     if (e.target.id === 'ShowBadges') {
       ShowBadges = e.target.checked;
       settings.set('ShowBadges', ShowBadges);
@@ -1726,6 +1883,7 @@ guistyles +='.loading-scene{display:none!important;}';
   document.getElementById('rainbow').checked = rainbow;
   document.getElementById('adspower').checked = adspower;
   document.getElementById('ShowBadges').checked = ShowBadges;
+  document.getElementById('ShowTwitch').checked = ShowTwitch;
   maxPlayersLab = document.getElementById('maxPlayersLab');
   minPlayersLab = document.getElementById('minPlayersLab');
   minTimeLeftLab = document.getElementById('minTimeLeftLab');
