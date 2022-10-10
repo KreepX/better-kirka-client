@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 /* eslint-disable semi */
 /* eslint-disable no-shadow */
 /* eslint-disable no-path-concat */
@@ -44,13 +45,18 @@ const clientId = '984501931273752577';
 const DiscordRPC = require('discord-rpc');
 const url = require("url");
 
-const RPC = new DiscordRPC.Client({transport: 'ipc'});
-
-DiscordRPC.register(clientId);
-
+let DRPID;
+let RPC;
 Store.initRenderer();
 
 const settings = new Store();
+
+let DiscordPresence = typeof settings.get('DiscordPresence') == 'undefined' ? true : settings.get('DiscordPresence');
+
+if (DiscordPresence) {
+    RPC = new DiscordRPC.Client({transport: 'ipc'});
+    DiscordRPC.register(clientId);
+}
 
 if (!settings.get('fpsCap')) {
     app.commandLine.appendSwitch('disable-frame-rate-limit');
@@ -205,6 +211,17 @@ const initResourceSwapper = () => {
     }
 }
 
+ipcMain.on('DiscordPresence', (event,PresenceState) => {
+    if (!PresenceState) {
+        clearInterval(DRPID);
+        RPC.destroy();
+    } else {
+        RPC = new DiscordRPC.Client({transport: 'ipc'});
+       DiscordRPC.register(clientId);
+       discRpc(PresenceState);
+    }
+});
+
 let startTime = Date.now();
 
 async function setActivity() {
@@ -226,8 +243,8 @@ async function setActivity() {
     });
 }
 
-function discRpc() {
-
+function discRpc(DPresence) {
+    if (DPresence) {
     RPC.on('ready', async () => {
 
         let donatorJson;
@@ -267,7 +284,7 @@ function discRpc() {
         if (!created) createWindow();
         await setActivity();
 
-        setInterval(() => {
+        DRPID = setInterval(() => {
             setActivity();
         }, 30 * 1000);
     });
@@ -277,4 +294,5 @@ function discRpc() {
         console.log("error");
         console.error(err);
     });
+}
 }
