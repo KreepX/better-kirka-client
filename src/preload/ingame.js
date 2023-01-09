@@ -1,132 +1,73 @@
+/* eslint-disable getter-return */
+/* eslint-disable no-extend-native */
+/* eslint-disable no-await-in-loop */
+/* eslint-disable prefer-rest-params */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable eqeqeq */
-const { clipboard, ipcRenderer, shell } = require("electron");
-const fs = require('fs');
-const path = require('path');
+
+const { clipboard, shell } = require('electron');
 const Store = require('electron-store');
 
-/*
-
-changes:
-added show Live twitch streams 
-
-*/
-
 const settings = new Store();
-const discord = ipcRenderer.sendSync('discord');
-const ingameIds = ipcRenderer.sendSync('ids');
-const badgeLinks = ipcRenderer.sendSync('badges');
-const documents = ipcRenderer.sendSync('docs');
-const scriptFolder = documents + "\\BetterKirkaClient\\scripts";
-
-if (!fs.existsSync(scriptFolder)) {
-    fs.mkdirSync(scriptFolder, {recursive: true});
-}
-try {
-    // eslint-disable-next-line arrow-parens
-    fs.readdirSync(scriptFolder).filter(file => path.extname(file).toLowerCase() === '.js').forEach(filename => {
-        try {
-            require(`${scriptFolder}/${filename}`);
-        } catch (e) {
-            console.error("an error occurred while executing userscript: " + filename + " error: " + e);
-        }
-    });
-} catch (e) {
-    console.error("an error occurred while loading userscripts: " + e);
-}
 
 const BKC = {
-  icon: 'background:url("data:image/png;base64,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") center right / 10px 10px no-repeat;padding-top:0px;padding-left:5px;',
-  origin: 'Better Kirka Client',
-  layout: '%c%s%c%s%c%s%c%s%c%s%c%s%c%o',
-  source: 'ingame.js',
-  joinargs(...args) {
-    let argArray ='';
-    for (let i = 0; i < args.length; i++)
-    argArray += ' ' + JSON.stringify(args[i]);
-    return argArray;
-  },
-  debug(...params) {
-    console.debug(BKC.layout, 'color:#4b89ff;', ' [DEBUG] ', 'color:blue;', '[', 'color:white;', BKC.origin, BKC.icon, ' ', 'color:blue;', ']', 'color:aqua;',': ', 'color:white;', ...params); 
-  },
-  error(...params) {
-    console.error(BKC.layout, 'color:red;', ' [ERROR] ', 'color:red;', '[', 'color:white;', BKC.origin, BKC.icon, ' ', 'color:red;', ']', 'color:aqua;',': ', 'color:white;', ...params);
-  },
-  cleartip(id) {
-    try {
-      let g = document.getElementById(id);
-      g.parentElement.removeChild(g);
-    } catch {}
+  cleartip(id, timeoutID) {
+    if (timeoutID) {
+      timeoutID = clearTimeout(timeoutID);
+      id.parentElement?.removeChild(id);
+    }
   },
   tip(...Msg) {
     let tipchilds = document.querySelectorAll('.vue-notification-wrapper');
-    if (tipchilds.length >= DevTooltipsMaxTips) document.getElementsByClassName('vue-notification-group')[0].getElementsByTagName('span')[0].removeChild(tipchilds[0]);
-    Msg = BKC.joinargs(...Msg);
+    let span = document.getElementsByClassName('vue-notification-group')[0].getElementsByTagName('span')[0];
+    if (tipchilds.length >= DevTooltipsMaxTips) {
+      let trimLen = tipchilds.length - DevTooltipsMaxTips;
+      for (let i = -1; i < trimLen; i++) {
+        span.removeChild(tipchilds[i]);
+      }
+    }
     let newtip = document.createElement('div');
-    let dataid = tipchilds ? String(tipchilds.length + 1) : '1';
-    newtip.setAttribute('data-id', dataid);
+    newtip.setAttribute('data-id', tipchilds ? tipchilds.length + 1 : '1');
     newtip.className = 'vue-notification-wrapper vn-fade-move';
-    newtip.style = 'transition-timing-function: ease; transition-delay: 0s; transition-property: all;';
-    newtip.id = 'BKC-dev-tip' + devid++;
-    newtip.innerHTML =
-      `
-  <div class="alert-default error" style="display: flex;align-items: center;padding: .9rem 1.1rem;margin-bottom: .5rem;color: var(--white);cursor: pointer;box-shadow: 0 0 .7rem rgba(0,0,0,.25);border-radius: .2rem;background: linear-gradient(262.54deg,#202639 9.46%,#223163 100.16%);margin-left: 1rem;border: solid .15rem var(--primary-1);font-family: Exo\ 2;">
-  <img alt="" style="width: 2rem;min-width: 2rem;height: 2rem;margin-right: .9rem;color: var(--white);fill: currentColor;box-sizing: border-box;" src="data:image/png;base64,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" />
-  <span id="BKC-dev-tip-text" class="text" style="font-size: 1rem;font-weight: 600;text-align: left;overflow-wrap: anywhere;">` +
-      Msg +
-      `</span></div>
-  `;
-    newtip.addEventListener('click', () => {
-      BKC.cleartip(newtip.id);
-    });
-    document.getElementsByClassName('vue-notification-group')[0].getElementsByTagName('span')[0].appendChild(newtip);
-    setTimeout(() => {
-      BKC.cleartip(newtip.id);
+    newtip.style = 'transition-timing-function:ease;transition-delay:0s;transition-property:all;';
+    newtip.id = `BKC-dev-tip${++devid}`;
+    newtip.innerHTML = `<div class="alert-default error" style="white-space:break-spaces;display:flex;align-items:center;padding:.9rem 1.1rem;margin-bottom:.5rem;color:var(--white);cursor:pointer;box-shadow:0 0 .7rem rgba(0,0,0,.25);border-radius:.2rem;background:linear-gradient(262.54deg,#202639 9.46%,#223163 100.16%);margin-left:1rem;border:solid .15rem var(--primary-1);font-family:Exo\\ 2;">
+                        <img alt="" style="width:2rem;min-width:2rem;height:2rem;margin-right:.9rem;color:var(--white);fill:currentColor;box-sizing:border-box;" src="data:image/png;base64,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" />
+                        <span id="BKC-dev-tip-text" class="text" style="font-size:1rem;font-weight:600;text-align:center;overflow-wrap:anywhere;">${Msg}</span></div>`;
+    newtip = span.appendChild(newtip);
+
+    let timeoutID = setTimeout(() => {
+      BKC.cleartip(newtip, timeoutID);
     }, DevTooltipsTimeout);
+
+    newtip.addEventListener('click', () => {
+      BKC.cleartip(newtip, timeoutID);
+    });
   },
 };
 
 window.addEventListener('error', (event) => {
-  if (event.filename.match(BKC.source)) {
+  if (/ingame\.js/.test(event.filename)) {
     event.preventDefault();
-    BKC.error(event);
+    console.error(event);
     if (DevToolTips) {
       BKC.tip(event.message);
     }
   }
 });
 
-function insertAfter(newElement, referenceElement) {
-  referenceElement.parentNode.insertBefore(newElement, referenceElement.nextSibling);
-}
-
-// prettier-ignore
-function scrollIntoView(t) { // http://roysharon.com/blog/37
- if (typeof(t) !== 'object') return;
- if (t.getRangeAt){if (t.rangeCount === 0) return;t = t.getRangeAt(0);}
- if (t.cloneRange){var r = t.cloneRange();r.collapse(true);
-  // eslint-disable-next-line no-redeclare
-  var t = r.startContainer;
-  if (t.nodeType === 1)
-   t = t.childNodes[r.startOffset];
-  }
- let o = t;while (o && o.nodeType !== 1) o = o.previousSibling;t = o || t.parentNode;
- if (t) t.scrollIntoView();
-
-}
-
 function hexToH(H) {
   let r = 0;
   let g = 0;
   let b = 0;
   if (H.length === 4) {
-    r = '0x' + H[1] + H[1];
-    g = '0x' + H[2] + H[2];
-    b = '0x' + H[3] + H[3];
+    r = `0x${H[1]}${H[1]}`;
+    g = `0x${H[2]}${H[2]}`;
+    b = `0x${H[3]}${H[3]}`;
   } else if (H.length === 7) {
-    r = '0x' + H[1] + H[2];
-    g = '0x' + H[3] + H[4];
-    b = '0x' + H[5] + H[6];
+    r = `0x${H[1]}${H[2]}`;
+    g = `0x${H[3]}${H[4]}`;
+    b = `0x${H[5]}${H[6]}`;
   }
   r /= 255;
   g /= 255;
@@ -160,12 +101,30 @@ function hslToHex(h, s, l) {
 
 function componentToHex(c) {
   let hex = c.toString(16);
-  // prettier-ignore
-  return hex.length == 1 ? "0" + hex : hex;
+  return hex.length === 1 ? '0' + hex : hex;
 }
 
 function rgbToHex(rr, gg, bb) {
   return '#' + componentToHex(rr) + componentToHex(gg) + componentToHex(bb);
+}
+
+function scrollIntoView(t) {
+  if (typeof t !== 'object') return;
+  if (t.getRangeAt) {
+    if (t.rangeCount === 0) return;
+    t = t.getRangeAt(0);
+  }
+  if (t.cloneRange) {
+    var r = t.cloneRange();
+    r.collapse(true);
+    // eslint-disable-next-line no-redeclare
+    var t = r.startContainer;
+    if (t.nodeType === 1) t = t.childNodes[r.startOffset];
+  }
+  let o = t;
+  while (o && o.nodeType !== 1) o = o.previousSibling;
+  t = o || t.parentNode;
+  if (t) t.scrollIntoView();
 }
 
 function frameFuncsRemove(pos) {
@@ -175,162 +134,38 @@ function frameFuncsRemove(pos) {
   }
 }
 
-function InitweaponFunc() {
-  if (scene) {
-    weaponModel = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems']['0']['_queries']['player']['entities']['0']['_components']['35']['weapons'][weap]['model'];
-    armsMaterial = weaponModel?.['parent']?.['children']['0']['material'];
-    weaponMaterial = weaponModel?.['children'][num]['material'];
-  }
-}
-
-function overlayModelFunc() {
-  if (overlayModel) {
-    if (leftHanded) {
-      overlayModel.scale.x = -1;
-    } else {
-      overlayModel.scale.x = 1;
-    }
-  }
-}
-
 function permCrosshairToggleFunc() {
   if (permCrosshair) {
-    if (!document.querySelector('#BKC-Styles').innerHTML.match(/img[#]crosshair-static[{]opacity[:]1[!]important[;][}]/g)) document.querySelector('#BKC-Styles').innerHTML += 'img#crosshair-static{opacity:1!important;}';
-  } else if (document.querySelector('#BKC-Styles').innerHTML.match(/img[#]crosshair-static[{]opacity[:]1[!]important[;][}]/g)) {
-    document.querySelector('#BKC-Styles').innerHTML = document.querySelector('#BKC-Styles').innerHTML.replace(/img[#]crosshair-static[{]opacity[:]1[!]important[;][}]/g, '');
-  }
-}
-
-function hideWeaponsAdsFunc() {
-  if (weaponMaterial) weaponMaterial.visible = !scoped;
-  if ((scoped && hideWeaponsAds)) {
-    armsMaterial.visible = !scoped;
+    permcrossstyle.innerHTML = 'img#crosshair-static{opacity:1!important;}';
   } else {
-    armsMaterial.visible = arms;
-  }
-}
-
-function inspectingFunc() {
-  if (inspecting) {
-    if (!prevInsp) {
-      if (weaponModel) {
-        prevInspectPos = weaponModel.position.clone();
-        prevInspectRot = weaponModel.rotation.clone();
-        inspectedWeapon = weaponModel;
-      }
-    }
-
-    weaponModel.rotation.x = 0;
-    weaponModel.rotation.y = -0.3;
-    weaponModel.rotation.z = -0.4;
-    weaponModel.position.y = 0.05;
-    weaponModel.position.z = -0.08;
-  } else if (prevInsp) {
-    inspectedWeapon.rotation.x = prevInspectRot.x;
-    inspectedWeapon.rotation.y = prevInspectRot.y;
-    inspectedWeapon.rotation.z = prevInspectRot.z;
-    inspectedWeapon.position.y = prevInspectPos.y;
-    inspectedWeapon.position.z = prevInspectPos.z;
-  }
-
-  prevInsp = inspecting;
-}
-
-function wireframeArmsFunc() {
-  if (armsMaterial) {
-    if (wireframeArms) {
-      armsMaterial.wireframe = true;
-      armsMaterial.color.r = WireFrameArmsColor.r / 255;
-      armsMaterial.color.g = WireFrameArmsColor.g / 255;
-      armsMaterial.color.b = WireFrameArmsColor.b / 255;
-      armsMaterial.emissive.r = WireFrameArmsColor.r / 255;
-      armsMaterial.emissive.g = WireFrameArmsColor.g / 255;
-      armsMaterial.emissive.b = WireFrameArmsColor.b / 255;
-    } else if (prevWireframeArms) {
-      armsMaterial.wireframe = false;
-      armsMaterial.color.r = 1;
-      armsMaterial.color.g = 1;
-      armsMaterial.color.b = 1;
-      armsMaterial.emissive.r = 0;
-      armsMaterial.emissive.g = 0;
-      armsMaterial.emissive.b = 0;
-    }
-    prevWireframeArms = wireframeArms;
-  }
-}
-
-function wireframeWeaponsFunc() {
-  if (weaponMaterial) {
-    if (wireframeWeapons) {
-      weaponMaterial.wireframe = true;
-      weaponMaterial.color.r = WireFrameWeapColor.r / 255;
-      weaponMaterial.color.g = WireFrameWeapColor.g / 255;
-      weaponMaterial.color.b = WireFrameWeapColor.b / 255;
-      weaponMaterial.emissive.r = WireFrameWeapColor.r / 255;
-      weaponMaterial.emissive.g = WireFrameWeapColor.g / 255;
-      weaponMaterial.emissive.b = WireFrameWeapColor.b / 255;
-    } else if (prevWireframeWeapons) {
-      weaponMaterial.wireframe = false;
-      weaponMaterial.color.r = 1;
-      weaponMaterial.color.g = 1;
-      weaponMaterial.color.b = 1;
-      weaponMaterial.emissive.r = 0;
-      weaponMaterial.emissive.g = 0;
-      weaponMaterial.emissive.b = 0;
-    }
-
-    prevWireframeWeapons = wireframeWeapons;
+    permcrossstyle.innerHTML = '';
   }
 }
 
 function playerHighLightFunc() {
   if (ShouldHiglight) {
     let localPlayerClass = scene['children']['0']['parent']['entity']['_entityManager']['mWnwM']['systemManager']['_systems']['0']['_queries']['player']['entities']['0']['_components']['38'].wnWmN;
+    let qNum = 2;
 
-    for (let i = 0; i < scene["entity"]["_entityManager"]["mWnwM"]["systemManager"]["_systems"]["2"]["_queries"].players.entities.length; i++) {
-        let player = scene["entity"]["_entityManager"]["mWnwM"]["systemManager"]["_systems"]["2"]["_queries"].players.entities[i]["_components"];
-        let mat = scene["entity"]["_entityManager"]["mWnwM"]["systemManager"]["_systems"]["2"]["_queries"].players.entities[i]["_components"][0].value.children[0].children[0].children[1].material;
+    if (!scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players 
+    && !scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][++qNum]['_queries'].players) return;
+
+    for (let i = 0; i < scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players?.entities?.length; i++) {
+      let mat = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players.entities[i]['_components'][0].value.children[0].children[0].children[1].material;
+
       if (mat.color.r === 1 && mat.color.g < 1 && mat.color.b < 1) continue;
-
+      let player = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players.entities[i]['_components'];
       if (!localPlayerClass.team || localPlayerClass.team !== player['50'].team) {
-        color = colorEnemy;
-      } else {
-        color = colorTeam;
+        if (mat.color !== colorEnemy) {
+          mat.map = null;
+          mat.color = colorEnemy;
+          mat.needsUpdate = true;
+        }
+      } else if (mat.color !== colorTeam) {
+        mat.map = null;
+        mat.color = colorTeam;
+        mat.needsUpdate = true;
       }
-
-      mat.map = null;
-      mat.color.r = color.r * Number.MAX_SAFE_INTEGER;
-      mat.color.g = color.g * Number.MAX_SAFE_INTEGER;
-      mat.color.b = color.b * Number.MAX_SAFE_INTEGER;
-      mat.needsUpdate = true;
-    }
-  }
-}
-
-function menuVisibleFunc() {
-  if (menuVisible) {
-    window.requestAnimationFrame(menuVisibleFunc);
-    if (minPlayerSlider) {
-      // eslint-disable-next-line radix
-      minPlayers = Number.parseInt(minPlayerSlider.value);
-      minPlayersLab.innerText = minPlayerSlider.value + ' min. Players';
-    }
-
-    if (maxPlayerSlider) {
-      // eslint-disable-next-line radix
-      maxPlayers = Number.parseInt(maxPlayerSlider.value);
-      maxPlayersLab.innerText = maxPlayerSlider.value + ' max. Players';
-    }
-
-    if (minTimeLeftSlider) {
-      // eslint-disable-next-line radix
-      minTimeLeft = Number.parseInt(minTimeLeftSlider.value);
-      minTimeLeftLab.innerText = minTimeLeftSlider.value + ' min. Time Left';
-    }
-
-    if (volumeSlider) {
-      volume = Number.parseFloat(volumeSlider.value);
-      volumeLab.innerText = 'Volume: ' + volumeSlider.value;
     }
   }
 }
@@ -345,100 +180,12 @@ function hideFlagAdsFunc() {
   }
 }
 
-function CleanweaponFunc() {
-  if (!hideWeaponsAds && !hideArms && !wireframeArms && !wireframeWeapons && !inspecting && !rainbow) {
-    frameFuncsRemove(InitweaponFunc);
-  }
+function IsScoped(e) {
+  if (e.button === 2) scoped = true;
 }
 
-function rainbowFunc() {
-  rainbowIntervId = setInterval(() => {
-    if (rainbow) {
-      if (r > 0 && b === 0) {
-        r--;
-        g++;
-      }
-      if (g > 0 && r === 0) {
-        g--;
-        b++;
-      }
-      if (b > 0 && g === 0) {
-        r++;
-        b--;
-      }
-    } else {
-      r = WireFrameArmsColor.r;
-      g = WireFrameArmsColor.g;
-      b = WireFrameArmsColor.b;
-      CleanweaponFunc();
-      clearInterval(rainbowIntervId);
-    }
-  }, 4);
-}
-
-function appendBadges() {
-  players.querySelectorAll('.short-id').forEach((e) => {
-    if (ingameIds.includes(e.innerText)) {
-      let img = document.createElement('img');
-
-      // prettier-ignore
-      img.src = badgeLinks[e.innerText] !== '' ? badgeLinks[e.innerText] : badgeLinks.default;
-
-      imgTags.push(img);
-
-      e.parentElement.children[1].append(img);
-    }
-  });
-}
-
-const playersobserver = new MutationObserver((mutation) => {
-  let n = false;
-
-  mutation.forEach((e) => {
-    e.addedNodes.forEach((f) => {
-      if (f.nodeName === 'IMG') n = true;
-    });
-  });
-
-  if (n) return;
-
-  for (let imgTag of imgTags) {
-    if (imgTag) imgTag.parentElement.removeChild(imgTag);
-  }
-
-  imgTags = [];
-
-  appendBadges();
-});
-
-function ShowBadgesFunc() {
-  const ShowBadgesInt = setInterval(() => {
-    try {
-      // prettier-ignore
-      players = document.getElementsByClassName('players')?.[0];
-
-      if (!players) gains = [];
-
-      if (!hasPlayerList && players) {
-        appendBadges();
-
-        playersobserver.observe(players, {
-          attributes: true,
-          characterData: true,
-          childList: true,
-          subtree: true,
-          attributeOldValue: true,
-          characterDataOldValue: true,
-        });
-
-        hasPlayerList = !!players;
-      }
-    } catch (e) {}
-    if (!ShowBadges) {
-      playersobserver.disconnect();
-      clearInterval(ShowBadgesInt);
-    }
-  }, 1000);
+function IsNotScoped(e) {
+  if (e.button === 2) scoped = false;
 }
 
 function settingsSetGit(setting, value) {
@@ -446,158 +193,126 @@ function settingsSetGit(setting, value) {
   return value;
 }
 
-async function ShowHideGameModes() {
-  let modecards = document.getElementsByClassName('list-cont')[0].getElementsByClassName('map');
-  for (var i = 0; i < modecards.length; i++) {
-    try {
-      if (modecards[i].innerText.match(/PHY[_]/g)) {
-        if (GameModesShowPHY === false) {
-          modecards[i].parentElement.parentElement.style.display = "none";
-        } else {
-          modecards[i].parentElement.parentElement.style.display = "flex";
+let Sessionids = [];
+function JoinLobbyWhenUnlocked() {
+  // adds checkboxes beside server lobby join buttons
+  // to attenmpt to join them when they become unlocked
+
+  let children = document.querySelector('html body div#app div#view div.background div.container div.content div.servers div.container-games div.list-cont div.list')?.children;
+  if (children) {
+    for (var i = 0; i < children.length; i++) {
+      if (!children[i].classList.contains('available-rooms') && !children[i].classList.contains('no-free')) {
+        if (!children[i]?.querySelector('#JWF-cb') && children[i].getElementsByClassName('right')?.[0]) {
+          var x = document.createElement('INPUT');
+          x.type = 'checkbox';
+          x.className = 'input-checkbox  button';
+          x.id = 'JWF-cb';
+          x.title = 'Join Lobby When Available';
+          x.style = 'margin-right:0.5rem;margin-left:1rem;--hover-color:var(--primary-2);display:flex;justify-content:center;align-items:center;border:none;position:relative;color:var(--white);font-size:1rem;transition:all .3s ease;font-family:Rowdies;padding:.9em 1.4em;transform:skew(-10deg);font-weight:900;overflow:hidden;text-transform:uppercase;border-radius:.2em;outline:none;text-shadow:0 .1em 0 #000;-webkit-text-stroke:1px var(--black);box-shadow:0 .15rem 0 rgba(0,0,0,.315);cursor:pointer;';
+          children[i].getElementsByClassName('right')[0].appendChild(x);
+          x.addEventListener('change', function () {
+            let thisId = this.parentElement.parentElement.getElementsByClassName('session-id')[0].innerHTML;
+            if (this.checked) {
+              if (thisId && !Sessionids.includes(thisId)) {
+                Sessionids.unshift(thisId);
+              }
+            } else {
+              let index = Sessionids.indexOf(thisId);
+              if (index > -1) {
+                Sessionids.splice(index, 1);
+              }
+            }
+          });
+          continue;
         }
-      } else if (modecards[i].innerText.match(/P[_]/g)) {
-        if (GameModesShowP === false) {
-          modecards[i].parentElement.parentElement.style.display = 'none';
-        } else {
-          modecards[i].parentElement.parentElement.style.display = 'flex';
-        }
-      } else if (modecards[i].innerText.match(/TDM[_]/g)) {
-        if (GameModesShowTDM === false) {
-          modecards[i].parentElement.parentElement.style.display = 'none';
-        } else {
-          modecards[i].parentElement.parentElement.style.display = 'flex';
-        }
-      } else if (modecards[i].innerText.match(/POINT[_]/g)) {
-        if (GameModesShowPOINT === false) {
-          modecards[i].parentElement.parentElement.style.display = 'none';
-        } else {
-          modecards[i].parentElement.parentElement.style.display = 'flex';
-        }
-      } else if (modecards[i].innerText.match(/DM[_]/g) && !modecards[i].innerText.match(/TDM[_]/g)) {
-        if (GameModesShowDM === false) {
-          modecards[i].parentElement.parentElement.style.display = 'none';
-        } else {
-          modecards[i].parentElement.parentElement.style.display = 'flex';
+
+        if (Sessionids.length) {
+          let ThisIdd = children[i].getElementsByClassName('session-id')[0]?.innerHTML;
+          if (Sessionids.includes(ThisIdd)) {
+            children[i].querySelector('#JWF-cb').checked = true;
+            if (!children[i].classList.contains('locked')) {
+              children[i].getElementsByClassName('button join')[0].click();
+            }
+          } else {
+            children[i].querySelector('#JWF-cb').checked = false;
+          }
         }
       }
-    } catch {}
+    }
   }
 }
 
-function GameModesCheckBoxChangeHandler() {
-  let selectedmode = this.parentElement.parentElement.className;
+async function ShowHideGameModes() {
+  let modecards = document.getElementsByClassName('list-cont')[0].getElementsByClassName('map');
+  let mci;
+  for (var i = 0; i < modecards.length; i++) {
+    mci = modecards[i].innerText;
+    if (/^PHY_/.test(mci)) {
+      if (!GameModesShowPHY) {
+        modecards[i].parentElement.parentElement.style.display = 'none';
+      } else {
+        modecards[i].parentElement.parentElement.style.display = 'flex';
+      }
+    } else if (/^P_/.test(mci)) {
+      if (!GameModesShowP) {
+        modecards[i].parentElement.parentElement.style.display = 'none';
+      } else {
+        modecards[i].parentElement.parentElement.style.display = 'flex';
+      }
+    } else if (/^TDM_/.test(mci)) {
+      if (!GameModesShowTDM) {
+        modecards[i].parentElement.parentElement.style.display = 'none';
+      } else {
+        modecards[i].parentElement.parentElement.style.display = 'flex';
+      }
+    } else if (/^POINT_/.test(mci)) {
+      if (!GameModesShowPOINT) {
+        modecards[i].parentElement.parentElement.style.display = 'none';
+      } else {
+        modecards[i].parentElement.parentElement.style.display = 'flex';
+      }
+    } else if (/^DM_/.test(mci)) {
+      if (!GameModesShowDM) {
+        modecards[i].parentElement.parentElement.style.display = 'none';
+      } else {
+        modecards[i].parentElement.parentElement.style.display = 'flex';
+      }
+    }
+  }
+}
 
-  if (selectedmode === 'P') {
-    if (this.checked) {
-      GameModesShowP = true;
-    } else {
-      GameModesShowP = false;
-    }
+function GameModesCheckBoxChangeHandler(event) {
+  if (event.target.className === 'P-checkbox') {
+    GameModesShowP = event.target.checked;
     settings.set('GameModesShowP', GameModesShowP);
-  } else if (selectedmode === 'TDM') {
-    if (this.checked) {
-      GameModesShowTDM = true;
-    } else {
-      GameModesShowTDM = false;
-    }
+  } else if (event.target.className === 'TDM-checkbox') {
+    GameModesShowTDM = event.target.checked;
     settings.set('GameModesShowTDM', GameModesShowTDM);
-  } else if (selectedmode === 'DM') {
-    if (this.checked) {
-      GameModesShowDM = true;
-    } else {
-      GameModesShowDM = false;
-    }
+  } else if (event.target.className === 'DM-checkbox') {
+    GameModesShowDM = event.target.checked;
     settings.set('GameModesShowDM', GameModesShowDM);
-  } else if (selectedmode === 'POINT') {
-    if (this.checked) {
-      GameModesShowPOINT = true;
-    } else {
-      GameModesShowPOINT = false;
-    }
+  } else if (event.target.className === 'POINT-checkbox') {
+    GameModesShowPOINT = event.target.checked;
     settings.set('GameModesShowPOINT', GameModesShowPOINT);
-  } else if (selectedmode === 'PHY') {
-    if (this.checked) {
-      GameModesShowPHY = true;
-    } else {
-      GameModesShowPHY = false;
-    }
+  } else if (event.target.className === 'PHY-checkbox') {
+    GameModesShowPHY = event.target.checked;
     settings.set('GameModesShowPHY', GameModesShowPHY);
   }
-
   ShowHideGameModes();
 }
 
 const gamemodesobserver = new MutationObserver(() => {
   ShowHideGameModes();
+  JoinLobbyWhenUnlocked();
 });
 
 function SetGameModesCheckBoxes() {
-  try {
-    if (!document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div.tabs > div.mods.tabmods')) {
-      let modesCont = document.createElement('div');
-      modesCont.className = 'mods tabmods';
-      modesCont.setAttribute('style', 'display:flex;font-size:1rem!important;margin:0 auto;margin-right:0rem;');
-      modesCont.innerHTML = modesContinner;
-      document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div.tabs').appendChild(modesCont);
-      modesCont.getElementsByClassName('DM-checkbox')[0].checked = GameModesShowDM;
-      modesCont.getElementsByClassName('TDM-checkbox')[0].checked = GameModesShowTDM;
-      modesCont.getElementsByClassName('P-checkbox')[0].checked = GameModesShowP;
-      modesCont.getElementsByClassName('POINT-checkbox')[0].checked = GameModesShowPOINT;
-      modesCont.getElementsByClassName('PHY-checkbox')[0].checked = GameModesShowPHY;
-      let modes = document.getElementsByClassName('servers')[0].getElementsByClassName('list-cont')[0].getElementsByClassName('mods')[0].getElementsByTagName('input');
-      for (var i = 0; i < modes.length; i++) {
-        modes[i].addEventListener('change', GameModesCheckBoxChangeHandler);
-      }
-      gamemodesobserver.observe(document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div.list'), { attributes: true, childList: true, subtree: true });
-    }
-  } catch {}
-}
-
-const modesContinner = `
-
-    <style>
-    
-    div.tabs>div.mods.tabmods>div>label.custom-checkbox>input {
-        position: absolute;
-        z-index: -1;
-        opacity: 0;
-    }
-    
-    div.tabs>div.mods.tabmods>div>label.custom-checkbox>span{
-        display: inline-flex;
-        align-items: center;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-    }
-    
-    div.tabs>div.mods.tabmods>div>label.custom-checkbox>input:checked+span:before {
-        background-color: #ffb914;
-        border-color: #b6830e;
-        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='hsl(42, 85%, 100%)' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3e%3c/svg%3e");
-    }
-    
-    div.tabs>div.mods.tabmods>div>label.custom-checkbox>span:before {
-        content: "";
-        display: inline-block;
-        width: 1.3em;
-        height: 1.3em;
-        flex-shrink: 0;
-        flex-grow: 0;
-        /*margin-top: .3em;*/
-        border: .15rem solid #3c4b68;
-        border-radius: .25em;
-        margin-right: .5em;
-        background-repeat: no-repeat;
-        background-position: 50%;
-        background-size: 50% 50%;
-        background-color: #2f3957;
-    }
-    
-    </style>
-    
+  let p = document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div.tabs');
+  if (p && !p.querySelector('div.mods.tabmods')) {
+    let modesCont = document.createElement('div');
+    modesCont.className = 'mods tabmods';
+    modesCont.setAttribute('style', 'display:flex;font-size:1rem!important;margin:0 0 0 auto;');
+    modesCont.innerHTML = `
     <div class="DM" style="margin-right:.5rem!important;height:3.1vh;margin:auto;">
     <label class="custom-checkbox checkbox-size">
     <input type="checkbox" class="DM-checkbox">
@@ -632,258 +347,119 @@ const modesContinner = `
     <span> Physics </span>
     </label>
     </div>
-    
-`;
+    `;
+    modesCont = p.appendChild(modesCont);
+    modesCont.getElementsByClassName('DM-checkbox')[0].checked = GameModesShowDM;
+    modesCont.getElementsByClassName('TDM-checkbox')[0].checked = GameModesShowTDM;
+    modesCont.getElementsByClassName('P-checkbox')[0].checked = GameModesShowP;
+    modesCont.getElementsByClassName('POINT-checkbox')[0].checked = GameModesShowPOINT;
+    modesCont.getElementsByClassName('PHY-checkbox')[0].checked = GameModesShowPHY;
+    modesCont.addEventListener('change', GameModesCheckBoxChangeHandler);
 
-let r = 255;
-let g = 0;
-let b = 0;
-let rainbowIntervId;
-let DevToolTips = true; // shows console errors as in-game native notifications
-let DevTooltipsTimeout = 5000; // how long to wait before auto removing them
-let DevTooltipsMaxTips = 3; // max amount of notifications on screen at a time
+    gamemodesobserver.observe(document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div.list'), {
+      childList: true,
+      attributes: true,
+      subtree: true,
+      attributeOldValue: true,
+      characterData: true,
+      characterDataOldValue: true,
+    });
+  }
+}
+
+if (typeof settings.get('pendingImport') !== 'undefined') {
+  let savedStorage = settings.get('pendingImport');
+  Object.assign(localStorage, savedStorage);
+  settings.delete('pendingImport');
+  window.location.reload();
+}
+
+let DevToolTips = true;
+let DevTooltipsTimeout = 10000;
+let DevTooltipsMaxTips = 5;
 let devid = 0;
-let arms = true;
+let EnemyhighlightColor = typeof settings.get('EnemyhighlightColor') === 'undefined' ? settingsSetGit('EnemyhighlightColor', '#ff00ff') : settings.get('EnemyhighlightColor');
+let TeamhighlightColor = typeof settings.get('TeamhighlightColor') === 'undefined' ? settingsSetGit('TeamhighlightColor', '#0000ff') : settings.get('TeamhighlightColor');
+let GameModesShowPOINT = typeof settings.get('GameModesShowPOINT') === 'undefined' ? settingsSetGit('GameModesShowPOINT', true) : settings.get('GameModesShowPOINT');
+let GameModesShowTDM = typeof settings.get('GameModesShowTDM') === 'undefined' ? settingsSetGit('GameModesShowTDM', true) : settings.get('GameModesShowTDM');
+let GameModesShowPHY = typeof settings.get('GameModesShowPHY') === 'undefined' ? settingsSetGit('GameModesShowPHY', true) : settings.get('GameModesShowPHY');
+let GameModesShowDM = typeof settings.get('GameModesShowDM') === 'undefined' ? settingsSetGit('GameModesShowDM', true) : settings.get('GameModesShowDM');
+let GameModesShowP = typeof settings.get('GameModesShowP') === 'undefined' ? settingsSetGit('GameModesShowP', true) : settings.get('GameModesShowP');
+let TwitchHeight = typeof settings.get('TwitchHeight') === 'undefined' ? settingsSetGit('TwitchHeight', 'auto') : settings.get('TwitchHeight');
+let TwitchWidth = typeof settings.get('TwitchWidth') === 'undefined' ? settingsSetGit('TwitchWidth', 'auto') : settings.get('TwitchWidth');
+let TwitchLeft = typeof settings.get('TwitchLeft') === 'undefined' ? settingsSetGit('TwitchLeft', '-65vw') : settings.get('TwitchLeft');
+let ShowTwitch = typeof settings.get('ShowTwitch') === 'undefined' ? settingsSetGit('ShowTwitch', true) : settings.get('ShowTwitch');
+let TwitchTop = typeof settings.get('TwitchTop') === 'undefined' ? settingsSetGit('TwitchTop', '40vw') : settings.get('TwitchTop');
+let guiHeight = typeof settings.get('guiHeight') === 'undefined' ? settingsSetGit('guiHeight', '95%') : settings.get('guiHeight');
+let guiWidth = typeof settings.get('guiWidth') === 'undefined' ? settingsSetGit('guiWidth', '51%') : settings.get('guiWidth');
+let capture = typeof settings.get('capture') === 'undefined' ? false : settings.get('capture');
+let fpsCap = typeof settings.get('fpsCap') === 'undefined' ? false : settings.get('fpsCap');
+let playerHighLight = !!settings.get('playerHighLight');
+let permCrosshair = !!settings.get('permCrosshair');
+let hideFlagAds = !!settings.get('hideFlagAds');
+let customCss = !!settings.get('customCss');
+let gui = document.createElement('div');
+let customEnemyColorElem;
+let customTeamColorElem;
+let frameFuncs = [];
 let colorEnemy;
 let colorTeam;
-let color;
-let weaponModel;
-let armsMaterial;
-let weaponMaterial;
-// prettier-ignore
-let GameModesShowP = typeof settings.get('GameModesShowP') == 'undefined' ? settingsSetGit('GameModesShowP', true) : settings.get('GameModesShowP');
-// prettier-ignore
-let GameModesShowTDM = typeof settings.get('GameModesShowTDM') == 'undefined' ? settingsSetGit('GameModesShowTDM', true) : settings.get('GameModesShowTDM');
-// prettier-ignore
-let GameModesShowPOINT = typeof settings.get('GameModesShowPOINT') == 'undefined' ? settingsSetGit('GameModesShowPOINT', true) : settings.get('GameModesShowPOINT');
-// prettier-ignore
-let GameModesShowDM = typeof settings.get('GameModesShowDM') == 'undefined' ? settingsSetGit('GameModesShowDM', true) : settings.get('GameModesShowDM');
-// prettier-ignore
-let GameModesShowPHY = typeof settings.get('GameModesShowPHY') == 'undefined' ? settingsSetGit('GameModesShowPHY', true) : settings.get('GameModesShowPHY');
-
-let imgTags = [];
-let hasPlayerList = false;
-// prettier-ignore
-let ShowBadges = typeof settings.get('ShowBadges') == 'undefined' ? settingsSetGit('ShowBadges', true) : settings.get('ShowBadges');
-let frameFuncs = [];
-let permCrosshair = !!settings.get('permCrosshair');
-let noLoadingTimes = true;
-let customCss = !!settings.get('customCss');
-let hideWeaponsAds = !!settings.get('hideWeaponsAds');
-let hideArms = !!settings.get('hideArms');
-let leftHanded = !!settings.get('leftHanded');
-let hideFlagAds = !!settings.get('hideFlagAds');
-let playerHighLight = !!settings.get('playerHighLight');
-let fullBlack = !!settings.get('fullBlack');
-let wireframeWeapons = !!settings.get('wireframeWeapons');
-let wireframeArms = !!settings.get('wireframeArms');
-let WireFrameArmsColor;
-let WireFrameWeapColor;
-let rainbow = !!settings.get('rainbow');
-let adspower = !!settings.get('adspower');
-let autoJoin = !!settings.get('autoJoin');
-// prettier-ignore
-let fpsCap = typeof settings.get('fpsCap') == 'undefined' ? false : settings.get('fpsCap');
-// prettier-ignore
-let capture = typeof settings.get('capture') == 'undefined' ? false : settings.get('capture');
-// prettier-ignore
-let volume = typeof settings.get('volume') == 'undefined' ? 1 : settings.get('volume');
-let noKillSound = !!settings.get('noKillSound');
-let volumeSlider;
-let volumeLab;
-let clearInspect;
-let marketNames = !!settings.get('marketNames');
-let customPrice = !!settings.get('customPrice');
-let inspecting = false;
-let inspectingoverride = false;
-let prevInsp = false;
-let prevInspectPos;
-let prevInspectRot;
-let prevWireframeWeapons = false;
-let prevWireframeArms = false;
-let gui = document.createElement('div');
-let menuVisible = false;
-let inspectListening = false;
-if (!settings.get('inspectKey')) settings.set('inspectKey', 'j');
-let menuListening = false;
-let euLobbies = !!settings.get('euLobbies');
-let naLobbies = !!settings.get('naLobbies');
-let asiaLobbies = !!settings.get('asiaLobbies');
-let ffaLobbies = !!settings.get('ffaLobbies');
-let tdmLobbies = !!settings.get('tdmLobbies');
-let parkourLobbies = !!settings.get('parkourLobbies');
-// prettier-ignore
-let preferredFilter = typeof settings.get('preferredFilter') == 'undefined' ? 'Players' : settings.get('preferredFilter');
-// prettier-ignore
-let minPlayers = typeof settings.get('minPlayers') == 'undefined' ? 4 : settings.get('minPlayers');
-//let colorred = hexToRgb('#ff0000');
-// prettier-ignore
-let maxPlayers = typeof settings.get('maxPlayers') == 'undefined' ? 8 : settings.get('maxPlayers');
-// prettier-ignore
-let minTimeLeft = typeof settings.get('minTimeLeft') == 'undefined' ? 3 : settings.get('minTimeLeft');
-let filterMaps = !!settings.get('filterMaps');
-let avoidSameLobby = true;
-let currentURL = window.location.href;
-let gameModes = [];
-let bestLobby = '';
-let allLobbyData = [];
-// prettier-ignore
-let maps = settings.get('maps') ? settings.get('maps') : [];
-let customGames = !!settings.get('customGames');
-let responseCount = 0;
-let minPlayerSlider;
-let maxPlayerSlider;
-let minPlayersLab;
-let maxPlayersLab;
-let minTimeLeftSlider;
-let minTimeLeftLab;
-let settingsButtonsAdded = false;
 let scene;
 let flagMaterial;
-let players;
-let gains = [];
-let overlayModel;
-let clearhideWeaponsAdsFunc;
-let clearhideArmsFunc;
-let clearoverlayModelFunc;
-let clearhideFlagAdsFunc;
-let clearplayerHighLightFunc;
-let clearwireframeWeaponsFunc;
-let clearwireframeArmsFunc;
-let ShouldHiglight = false;
-//let crosshair;
-let weap;
-let num;
 let animate;
 let animateState;
-let scoped = false;
 let streamsmenu;
 let livestreamers;
-let TwitchTop =
-  typeof settings.get("TwitchTop") == "undefined"
-    ? settingsSetGit("TwitchTop", '40vw')
-    : settings.get("TwitchTop");
-
-let TwitchLeft =
-  typeof settings.get("TwitchLeft") == "undefined"
-    ? settingsSetGit("TwitchLeft", '-65vw')
-    : settings.get("TwitchLeft");
-
-let TwitchWidth =
-  typeof settings.get("TwitchWidth") == "undefined"
-    ? settingsSetGit("TwitchWidth", 'auto')
-    : settings.get("TwitchWidth");
-  
-let TwitchHeight =
-  typeof settings.get("TwitchHeight") == "undefined"
-    ? settingsSetGit("TwitchHeight", 'auto')
-    : settings.get("TwitchHeight");
-
-    let ShowTwitch =
-    typeof settings.get("ShowTwitch") == "undefined"
-      ? settingsSetGit("ShowTwitch", true)
-      : settings.get("ShowTwitch");
-
-      let DiscordPresence = typeof settings.get('DiscordPresence') == 'undefined' ? settingsSetGit("DiscordPresence", true) : settings.get('DiscordPresence');
-
-if (rainbow) {
-  rainbowFunc();
-}
-
-if (ShowBadges) {
-  ShowBadgesFunc();
-}
+let notificationsonclick;
+let GuiResizeObserver;
+let TwitchResizeObserver;
+let cssLinkElem;
+let QuestInterval;
+let permcrossstyle;
+let claimedQuest = false;
+let gamemodee = false;
+let flagmodeset = false;
+let scoped = false;
+let ShouldHiglight = false;
+let menuVisible = false;
+let gitclick = false;
+let discclick = false;
+let SaveGuiSize = () => {
+  if (guiWidth !== gui.style.width) {
+    guiWidth = settingsSetGit('guiWidth', gui.style.width);
+  }
+  if (guiHeight !== gui.style.height) {
+    guiHeight = settingsSetGit('guiHeight', gui.style.height);
+  }
+};
 
 if (playerHighLight) {
   frameFuncs.push(playerHighLightFunc);
 }
 
-if (leftHanded) {
-  frameFuncs.push(overlayModelFunc);
-}
-
-if (hideFlagAds) {
-  frameFuncs.push(hideFlagAdsFunc);
-}
-
-if (hideWeaponsAds) {
-  frameFuncs.push(hideWeaponsAdsFunc);
-}
-
-if (hideArms) {
-  arms = false;
-  if (!frameFuncs.includes(hideWeaponsAdsFunc)) {
-  frameFuncs.push(hideWeaponsAdsFunc);
-  }
-}
-
-if (wireframeArms) {
-  frameFuncs.push(wireframeArmsFunc);
-}
-
-if (wireframeWeapons) {
-  frameFuncs.push(wireframeWeaponsFunc);
-}
-
-if (leftHanded) {
-  frameFuncs.push(overlayModelFunc);
-}
-
-if (hideWeaponsAds || hideArms || wireframeArms || wireframeWeapons || rainbow) {
-  if (!frameFuncs.includes(InitweaponFunc)) {
-    frameFuncs.unshift(InitweaponFunc);
-  }
-}
-
-// eslint-disable-next-line no-extend-native
 WeakMap.prototype.set = new Proxy(WeakMap.prototype.set, {
   apply(target, thisArg, argArray) {
     if (argArray[0] && argArray[0].type === 'Scene') {
       if (argArray[0].children[0].type === 'AmbientLight') {
-        ShouldHiglight = false;
         scene = argArray[0];
-
+        ShouldHiglight = true;
         setTimeout(() => {
           scene.children.forEach((e) => {
-            // prettier-ignore
-            if (e.type === "Sprite" && !e.material.depthTest && e.material.map?.image?.width === 149) {
-                            flagMaterial = e.material;
-                        }
+            if (e.type === 'Sprite' && !e.material.depthTest && e.material.map?.image?.width === 149) {
+              flagMaterial = e.material;
+              flagmodeset = true;
+              if (hideFlagAds) {
+                if (!frameFuncs.includes(hideFlagAdsFunc)) {
+                  frameFuncs.push(hideFlagAdsFunc);
+                  window.addEventListener('mousedown', IsScoped);
+                  window.addEventListener('mouseup', IsNotScoped);
+                }
+              }
+            }
           });
         }, 1000);
-
-        const j = setInterval(() => {
-          try {
-            if (scene["entity"]["_entityManager"]["mWnwM"]["systemManager"]["_systems"]["2"]["_queries"].players.entities[0]["_components"]) {
-              ShouldHiglight = true;
-            }
-          } catch {}
-          if (ShouldHiglight) {
-            clearInterval(j);
-          }
-        });
-      } else if (argArray[0].children[0].type === 'DirectionalLight') {
-        // prettier-ignore
-        if (argArray[0].children[3]?.children[0]?.children[0]) {
-                    overlayModel = null;
-                    const t = setInterval(() => {
-
-                        try {
-                            for (let i = 0; i < argArray[0].children[3].children[0].children.length; i++) {
-                                if (argArray[0].children[3].children[0].children[i].type === "Object3D") {
-                                    overlayModel = argArray[0].children[3].children[0].children[i];
-                                    break;
-                                }
-                            }
-                        } catch {
-                        }
-                        if (overlayModel) clearInterval(t);
-                    });
-                }
       }
     }
-
-    // eslint-disable-next-line prefer-rest-params
     return Reflect.apply(...arguments);
   },
 });
@@ -916,8 +492,10 @@ function MoveTwitchMenu(TwitchHead) {
     lsmpos2 = lsmpos4 - xip.clientY;
     lsmpos3 = xip.clientX;
     lsmpos4 = xip.clientY;
-    TwitchHead.style.top = TwitchHead.offsetTop - lsmpos2 + 'px';
-    TwitchHead.style.left = TwitchHead.offsetLeft - lsmpos1 + 'px';
+    window.requestAnimationFrame(() => {
+      TwitchHead.style.top = `${TwitchHead.offsetTop - lsmpos2}px`;
+      TwitchHead.style.left = `${TwitchHead.offsetLeft - lsmpos1}px`;
+    });
   }
 
   function TwitchStopDragPlz() {
@@ -937,342 +515,311 @@ function SaveTwitchSize() {
   }
 }
 
-function twitchOpenStream(e) {
-  //BKC.debug("https://www.twitch.tv/" + e.target.ariaLabel);
-  //window.open("https://www.twitch.tv/" + e.target.ariaLabel);
-  shell.openExternal('https://www.twitch.tv/' + e.target.ariaLabel);
-}
-
 function SetTwitchLinks() {
   for (let link of streamsmenu.querySelectorAll('div.list>div.item')) {
-    if (link.querySelector('.content')) {
-      let labeltext = link.querySelector('div.content>div.name').innerText;
-      link.ariaLabel = labeltext;
-
-      try {
-        for (let childs of link.childNodes[1].children) {
-          childs.ariaLabel = labeltext;
-        }
-      } catch {}
-
-      try {
-        for (let childs of link.children) {
-          childs.ariaLabel = labeltext;
-        }
-      } catch {}
-      link.addEventListener('click', twitchOpenStream);
+    let l = link.querySelector('.name')?.innerHTML;
+    if (l) {
+      link.onclick = () => {
+        shell.openExternal(`https://www.twitch.tv/${l}`);
+      };
     }
   }
 }
 
+TwitchResizeObserver = new ResizeObserver(SaveTwitchSize);
+
 function ShowliveStreams() {
-  if (document.querySelector('.live-streams')) {
+  let defStremzMenu = document.querySelector('.live-streams');
+  if (defStremzMenu) {
     if (!document.querySelector('#live-streams-menu')) {
       streamsmenu = document.getElementsByClassName('live-streams')[0].cloneNode(true);
-
-      let display = ShowTwitch ? 'display:block!important;' : 'display:none!important;';
-      // prettier-ignore
-      streamsmenu.style =`
- position:absolute;
- resize:both;
- overflow: auto hidden!important;
- opacity:1!important;
- z-index:3!important;
- min-height:5vh!important;
- pointer-events:all!important;
-top:` + TwitchTop + ';left:' + TwitchLeft + ';width:' + TwitchWidth + ';height:' + TwitchHeight + ';' + display;
-
+      streamsmenu.style = `position:absolute;resize:both;overflow: auto hidden!important;opacity:1!important;z-index:3!important;min-height:5vh!important;pointer-events:all!important;
+      top:${TwitchTop};left:${TwitchLeft};width:${TwitchWidth};height:${TwitchHeight};${ShowTwitch ? 'display:block!important;' : 'display:none!important;'}`;
       for (let crap of streamsmenu.getAttributeNames()) {
-        if (crap.match('data-v')) {
+        if (/data-v/.test(crap)) {
           streamsmenu.removeAttribute(crap);
         }
       }
-
       streamsmenu.id = 'live-streams-menu';
-      streamsmenu.innerHTML += '<style>div#live-streams-menu>div.list{max-height:95vh!important;overflow-x:hidden!important;overflow-y:hidden!important;}</style>';
-      document.querySelector('#right-interface').appendChild(streamsmenu);
-      livestreamers = document.querySelector('.live-streams').querySelectorAll('[target="_blank"]').length;
-      MoveTwitchMenu(document.querySelector('#live-streams-menu'));
-      new ResizeObserver(SaveTwitchSize).observe(streamsmenu);
+      streamsmenu = document.querySelector('#right-interface').appendChild(streamsmenu);
+      livestreamers = defStremzMenu.querySelectorAll('[target="_blank"]').length;
+      TwitchResizeObserver.observe(streamsmenu);
+      MoveTwitchMenu(streamsmenu);
       SetTwitchLinks();
-    } else if (document.querySelector('.live-streams').querySelectorAll('[target="_blank"]').length > livestreamers) {
-      streamsmenu.innerHTML = document.querySelector('.live-streams').innerHTML + '<style>div#live-streams-menu>div.list{max-height:95vh!important;overflow-x:hidden!important;overflow-y:hidden!important;}</style>';
-      livestreamers = document.querySelector('.live-streams').querySelectorAll('[target="_blank"]').length;
-      MoveTwitchMenu(document.querySelector('#live-streams-menu'));
-      SetTwitchLinks();
+    } else {
+      let currentlen = defStremzMenu.querySelectorAll('[target="_blank"]').length;
+      if (currentlen > livestreamers) {
+        livestreamers = currentlen;
+        streamsmenu.innerHTML = defStremzMenu.innerHTML;
+        MoveTwitchMenu(streamsmenu);
+        SetTwitchLinks();
+      }
     }
   }
 }
 
-new MutationObserver((mutationRecords) => {
-    if (window.location.href.match(/kirka[.]io[/]game/g) !== null && !document.querySelector(".end-modal")) {
-      if (!animate) {
-        animateState("true");
+function toTitleCase(str) {
+  let rts = '';
+  let p = str.replace(/_/g, ' ').split(' ');
+  for (let i = 0; i < p.length; i++) {
+    rts += `${p[i].charAt(0).toUpperCase()}${p[i].substr(1).toLowerCase()} `;
+  }
+  return rts.trim();
+}
+
+async function CheckQuest() {
+  if (localStorage.token === '') return true;
+
+  let quests = await fetch('https://api.kirka.io/api/quests', {
+    headers: {
+      accept: 'application/json, text/plain, */*',
+      authorization: 'Bearer ' + localStorage.token,
+      'content-type': 'application/json;charset=UTF-8',
+      csrf: 'token',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-site': 'same-site',
+    },
+    referrer: 'https://kirka.io/',
+    referrerPolicy: 'strict-origin-when-cross-origin',
+    body: '{}',
+    method: 'POST',
+    mode: 'cors',
+    credentials: 'include',
+  });
+
+  if (quests.status >= 400) return false;
+
+  quests = await quests.json();
+
+  for (let quest of quests) {
+    if (quest.progress.completed && !quest.progress.rewardTaken) {
+      //prettier-ignore
+      BKC.tip(`${toTitleCase(quest.type)} Quest Completed:
+${quest.amount} ${toTitleCase(quest.name)} ${quest.weapon !== 'undefined' ? quest.weapon : ''}
+XP:  ${quest['rewards'][0].amount}   COINS:  ${quest['rewards'][1].amount}`);
+
+      await fetch('https://api.kirka.io/api/rewards/take', {
+        headers: {
+          accept: 'application/json, text/plain, */*',
+          authorization: 'Bearer ' + localStorage.token,
+          'content-type': 'application/json;charset=UTF-8',
+          csrf: 'token',
+          'sec-fetch-mode': 'cors',
+          'sec-fetch-site': 'same-site',
+        },
+        referrer: 'https://kirka.io/',
+        referrerPolicy: 'strict-origin-when-cross-origin',
+        body: JSON.stringify({ source: 'quest:' + quest.id }),
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+      });
+    }
+  }
+  return true;
+}
+
+function checkclaimQuest() {
+  CheckQuest()
+    .then((result) => {
+      if (!result) {
+        QuestInterval = setTimeout(() => {
+          checkclaimQuest();
+        }, 15000);
+        BKC.tip(`Failed Claiming Quest Trying Again In 15 Seconds`);
       }
-  
-      try {
-        if (document.getElementsByClassName("list-weapons")[0].children[0].children[0].innerText !== null) {
-          weap = document.getElementsByClassName("list-weapons")[0].children[0].children[0].innerText;
-          num = 4;
-          if (weap === "Weatie" || weap === "MAC-10") {
-            num = 5;
-          } else if (weap === "AR-9") {
-            num = 3;
-          }
-        }
-      } catch {}
-    } else {
-      ShouldHiglight = false;
-      scene = false;
-  
-      if (animate) {
-        animateState();
+    })
+    .catch((error) => {
+      BKC.tip(error);
+    });
+}
+
+const Questobserver = new MutationObserver(() => {
+  let remElement;
+  let notis = document.querySelectorAll('html body div#app div#notifications span div.vue-notification-wrapper div span.text');
+  for (let i = 0; i < notis.length; i++) {
+    remElement = notis[i].parentElement.parentElement;
+    if (/you completed a quest/i.test(notis[i]?.innerHTML)) {
+      if (remElement.style.display !== 'none') {
+        remElement.setAttribute('style', 'display: none!important');
       }
-  
-      if (window.location.href === 'https://kirka.io/') {
-        ShowliveStreams();
-      } else if (window.location.href.match(/kirka[.]io[/]servers/g) !== null && !document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div.tabs > div.mods.tabmods')) {
-        SetGameModesCheckBoxes();
+      if (!claimedQuest) {
+        claimedQuest = true;
+        checkclaimQuest();
+      }
+    } else if (/Failed to connect to the room/i.test(notis[i]?.innerHTML) && !window.location.href.startsWith('https://kirka.io/servers/')) {
+      if (remElement.style.display !== 'none') {
+        remElement.setAttribute('style', 'display: none!important');
+        document.querySelector('.icon-btn.text-1.SERVERS').click();
       }
     }
-  
-    try {
-      mutationRecords.forEach((record) => {
-        record.addedNodes.forEach((el) => {
-          if (el.classList?.contains("loading-scene") && noLoadingTimes)
-            el.parentNode.removeChild(el);
-          if (el.id === "qc-cmp2-container") el.parentNode.removeChild(el);
-  
-          if (el.id === "cmpPersistentLink" || el.classList?.contains("home") || el.classList?.contains("moneys")) {
-            if (!document.querySelector("#clientJoinButton")) {
-              let btn = document.createElement("button");
-              btn.id = "clientJoinButton";
-  
-              btn.style = `
-              background-color: var(--primary-1);
-              --hover-color: var(--primary-2);
-              --top: var(--primary-2);
-              --bottom: var(--primary-3);
-              display: flex;
-              justify-content: center;
-              align-items: center;
-              border: none;
-              position: absolute;
-              color: var(--white);
-              font-size: 1rem;
-              transition: all .3s ease;
-              font-family: Rowdies;
-              padding: .9em 1.4em;
-              transform: skew(-10deg);
-              font-weight: 900;
-              overflow: hidden;
-              text-transform: uppercase;
-              border-radius: .2em;
-              outline: none;
-              text-shadow: 0 0.1em 0 #000;
-              -webkit-text-stroke: 1px var(--black);
-              box-shadow: 0 0.15rem 0 rgba(0,0,0,.315);
-              cursor: pointer;
-              box-shadow: 0 5.47651px 0 rgba(0,0,0,.5);
-              text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 1px 1px rgba(0,0,0,.486);
-              width: 150px;
-              height: 50px;
-              bottom: 20px;
-              right: 100%;
-              margin-right: 10px;
-              font-size: 20px;
-              `;
-  
-              btn.innerText = "Join Link";
-  
-              btn.onclick = () => {
-                window.open(clipboard.readText());
-              };
-  
-              document.getElementsByClassName("play-content")[0].append(btn);
-            }
-            document.getElementsByClassName("settings-and-socicons")[0].children[0].onclick = () => {
-              window.open("https://discord.com/invite/cNwzjsFHpg");
-            };
-  
-            document.getElementsByClassName("settings-and-socicons")[0].children[1].onclick = () => {
-              window.open(
-                "https://github.com/42infi/better-kirka-client/releases"
-              );
-            };
-  
-            if (!el.classList?.contains("home") && !el.classList?.contains("moneys"))
-              el.parentNode.removeChild(el);
-          }
-  
-          if (el.classList?.contains("settings") && !settingsButtonsAdded) {
-            let exportBtn = document.createElement("div");
-  
-            exportBtn.id = "importBtn";
-  
-            exportBtn.style = `
-            line-height: 1.2;
-            user-select: none;
-            --white: #fff;
-            --secondary-2: #37477c;
-            -webkit-font-smoothing: antialiased;
-            text-align: center;
-            font-family: Exo\ 2;
-            box-sizing: border-box;
-            text-shadow: -1px -1px 0 #0f0f0f,1px -1px 0 #0f0f0f,-1px 1px 0 #0f0f0f,1px 1px 0 #0f0f0f;
-            font-weight: 100;
-            height: 100%;
-            padding: 0 .8rem;
-            color: var(--white);
-            font-size: 1.5rem;
-            box-shadow: 0 .125rem .25rem rgba(24,28,40,.25);
-            border-radius: 0 .313rem .313rem 0;
-            background-color: var(--secondary-2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            `;
-  
-            exportBtn.onmouseover = () => {
-              exportBtn.style.color = "#ffd500";
-            };
-  
-            exportBtn.onmouseout = () => {
-              exportBtn.style.color = "#ffffff";
-            };
-  
-            exportBtn.innerText = "Export to clipboard";
-  
-            exportBtn.onclick = () => {
-              let gameSettingsObj = {};
-  
-              for (let key in localStorage) {
-                if (key.startsWith("m")) {
-                  if (localStorage[key].startsWith('"') && localStorage[key].endsWith('"')) {
-                    gameSettingsObj[key] = localStorage[key].slice(1, -1);
-                  } else {
-                    gameSettingsObj[key] = localStorage[key];
-                  }
-                }
-              }
-              clipboard.writeText(JSON.stringify(gameSettingsObj));
-            };
-  
-            let importBtn = document.createElement("div");
-  
-            importBtn.id = "importBtn";
-  
-            importBtn.style = `
-            line-height: 1.2;
-            user-select: none;
-            --white: #fff;
-            --secondary-2: #37477c;
-            -webkit-font-smoothing: antialiased;
-            text-align: center;
-            font-family: Exo\ 2;
-            box-sizing: border-box;
-            text-shadow: -1px -1px 0 #0f0f0f,1px -1px 0 #0f0f0f,-1px 1px 0 #0f0f0f,1px 1px 0 #0f0f0f;
-            font-weight: 100;
-            height: 100%;
-            padding: 0 .8rem;
-            color: var(--white);
-            font-size: 1.5rem;
-            box-shadow: 0 .125rem .25rem rgba(24,28,40,.25);
-            border-radius: 0 .313rem .313rem 0;
-            background-color: var(--secondary-2);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            `;
-  
-            importBtn.onmouseover = () => {
-              importBtn.style.color = "#ffd500";
-            };
-  
-            importBtn.onmouseout = () => {
-              importBtn.style.color = "#ffffff";
-            };
-  
-            importBtn.innerText = "Import from clipboard";
-  
-            importBtn.onclick = () => {
-              Object.assign(localStorage, JSON.parse(clipboard.readText()));
-              window.location.reload();
-            };
-  
-            document.getElementsByClassName("left")[0].appendChild(exportBtn);
-            document.getElementsByClassName("left")[0].appendChild(importBtn);
-  
-            settingsButtonsAdded = true;
-          }
-        });
-      });
-    } catch {}
-  }).observe(document, { childList: true, subtree: true });
-  
+  }
+});
+
+function NotificationsOpenMenus() {
+  let n;
+  let p = document.querySelector('#notifications');
+
+  if (p) {
+    n = p.onclick = (e) => {
+      let text = (e.target?.innerHTML || e.target.parentElement.nextSibling.innerHTML).toLowerCase();
+      if (text) {
+        if (/friend.*request/g.test(text) && window.location.href !== 'https://kirka.io/friends') {
+          document.querySelector('.icon-btn.text-1.FRIENDS').click();
+        } else if (/item.*sold/g.test(text) && window.location.href !== 'https://kirka.io/inventory') {
+          document.querySelector('.icon-btn.text-1.INVENTORY').click();
+        } else if (/hourly Quest Claimed/gi.test(text) && window.location.href !== 'https://kirka.io/quests/hourly') {
+          document.querySelector('.icon-btn.text-1.QUESTS').click();
+        }
+      }
+    };
+
+    Questobserver.observe(p, {
+      childList: true,
+      attributes: true,
+      subtree: true,
+    });
+  }
+  return !!n;
+}
+
+const SomeObserver = new MutationObserver(() => {
+  if (window.location.href === 'https://kirka.io/') {
+    ShowliveStreams();
+  } else if (/kirka[.]io[/]servers/.test(window.location.href) && !document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div.tabs > div.mods.tabmods')) {
+    SetGameModesCheckBoxes();
+  }
+
+  if (!notificationsonclick) {
+    notificationsonclick = NotificationsOpenMenus();
+  }
+
+  if (!document.querySelector('#clientJoinButton') && document.querySelector('.play-content')) {
+    let btn = document.createElement('button');
+    btn.id = 'clientJoinButton';
+    btn.style = 'background-color: var(--primary-1);--hover-color: var(--primary-2);--top: var(--primary-2);--bottom: var(--primary-3);display: flex;justify-content: center;align-items: center;border: none;position: absolute;color: var(--white);font-size: 1rem;transition: all .3s ease;font-family: Rowdies;padding: .9em 1.4em;transform: skew(-10deg);font-weight: 900;overflow: hidden;text-transform: uppercase;border-radius: .2em;outline: none;text-shadow: 0 0.1em 0 #000;-webkit-text-stroke: 1px var(--black);box-shadow: 0 0.15rem 0 rgba(0,0,0,.315);cursor: pointer;box-shadow: 0 5.47651px 0 rgba(0,0,0,.5);text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 1px 1px rgba(0,0,0,.486);width: 150px;height: 50px;bottom: 20px;right: 100%;margin-right: 10px;font-size: 20px;';
+    btn.innerText = 'Join Link';
+    btn.onclick = () => {
+      window.open(clipboard.readText());
+    };
+
+    document.getElementsByClassName('play-content')[0].append(btn);
+  }
+
+  if (!discclick && document.querySelector('.soc-icon.svg-icon.svg-icon--discord')) {
+    let p = (document.querySelector('.soc-icon.svg-icon.svg-icon--discord').parentElement.onclick = () => shell.openExternal('https://discord.com/invite/cNwzjsFHpg'));
+    discclick = !!p;
+  }
+
+  if (!gitclick && document.querySelector('.soc-icon.svg-icon.svg-icon--gamepad2')) {
+    let p = (document.querySelector('.soc-icon.svg-icon.svg-icon--gamepad2').parentElement.onclick = () => shell.openExternal('https://github.com/42infi/better-kirka-client/releases'));
+    gitclick = !!p;
+  }
+});
+
+SomeObserver.observe(document, { childList: true, subtree: true });
+
+const MainObserverr = new MutationObserver(() => {
+  if (!gamemodee && /kirka[.]io[/]game/.test(window.location.href) && !document.querySelector('.end-modal')) {
+    gamemodee = true;
+    SomeObserver.disconnect();
+    if (!animate) animateState('true');
+    if (TwitchResizeObserver) TwitchResizeObserver.disconnect();
+    if (QuestInterval) QuestInterval = clearTimeout(QuestInterval);
+
+    document.removeEventListener('keyup', keyup);
+  } else if (gamemodee && (!/kirka[.]io[/]game/.test(window.location.href) || document.querySelector('.end-modal'))) {
+    ShouldHiglight = false;
+    if (animate) {
+      animateState();
+    }
+    gamemodee = false;
+    gitclick = false;
+    discclick = false;
+    if (flagmodeset) {
+      flagmodeset = false;
+      frameFuncsRemove(hideFlagAdsFunc);
+      window.removeEventListener('mousedown', IsScoped);
+      window.removeEventListener('mouseup', IsNotScoped);
+    }
+    SomeObserver.observe(document, { childList: true, subtree: true });
+    claimedQuest = false;
+    Sessionids = [];
+    document.addEventListener('keyup', keyup);
+  }
+});
+
+window.addEventListener('load', () => {
+  if (document.querySelector('html body div#app')) {
+    MainObserverr.observe(document.querySelector('html body div#app'), {
+      childList: true,
+      attributes: true,
+      attributeOldValue: true,
+      characterData: true,
+      characterDataOldValue: true,
+    });
+  }
+});
+
 // new adblock
 Object.defineProperty(window, 'aiptag', {
-  // eslint-disable-next-line no-unused-vars
-  set(v) {},
-  // eslint-disable-next-line getter-return
+  set(_v) {},
   get() {},
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (customCss) {
-    let cssLinkElem = document.createElement('link');
+  if (customCss && !document.querySelector('#custom-css')) {
+    cssLinkElem = document.createElement('link');
+    cssLinkElem.id = 'custom-css';
     cssLinkElem.href = settings.get('cssLink');
     cssLinkElem.rel = 'stylesheet';
-    document.head.append(cssLinkElem);
+    cssLinkElem = document.head.appendChild(cssLinkElem);
   }
 
   gui.id = 'gui';
 
   let guistyles = `
 
-#gui {
-  background-color: rgba(24,25,28,0.95);
-  border: 5px solid #18191c;
-  border-top: 0px;
-  border-bottom: 0px;
-  box-shadow: 0 0 8px 2px #000;
-  position: absolute;
-  left: 5%;
-  top: 2.5%;
-  z-index: 300;
-  color: #fff;
-  padding: 6px;
-  font-family: "Titillium Web",serif;
-  line-height: 1.6;
-  border-radius: 3px;
-  max-height: 95%;
-  max-width: 90%;
-  min-width: 51%;
-  min-height: 45%;
-  display: flex;
-  flex-direction: column;
-  flex-wrap: nowrap;
-  place-content: stretch space-between;
-  align-items: stretch;
-  resize: both;
-  overflow: auto;
-  padding-top: .1rem;
-}
+  #gui {
+    border: 0!important;
+    background-color: rgba(24,25,28,0.95);
+    box-shadow: 0 0 8px 2px #000;
+    position: absolute;
+    left: 5%;
+    top: 2.5%;
+    z-index: 300;
+    color: #fff;
+    font-family: "Titillium Web",serif;
+    line-height: 1.6;
+    border-radius: 3px;
+    max-height: 95%;
+    max-width: 90%;
+    min-width: 21%;
+    min-height: 45%;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    place-content: stretch space-between;
+    align-items: stretch;
+    resize: both;
+    overflow: auto;
+    margin: auto;
+  }
 
-.heading {
-  min-height: 2.3rem;
-  max-height: 2.3rem;
-  height: 100%;
-  justify-content: center;
-  align-items: center;
-  margin: 0px -6px 8px;
-  font-size: 24px;
-  border-bottom: 2px solid #8c8c8c;
-  min-width: 100%;
-  overflow: hidden;
-  line-height: 1.7rem;
-  margin-bottom: -0px;
-}
+  .heading {
+    min-height: 2.3rem;
+    max-height: 3.3rem;
+    justify-content: center;
+    align-items: center;
+    margin: 0px 0px 0px 0;
+    font-size: 24px;
+    border-bottom: 2px solid #8c8c8c;
+    min-width: 100%;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    padding: 0.1rem 0;
+  }
 
 .footer, .heading {
   background-color: #18191c;
@@ -1288,19 +835,15 @@ document.addEventListener('DOMContentLoaded', () => {
   align-content: flex-start;
   align-items: flex-start;
   flex-direction: column;
+  padding: 0 0.5rem;
 }
 
 .module {
   overflow-wrap: anywhere;
-}
-
-.colordemo {
-  user-select: none;
-  cursor: default;
-  pointer-events: none;
-  width: 1.75rem;
-  border-radius: 0.2rem;
-  margin-right: .5rem;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  place-content: center;
 }
 
 .footer {
@@ -1314,13 +857,26 @@ document.addEventListener('DOMContentLoaded', () => {
   line-height: 1.6rem;
 }
 
+.footer {
+  min-height: 2.3rem;
+  max-height: 3.3rem;
+  justify-content: center;
+  align-items: center;
+  margin: 0px 0px 0px 0;
+  min-width: 100%;
+  overflow: hidden;
+  display: flex;
+  padding: 0.1rem 0;
+  font-size: 11px;
+  border-top: 2px solid #8c8c8c;
+}
+
 .autojoin-hr {
-  width: 20%;
+  width: 100%;
   min-width: 10%;
   height: 1px;
   background-color: #8c8c8c;
-  margin: .5rem 0;
-  margin-right: .3rem;
+  margin: .5rem .3rem .5rem 0;
   pointer-events: none;
 }
 
@@ -1334,11 +890,89 @@ input:disabled {
   background-color: rgb(0, 0, 0, .1)
 }
 
+div.tabs>div.mods.tabmods>div>label.custom-checkbox>input {
+  position: absolute;
+  z-index: -1;
+  opacity: 0;
+}
+
+div.tabs>div.mods.tabmods>div>label.custom-checkbox>span{
+  display: inline-flex;
+  align-items: center;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+div.tabs>div.mods.tabmods>div>label.custom-checkbox>input:checked+span:before {
+  background-color: #ffb914;
+  border-color: #b6830e;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='hsl(42, 85%, 100%)' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3e%3c/svg%3e");
+}
+
+div.tabs>div.mods.tabmods>div>label.custom-checkbox>span:before {
+  content: "";
+  display: inline-block;
+  width: 1.3em;
+  height: 1.3em;
+  flex-shrink: 0;
+  flex-grow: 0;
+  border: .15rem solid #3c4b68;
+  border-radius: .25em;
+  margin-right: .5em;
+  background-repeat: no-repeat;
+  background-position: 50%;
+  background-size: 50% 50%;
+  background-color: #2f3957;
+}
+
+div#live-streams-menu>div.list{
+  max-height:95vh!important;
+  overflow:hidden hidden!important;
+}
+
+  input.gui-color-input {
+    -webkit-appearance: none !important;
+    border: none !important;
+    width: 3vw !important;
+    height: 3vh !important;
+    padding: 0 !important;
+    background-color: #00000000 !important;
+    cursor: pointer !important;
+    --b-radius: 0.4rem;
+    border-radius: .4rem !important;
+  }
+  
+  input.gui-color-input::-webkit-color-swatch-wrapper {
+    padding: 0 !important;
+    border-radius: calc(var(--b-radius) - 0.1rem)!important;
+  }
+  
+  input.gui-color-input::-webkit-color-swatch {
+    border: none !important;
+    border-radius: calc(var(--b-radius) - 0.2rem)!important;
+    box-shadow: rgba(0,0,0,0.5) 2px 1px 6px!important;
+  }
+
+  div.module-wrapper div.module input[type=checkbox] {
+    margin: auto;
+  }
+
+  div.module label {
+    margin: 0 0.5rem;
+  }
+  html>body>div#app>div#view{user-select:text!important;}
+
+  .loading-scene,
+  #qc-cmp2-container,
+  #cmpPersistentLink {
+    display:none!important;
+  }
 `;
 
-  if (permCrosshair) guistyles += 'img#crosshair-static{opacity:1!important;}';
-  // prettier-ignore
-  gui.innerHTML +=`<style id="BKC-Styles">@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300&display=swap');` + guistyles + `</style>
+  gui.innerHTML = `
+    <style id="BKC-permcrosshair"></style><style id="BKC-Styles">@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300&display=swap');${guistyles}</style>
 
   <div id="infi" class="heading">Client Settings</div>
       <div class="module-wrapper">
@@ -1353,22 +987,7 @@ input:disabled {
                <input type="text" id="cssLink" placeholder="Paste CSS Link Here">
            </div>
        
-           <div class="module">
-               <input type="checkbox" id="hideweap" name="hideweap">
-               <label for="hideweap">Hide Weapon ADS</label>
-           </div>
-       
-           <div class="module">
-               <input type="checkbox" id="arms" name="arms">
-               <label for="arms">Hide Arms</label>
-           </div>
-       
-           <div class="module">
-               <input type="checkbox" id="leftHanded" name="leftHanded">
-               <label for="leftHanded">Left Handed</label>
-           </div>
-       
-           <div class="module">
+          <div class="module">
                <input type="checkbox" id="hideflag" name="hideflag">
                <label for="hideflag">Hide Flag ADS</label>
            </div>
@@ -1381,133 +1000,19 @@ input:disabled {
            </div>
        
            <div class="module">
-               <label for="EnemyhighlightColor">Custom Enemy Highlight Color: </label>
-               <input type="text" title="Enter a Valid Color Value &#013; examples: &#013; Red &#013; Yellow &#013; DarkGoldenRod &#013; #000000 &#013; rgb(255,04,65)" id="EnemyhighlightColorFilterField" placeholder="Red">
-               <input type="text" class="colordemo" id="EnemyhighlightColorCard">
-               </div>
-
-           <div class="module" style="margin: .25rem 0;">
-               <label for="TeamhighlightColor">Custom Teammate Highlight Color: </label>
-               <input type="text" title="Enter a Valid Color Value &#013; examples: &#013; Red &#013; Yellow &#013; DarkGoldenRod &#013; #000000 &#013; rgb(255,04,65)" id="TeamhighlightColorFilterField" placeholder="Blue">
-               <input type="text" class="colordemo" id="TeamhighlightColorCard">
-               </div>
+           <label for="customColor">Custom Enemy Highlight Color:  </label>
+           <input type="color" id="EnemyhighlightColor" class="gui-color-input">
+           </div>
 
            <div class="module autojoin autojoin-hr"></div>
 
            <div class="module">
-               <input type="checkbox" id="wireframeWeapons" name="wireframeWeapons">
-               <label for="wireframeWeapons">Wireframe Weapons</label>
+           <label for="customColor">Custom Team Highlight Color:  </label>
+           <input type="color" id="TeamhighlightColor" class="gui-color-input">
            </div>
-       
-           <div class="module">
-               <label for="wireframeWeapClr">Custom Wireframe Weapon Color: </label>
-               <input type="text" title="Enter a Valid Color Value &#013; examples: &#013; Red &#013; Yellow &#013; DarkGoldenRod &#013; #000000 &#013; rgb(255,04,65)" id="wireframeWeapClrFilterField" placeholder="Red">
-               <input type="text" class="colordemo" id="wireframeWeapClrCard">
-               </div>
 
            <div class="module autojoin autojoin-hr"></div>
-
-           <div class="module">
-               <input type="checkbox" id="wireframeArms" name="wireframeArms">
-               <label for="wireframeArms">Wireframe Arms</label>
-           </div>
-       
-           <div class="module">
-               <label for="wireframeArmsClr">Custom Wireframe Arms Color: </label>
-               <input type="text" title="Enter a Valid Color Value &#013; examples: &#013; Red &#013; Yellow &#013; DarkGoldenRod &#013; #000000 &#013; rgb(255,04,65)" id="wireframeArmsClrFilterField" placeholder="Red">
-               <input type="text" class="colordemo" id="wireframeArmsClrCard">
-               </div>
-
-           <div class="module autojoin autojoin-hr"></div>
-
-           <div class="module">
-               <input type="checkbox" id="rainbow" name="rainbow">
-               <label for="rainbow">Rainbow Colors</label>
-           </div>
-       
-           <div class="module">
-               Inspect Key
-               <button id="inspBindButton" style="width: 100px">click to bind</button>
-           </div>
-       
-           <div class="module">
-               <input type="checkbox" id="adspower" name="adspower">
-               <label for="adspower">0 ADS Power</label>
-           </div>
-       
-           <div class="module">
-               <input type="checkbox" id="autoJoin" name="autoJoin">
-               <label for="autoJoin">Auto-Joiner (Key F7)</label>
-           </div>
-       
-           <div class="module autojoin autojoin-hr"></div>
-       
-           <div class="module autojoin">
-               <input type="checkbox" id="euLobbies" name="euLobbies">
-               <label for="euLobbies">EU Lobbies</label>
-           </div>
-       
-           <div class="module autojoin">
-               <input type="checkbox" id="naLobbies" name="naLobbies">
-               <label for="naLobbies">NA Lobbies</label>
-           </div>
-       
-           <div class="module autojoin">
-               <input type="checkbox" id="asiaLobbies" name="asiaLobbies">
-               <label for="asiaLobbies">ASIA Lobbies</label>
-           </div>
-       
-           <div class="module autojoin">
-               <input type="checkbox" id="ffaLobbies" name="ffaLobbies">
-               <label for="ffaLobbies">FFA Lobbies</label>
-           </div>
-       
-           <div class="module autojoin">
-               <input type="checkbox" id="tdmLobbies" name="tdmLobbies">
-               <label for="tdmLobbies">TDM Lobbies</label>
-           </div>
-       
-           <div class="module autojoin">
-               <input type="checkbox" id="parkourLobbies" name="parkourLobbies">
-               <label for="parkourLobbies">PARKOUR Lobbies</label>
-           </div>
-       
-           <div class="module autojoin">
-               <label for="preferredFilter">Prefered Filter:</label>
-               <select id="preferredFilter" name="preferredFilter">
-                   <option value="Time">Time</option>
-                   <option value="Players">Players</option>
-               </select>
-           </div>
-       
-           <div class="module autojoin">
-               <input type="range" id="minPlayers" name="minPlayers" min="0" max="8" value="0" step="1">
-               <label id="minPlayersLab" for="minPlayers">min. Players</label>
-           </div>
-       
-           <div class="module autojoin">
-               <input type="range" id="maxPlayers" name="maxPlayers" min="0" max="8" value="0" step="1">
-               <label id="maxPlayersLab" for="maxPlayers">max. Players</label>
-           </div>
-       
-           <div class="module autojoin">
-               <input type="range" id="minTimeLeft" name="minTimeLeft" min="0" max="8" value="0" step="1">
-               <label id="minTimeLeftLab" for="minTimeLeft">min. Time Left</label>
-           </div>
-       
-           <div class="module autojoin">
-               <input type="checkbox" id="filterMaps" name="filterMaps">
-               <label for="filterMaps">Map Filter: </label>
-               <input type="text" id="mapFilterField" placeholder="Map1, Map2, Map3, etc.">
-           </div>
-       
-           <div class="module autojoin">
-               <input type="checkbox" id="customGames" name="customGames">
-               <label for="customGames">Custom Games </label>
-           </div>
-       
-           <div class="module autojoin autojoin-hr"></div>
-       
+    
            <div class="module">
                <input type="checkbox" id="fpsCap" name="fpsCap">
                <label for="fpsCap">Cap FPS</label>
@@ -1519,75 +1024,22 @@ input:disabled {
            </div>
        
            <div class="module">
-               Menu Toggle Key
-               <button id="menuBindButton" style="width: 100px">click to bind</button>
-           </div>
-       
-           <div class="module">
-               <input type="range" id="volume" name="volume" min="0" max="2" value="1" step="0.1">
-               <label id="volumeLab" for="volume">Volume</label>
-           </div>
-       
-           <div class="module">
-               <input type="checkbox" id="noKillSound" name="noKillSound">
-               <label for="noKillSound">Disable Killsounds (applies after reload)</label>
-           </div>
-
-           <div class="module">
-               <input type="checkbox" id="marketNames" name="marketNames">
-               <label for="marketNames">Market Names</label>
-           </div>
-               <div class="module">
-               <input type="checkbox" id="customPrice" name="customPrice">
-               <label for="customPrice">Custom List Price</label>
-           </div>
-
-           <div class="module">
-           <input type="checkbox" id="ShowBadges" name="ShowBadges">
-           <label title="Show Custom Client Badges" for="ShowBadges">Show Custom Badges</label>
-           </div>
-
-           <div class="module">
            <input type="checkbox" id="ShowTwitch" name="ShowTwitch">
            <label title="Show Live Kirka Twitch Streams &#013; Click And Drag The Titlebar To Move The Menu  &#013; Click And Drag The Bottom Right Corner To Resize The Menu" for="ShowTwitch">Show Live Kirka Twitch Streams Menu</label>
            </div>
 
-           <div class="module">
-           <input type="checkbox" id="DRP" name="DRP">
-           <label title="Enable Discord Rich Presence" for="DRP">Enable Discord Rich Presence</label>
-           </div>
+           <div class="module autojoin autojoin-hr"></div>
 
       </div><div class="footer">Toggle With "PageUp" Key</div>
-
 `;
 
   gui.onclick = (e) => {
-
-    if (e.target.id === "DRP") {
-      DiscordPresence = e.target.checked;
-      settings.set("DiscordPresence", DiscordPresence);
-      ipcRenderer.send('DiscordPresence',DiscordPresence);
-    }
-
     if (e.target.id === 'ShowTwitch') {
       ShowTwitch = e.target.checked;
       settings.set('ShowTwitch', ShowTwitch);
-      if (document.querySelector('#live-streams-menu')) {
-        let style = document.querySelector('#live-streams-menu').getAttribute('style');
-        if (ShowTwitch) {
-          style = style.replace(/display.*none/g, 'display:block');
-        } else {
-          style = style.replace(/display.*block/g, 'display:none');
-        }
-        document.querySelector('#live-streams-menu').setAttribute('style', style);
-      }
-    }
-
-    if (e.target.id === 'ShowBadges') {
-      ShowBadges = e.target.checked;
-      settings.set('ShowBadges', ShowBadges);
-      if (ShowBadges) {
-        ShowBadgesFunc();
+      let stremz = document.querySelector('#live-streams-menu');
+      if (stremz) {
+        stremz.style = `position:absolute;resize:both;overflow: auto hidden!important;opacity:1!important;z-index:3!important;min-height:5vh!important;pointer-events:all!important;top:${TwitchTop};left:${TwitchLeft};width:${TwitchWidth};height:${TwitchHeight};${ShowTwitch ? 'display:block!important;' : 'display:none!important;'}`;
       }
     }
 
@@ -1597,89 +1049,25 @@ input:disabled {
       permCrosshairToggleFunc();
     }
 
-    if (e.target.id === 'hideweap') {
-      hideWeaponsAds = e.target.checked;
-      settings.set('hideWeaponsAds', hideWeaponsAds);
-
-      if (hideWeaponsAds) {
-        try {
-          clearTimeout(clearhideWeaponsAdsFunc);
-        } catch {}
-
-        if (!frameFuncs.includes(hideWeaponsAdsFunc)) {
-          frameFuncs.push(hideWeaponsAdsFunc);
-        }
-        if (!frameFuncs.includes(InitweaponFunc)) {
-          frameFuncs.unshift(InitweaponFunc);
-        }
-      } else if (!hideArms && !hideWeaponsAds) {
-          clearhideArmsFunc = setTimeout(() => {
-            frameFuncsRemove(hideWeaponsAdsFunc);
-            CleanweaponFunc();
-          }, 100);
-        }
-      
-    }
-
-    if (e.target.id === 'arms') {
-      hideArms = e.target.checked;
-      settings.set('hideArms', hideArms);
-      if (hideArms) {
-        arms = false;
-        try {
-          clearTimeout(clearhideArmsFunc);
-        } catch {}
-
-        if (!frameFuncs.includes(hideWeaponsAdsFunc)) {
-          frameFuncs.push(hideWeaponsAdsFunc);
-        }
-        if (!frameFuncs.includes(InitweaponFunc)) {
-          frameFuncs.unshift(InitweaponFunc);
-        }
-      } else {
-        arms = true;
-        if (!hideArms && !hideWeaponsAds){
-        clearhideArmsFunc = setTimeout(() => {
-          frameFuncsRemove(hideWeaponsAdsFunc);
-          CleanweaponFunc();
-        }, 100);
-      }
-      }
-    }
-
-    if (e.target.id === 'leftHanded') {
-      leftHanded = e.target.checked;
-      settings.set('leftHanded', leftHanded);
-      if (leftHanded) {
-        try {
-          clearTimeout(clearoverlayModelFunc);
-        } catch {}
-        if (!frameFuncs.includes(overlayModelFunc)) {
-          frameFuncs.push(overlayModelFunc);
-        }
-      } else {
-        clearoverlayModelFunc = setTimeout(() => {
-          frameFuncsRemove(overlayModelFunc);
-          CleanweaponFunc();
-        }, 100);
-      }
-    }
-
     if (e.target.id === 'hideflag') {
       hideFlagAds = e.target.checked;
       settings.set('hideFlagAds', hideFlagAds);
+
       if (hideFlagAds) {
-        try {
-          clearTimeout(clearhideFlagAdsFunc);
-        } catch {}
-        if (!frameFuncs.includes(hideFlagAdsFunc)) {
-          frameFuncs.push(hideFlagAdsFunc);
+        if (flagmodeset) {
+          if (!frameFuncs.includes(hideFlagAdsFunc)) {
+            frameFuncs.push(hideFlagAdsFunc);
+            window.addEventListener('mousedown', IsScoped);
+            window.addEventListener('mouseup', IsNotScoped);
+          }
         }
       } else {
-        clearhideFlagAdsFunc = setTimeout(() => {
-          frameFuncsRemove(hideFlagAdsFunc);
-          CleanweaponFunc();
-        }, 100);
+        frameFuncsRemove(hideFlagAdsFunc);
+        if (flagMaterial) {
+          flagMaterial.visible = true;
+        }
+        window.removeEventListener('mousedown', IsScoped);
+        window.removeEventListener('mouseup', IsNotScoped);
       }
     }
 
@@ -1687,633 +1075,148 @@ input:disabled {
       playerHighLight = e.target.checked;
       settings.set('playerHighLight', playerHighLight);
       if (playerHighLight) {
-        try {
-          clearTimeout(clearplayerHighLightFunc);
-        } catch {}
         if (!frameFuncs.includes(playerHighLightFunc)) {
           frameFuncs.push(playerHighLightFunc);
         }
       } else {
-        clearplayerHighLightFunc = setTimeout(() => {
-          frameFuncsRemove(playerHighLightFunc);
-        }, 100);
+        frameFuncsRemove(playerHighLightFunc);
       }
-    }
-
-    if (e.target.id === 'wireframeWeapons') {
-      wireframeWeapons = e.target.checked;
-      settings.set('wireframeWeapons', wireframeWeapons);
-      if (wireframeWeapons) {
-        try {
-          clearTimeout(clearwireframeWeaponsFunc);
-        } catch {}
-        if (!frameFuncs.includes(wireframeWeaponsFunc)) {
-          frameFuncs.push(wireframeWeaponsFunc);
-        }
-
-        if (!frameFuncs.includes(InitweaponFunc)) {
-          frameFuncs.unshift(InitweaponFunc);
-        }
-      } else {
-        clearwireframeWeaponsFunc = setTimeout(() => {
-          frameFuncsRemove(wireframeWeaponsFunc);
-          CleanweaponFunc();
-        }, 100);
-      }
-    }
-
-    if (e.target.id === 'wireframeArms') {
-      wireframeArms = e.target.checked;
-      settings.set('wireframeArms', wireframeArms);
-      if (wireframeArms) {
-        try {
-          clearTimeout(clearwireframeArmsFunc);
-        } catch {}
-        if (!frameFuncs.includes(wireframeArmsFunc)) {
-          frameFuncs.push(wireframeArmsFunc);
-        }
-        if (!frameFuncs.includes(InitweaponFunc)) {
-          frameFuncs.unshift(InitweaponFunc);
-        }
-      } else {
-        clearwireframeArmsFunc = setTimeout(() => {
-          frameFuncsRemove(wireframeArmsFunc);
-          CleanweaponFunc();
-        }, 100);
-      }
-    }
-
-    if (e.target.id === 'rainbow') {
-      rainbow = e.target.checked;
-      settings.set('rainbow', rainbow);
-      if (rainbow) {
-        if (!frameFuncs.includes(InitweaponFunc)) {
-          frameFuncs.unshift(InitweaponFunc);
-        }
-        rainbowFunc();
-      }
-    }
-
-    if (e.target.id === 'adspower') {
-      adspower = e.target.checked;
-      settings.set('adspower', adspower);
     }
 
     if (e.target.id === 'customCSS') {
       customCss = e.target.checked;
       settings.set('customCss', customCss);
-    }
 
-    if (e.target.id === 'autoJoin') {
-      autoJoin = e.target.checked;
-      settings.set('autoJoin', autoJoin);
-      for (let f of document.getElementsByClassName('autojoin')) {
-        // prettier-ignore
-        f.style.display = autoJoin ? 'block' : 'none';
+      if (customCss) {
+        if (cssField.value !== '') {
+          if (!cssLinkElem) {
+            cssLinkElem = document.createElement('link');
+            cssLinkElem.rel = 'stylesheet';
+            cssLinkElem.id = 'custom-css';
+          }
+          cssLinkElem.href = settings.get('cssLink');
+          cssLinkElem = document.head.appendChild(cssLinkElem);
+        }
+      } else if (document.head.querySelector('#custom-css')) {
+        cssLinkElem = document.head.removeChild(cssLinkElem);
       }
-    }
-
-    if (e.target.id === 'euLobbies') {
-      euLobbies = e.target.checked;
-      settings.set('euLobbies', euLobbies);
-    }
-
-    if (e.target.id === 'naLobbies') {
-      naLobbies = e.target.checked;
-      settings.set('naLobbies', naLobbies);
-    }
-
-    if (e.target.id === 'asiaLobbies') {
-      asiaLobbies = e.target.checked;
-      settings.set('asiaLobbies', asiaLobbies);
-    }
-
-    if (e.target.id === 'ffaLobbies') {
-      ffaLobbies = e.target.checked;
-      settings.set('ffaLobbies', ffaLobbies);
-    }
-
-    if (e.target.id === 'tdmLobbies') {
-      tdmLobbies = e.target.checked;
-      settings.set('tdmLobbies', tdmLobbies);
-    }
-
-    if (e.target.id === 'parkourLobbies') {
-      parkourLobbies = e.target.checked;
-      settings.set('parkourLobbies', parkourLobbies);
-    }
-
-    if (e.target.id === 'filterMaps') {
-      filterMaps = e.target.checked;
-      settings.set('filterMaps', filterMaps);
-    }
-
-    if (e.target.id === 'customGames') {
-      customGames = e.target.checked;
-      settings.set('customGames', customGames);
     }
 
     if (e.target.id === 'fpsCap') {
       fpsCap = e.target.checked;
       settings.set('fpsCap', fpsCap);
-      alert('setting will apply after client restart');
+      BKC.tip('setting will apply after client restart');
     }
 
     if (e.target.id === 'capture') {
       capture = e.target.checked;
       settings.set('capture', capture);
-      alert('setting will apply after client restart');
-    }
-
-    if (e.target.id === 'noKillSound') {
-      noKillSound = e.target.checked;
-      settings.set('noKillSound', noKillSound);
-    }
-
-    if (e.target.id === 'marketNames') {
-      marketNames = e.target.checked;
-      settings.set('marketNames', marketNames);
-    }
-
-    if (e.target.id === 'customPrice') {
-      customPrice = e.target.checked;
-      settings.set('customPrice', customPrice);
+      BKC.tip('setting will apply after client restart');
     }
   };
 
-  // gui.style.display = "none";
-  let guiWidth = typeof settings.get('guiWidth') == 'undefined' ? settingsSetGit('guiWidth','51%') : settings.get('guiWidth');
-  let guiHeight = typeof settings.get('guiHeight') == 'undefined' ? settingsSetGit('guiHeight','95%') : settings.get('guiHeight');
-  gui.style ='display:none;width:' + guiWidth + ';height:' + guiHeight + ';';
+  gui.style = `display:none;width:${guiWidth};height:${guiHeight};`;
 
-  document.body.appendChild(gui);
+  gui = document.body.appendChild(gui);
+
+  permcrossstyle = gui.querySelector('#BKC-permcrosshair');
+
+  if (permCrosshair) {
+    permcrossstyle.innerHTML = 'img#crosshair-static{opacity:1!important;}';
+  }
 
   if (settings.get('menuOpen') === undefined || settings.get('menuOpen')) {
     toggleGui();
   }
 
-  let SaveGuiSize = () => {
-    if (guiWidth !== gui.style.width) {
-      guiWidth = settingsSetGit('guiWidth', gui.style.width);
-    }
-    if (guiHeight !== gui.style.height) {
-      guiHeight = settingsSetGit('guiHeight', gui.style.height);
-    }
-  };
-
-  new ResizeObserver(SaveGuiSize).observe(gui);
-  document.getElementById('crosshair').checked = permCrosshair;
-  document.getElementById('customCSS').checked = customCss;
-  document.getElementById('hideweap').checked = hideWeaponsAds;
-  document.getElementById('arms').checked = hideArms;
-  document.getElementById('leftHanded').checked = leftHanded;
-  document.getElementById('hideflag').checked = hideFlagAds;
-  document.getElementById('highlight').checked = playerHighLight;
-  document.getElementById('wireframeWeapons').checked = wireframeWeapons;
-  document.getElementById('wireframeArms').checked = wireframeArms;
-  document.getElementById('rainbow').checked = rainbow;
-  document.getElementById('adspower').checked = adspower;
-  document.getElementById('ShowBadges').checked = ShowBadges;
-  document.getElementById('ShowTwitch').checked = ShowTwitch;
-  document.getElementById("DRP").checked = DiscordPresence;
-  maxPlayersLab = document.getElementById('maxPlayersLab');
-  minPlayersLab = document.getElementById('minPlayersLab');
-  minTimeLeftLab = document.getElementById('minTimeLeftLab');
-  maxPlayerSlider = document.getElementById('maxPlayers');
-  minPlayerSlider = document.getElementById('minPlayers');
-  minTimeLeftSlider = document.getElementById('minTimeLeft');
-  maxPlayerSlider.onchange = () => {
-    // eslint-disable-next-line radix
-    settings.set('maxPlayers', Number.parseInt(maxPlayerSlider.value));
-  };
-  minPlayerSlider.onchange = () => {
-    // eslint-disable-next-line radix
-    settings.set('minPlayers', Number.parseInt(minPlayerSlider.value));
-  };
-  minTimeLeftSlider.onchange = () => {
-    // eslint-disable-next-line radix
-    settings.set('minTimeLeft', Number.parseInt(minTimeLeftSlider.value));
-  };
-  minPlayerSlider.value = minPlayers;
-  maxPlayerSlider.value = maxPlayers;
-  minTimeLeftSlider.value = minTimeLeft;
-  if (autoJoin) {
-    for (let e of document.getElementsByClassName('autojoin')) {
-      // prettier-ignore
-      e.style.display = autoJoin ? 'block' : 'none';
-    }
-  }
-
-  document.getElementById('autoJoin').checked = autoJoin;
-  document.getElementById('euLobbies').checked = euLobbies;
-  document.getElementById('naLobbies').checked = naLobbies;
-  document.getElementById('asiaLobbies').checked = asiaLobbies;
-  document.getElementById('ffaLobbies').checked = ffaLobbies;
-  document.getElementById('tdmLobbies').checked = tdmLobbies;
-  document.getElementById('parkourLobbies').checked = parkourLobbies;
-  let inspectBindButton = document.getElementById('inspBindButton');
-  inspectBindButton.style.fontWeight = '800';
-  inspectBindButton.onclick = () => {
-    inspectListening = true;
-    inspectBindButton.innerText = 'Press a Key';
-  };
-
-  inspectBindButton.innerText = settings.get('inspectKey').toUpperCase();
   let cssField = document.getElementById('cssLink');
   if (settings.get('cssLink') === undefined) settings.set('cssLink', '');
   cssField.value = settings.get('cssLink');
 
   cssField.oninput = () => {
+    if (customCss && cssField.value !== '') {
+      if (!cssLinkElem) {
+        cssLinkElem = document.createElement('link');
+        cssLinkElem.rel = 'stylesheet';
+        cssLinkElem.id = 'custom-css';
+      }
+
+      cssLinkElem.href = cssField.value;
+      cssLinkElem = document.head.appendChild(cssLinkElem);
+    } else if (document.head.querySelector('#custom-css')) {
+      cssLinkElem = document.head.removeChild(cssLinkElem);
+    }
     settings.set('cssLink', cssField.value);
   };
 
-  let filter = document.getElementById('preferredFilter');
-  filter.value = preferredFilter;
-
-  filter.onchange = () => {
-    preferredFilter = filter.value;
-    settings.set('preferredFilter', filter.value);
-  };
-
-  document.getElementById('filterMaps').checked = filterMaps;
-
-  let mapField = document.getElementById('mapFilterField');
-
-  let mapString = '';
-  for (let name of maps) {
-    mapString += name + ', ';
-  }
-
-  mapField.value = mapString.slice(0, -2);
-
-  mapField.oninput = () => {
-    maps = mapField.value.replace(/ /g, '').toLowerCase().split(',');
-    settings.set('maps', maps);
-  };
-
-  function GetUsableColor(Element) {
-    let a = window
-      .getComputedStyle(Element)
-      .backgroundColor.replace(/rgb[(](.*)[)]/g, '$1')
-      .split(',');
-    if (a[0] !== a[1] && a[0] !== a[2] && a[1] !== a[0] && a[1] !== a[2]) {
-      return hexToRgb(hslToHex(hexToH(rgbToHex(Number(a[0]), Number(a[1]), Number(a[2]))), 100, 50));
-    }
+  function AnotherFunction(a) {
     return {
-      r: Number(a[0]),
-      g: Number(a[1]),
-      b: Number(a[2])
+      r: a.r * Number.MAX_SAFE_INTEGER,
+      g: a.g * Number.MAX_SAFE_INTEGER,
+      b: a.b * Number.MAX_SAFE_INTEGER,
     };
   }
 
-  function GetRgbColor(Element) {
-    let a = window.getComputedStyle(Element).backgroundColor.replace(/rgb[(](.*)[)]/g, '$1').split(',');
-    return {
-      r: Number(a[0]),
-      g: Number(a[1]),
-      b: Number(a[2])
-    };
-  }
-
-  // Enemy color
-  let EnemyhighlightColorString = document.getElementById('EnemyhighlightColorFilterField');
-  let EnemyhighlightColorCard = document.getElementById('EnemyhighlightColorCard');
-  // prettier-ignore
-  colorEnemy = typeof settings.get('EnemyhighlightColor') == 'undefined' ? (fullBlack ? settingsSetGit('EnemyhighlightColor','Black') : settingsSetGit('EnemyhighlightColor','Red')) : settings.get('EnemyhighlightColor');
-  EnemyhighlightColorString.value = colorEnemy;
-  EnemyhighlightColorCard.style = 'background-color:' + colorEnemy + ';';
-  colorEnemy = GetUsableColor(EnemyhighlightColorCard);
-
-  if (EnemyhighlightColorString.value === 'Red') {
-    EnemyhighlightColorString.value = '';
-  }
-
-  EnemyhighlightColorString.oninput = () => {
-    if (EnemyhighlightColorString.value.length === 0) {
-      EnemyhighlightColorCard.style.backgroundColor = 'Red';
-      settings.set('EnemyhighlightColor', 'Red');
-    } else {
-      EnemyhighlightColorCard.style.backgroundColor = EnemyhighlightColorString.value;
-      settings.set('EnemyhighlightColor', EnemyhighlightColorString.value);
+  function GetUsableColor(a) {
+    if (a.r !== a.g && a.r !== a.b && a.g !== a.r && a.g !== a.b) {
+      return AnotherFunction(hexToRgb(hslToHex(hexToH(rgbToHex(a.r, a.g, a.b)), 100, 50)));
     }
-    colorEnemy = GetUsableColor(EnemyhighlightColorCard);
-
-    /*
-  setTimeout(() => {
-    BKC.debug(colorEnemy);
-  },1000);
-  */
-  };
-
-  // Team color
-  let TeamhighlightColorString = document.getElementById('TeamhighlightColorFilterField');
-  let TeamhighlightColorCard = document.getElementById('TeamhighlightColorCard');
-  // prettier-ignore
-  colorTeam = typeof settings.get('TeamhighlightColor') == 'undefined' ? settingsSetGit('TeamhighlightColor','Blue') : settings.get('TeamhighlightColor');
-  TeamhighlightColorString.value = colorTeam;
-  TeamhighlightColorCard.style = 'background-color:' + colorTeam + ';';
-  colorTeam = GetUsableColor(TeamhighlightColorCard);
-
-  if (TeamhighlightColorString.value === 'Blue') {
-    TeamhighlightColorString.value = '';
+    return AnotherFunction(a);
   }
 
-  TeamhighlightColorString.oninput = () => {
-    if (TeamhighlightColorString.value.length === 0) {
-      TeamhighlightColorCard.style.backgroundColor = 'Blue';
-      settings.set('TeamhighlightColor', 'Blue');
-    } else {
-      TeamhighlightColorCard.style.backgroundColor = TeamhighlightColorString.value;
-      settings.set('TeamhighlightColor', TeamhighlightColorString.value);
-    }
-    colorTeam = GetUsableColor(TeamhighlightColorCard);
+  customEnemyColorElem = document.getElementById('EnemyhighlightColor');
+  customTeamColorElem = document.getElementById('TeamhighlightColor');
 
-    /*
-setTimeout(() => {
-  BKC.debug(colorTeam);
-},1000);
-*/
+  customEnemyColorElem.value = EnemyhighlightColor;
+  customTeamColorElem.value = TeamhighlightColor;
+
+  colorEnemy = GetUsableColor(hexToRgb(customEnemyColorElem.value));
+  colorTeam = GetUsableColor(hexToRgb(customTeamColorElem.value));
+
+  customEnemyColorElem.oninput = () => {
+    settings.set('EnemyhighlightColor', customEnemyColorElem.value);
+    colorEnemy = GetUsableColor(hexToRgb(customEnemyColorElem.value));
   };
 
-// Custom WireFrame Arms Color
-
-WireFrameArmsColor = typeof settings.get("WireFrameArmsColor") == "undefined" ? settingsSetGit("WireFrameArmsColor", 'Red') : settings.get("WireFrameArmsColor");
-let WireFrameArmsClrString = document.getElementById('wireframeArmsClrFilterField');
-let WireFrameArmsClrCard = document.getElementById('wireframeArmsClrCard');
-WireFrameArmsClrString.value = WireFrameArmsColor;
-WireFrameArmsClrCard.style = 'background-color:' + WireFrameArmsColor + ';';
-WireFrameArmsColor = GetRgbColor(WireFrameArmsClrCard);
-
-if (WireFrameArmsClrString.value === 'Red') {
-  WireFrameArmsClrString.value = '';
-}
-
-WireFrameArmsClrString.oninput = () => {
-  if (WireFrameArmsClrString.value.length === 0) {
-    WireFrameArmsClrCard.style.backgroundColor = 'Red';
-    settings.set('WireFrameArmsColor', 'Red');
-  } else {
-    WireFrameArmsClrCard.style.backgroundColor = WireFrameArmsClrString.value;
-    settings.set('WireFrameArmsColor', WireFrameArmsClrString.value);
-  }
-  WireFrameArmsColor = GetRgbColor(WireFrameArmsClrCard);
-
-  // setTimeout(() => {BKC.debug(WireFrameArmsColor);},1000);
-
-};
-
-// Custom WireFrame Weapons Color
-
-WireFrameWeapColor = typeof settings.get("WireFrameWeapColor") == "undefined" ? settingsSetGit("WireFrameWeapColor", 'Red') : settings.get("WireFrameWeapColor");
-let WireFrameWeapClrString = document.getElementById('wireframeWeapClrFilterField');
-let WireFrameWeapClrCard = document.getElementById('wireframeWeapClrCard');
-WireFrameWeapClrString.value = WireFrameWeapColor;
-WireFrameWeapClrCard.style = 'background-color:' + WireFrameWeapColor + ';';
-WireFrameWeapColor = GetRgbColor(WireFrameWeapClrCard);
-
-if (WireFrameWeapClrString.value === 'Red') {
-  WireFrameWeapClrString.value = '';
-}
-
-WireFrameWeapClrString.oninput = () => {
-  if (WireFrameWeapClrString.value.length === 0) {
-    WireFrameWeapClrCard.style.backgroundColor = 'Red';
-    settings.set('WireFrameWeapColor', 'Red');
-  } else {
-    WireFrameWeapClrCard.style.backgroundColor = WireFrameWeapClrString.value;
-    settings.set('WireFrameWeapColor', WireFrameWeapClrString.value);
-  }
-  WireFrameWeapColor = GetRgbColor(WireFrameWeapClrCard);
-  
-  // setTimeout(() => {BKC.debug(WireFrameWeapColor);},1000);
-
-};
-
-  document.getElementById('customGames').checked = customGames;
-  document.getElementById('fpsCap').checked = fpsCap;
-  document.getElementById('capture').checked = capture;
-  document.getElementById('marketNames').checked = marketNames;
-  document.getElementById('customPrice').checked = customPrice;
-
-  let menuBindButton = document.getElementById('menuBindButton');
-  menuBindButton.style.fontWeight = '800';
-  menuBindButton.onclick = () => {
-    menuListening = true;
-    menuBindButton.innerText = 'Press a Key';
+  customTeamColorElem.oninput = () => {
+    settings.set('TeamhighlightColor', customTeamColorElem.value);
+    colorTeam = GetUsableColor(hexToRgb(customTeamColorElem.value));
   };
 
-  // prettier-ignore
-  menuBindButton.innerText = settings.get("menuKey") !== undefined ? settings.get("menuKey").toUpperCase() : "click to bind";
-
-  document.getElementById('noKillSound').checked = noKillSound;
-
-  volumeLab = document.getElementById('volumeLab');
-  volumeSlider = document.getElementById('volume');
-
-  volumeSlider.onchange = () => {
-    settings.set('volume', Number.parseFloat(volumeSlider.value));
-    for (let i = 0; i < gains.length; i++) {
-      const cur = gains[i];
-      if (cur) cur.value = volume;
-    }
-  };
-
-  volumeSlider.value = volume;
-
-  // adds search bar
-  if (document.querySelector('#view > div > div > div.top-bar > div.left') && !document.querySelector('#searchfrnds')) {
+  let t = document.querySelector('#view > div > div > div.top-bar > div.left');
+  if (t && !document.querySelector('#searchfrnds')) {
     let fbtn = document.createElement('input');
     fbtn.placeholder = 'Search...';
     fbtn.className = 'input';
     fbtn.id = 'searchfrnds';
-    fbtn.style.width = 'calc(100%)';
+    fbtn.style.width = '100%';
     fbtn.style.margin = 'auto 0.3rem';
     fbtn.style.cursor = 'text';
-    fbtn.innerHTML = '<style>html>body>div#app>div#view{user-select:text!important;}</style>';
-    insertAfter(fbtn, document.querySelector('#view > div > div > div.top-bar > div.left'));
+    t.parentNode.insertBefore(fbtn, t.nextSibling);
     fbtn.addEventListener('keypress', (evt) => {
       if (evt.key === 'Enter') {
-        window.find(document.querySelector('#searchfrnds').value, false, false, true, false, true);
+        window.find(evt.target.value, false, false, true, false, true);
         scrollIntoView(window.getSelection());
       }
     });
   }
+
+  document.getElementById('crosshair').checked = permCrosshair;
+  document.getElementById('hideflag').checked = hideFlagAds;
+  document.getElementById('highlight').checked = playerHighLight;
+  document.getElementById('customCSS').checked = customCss;
+  document.getElementById('ShowTwitch').checked = ShowTwitch;
+  document.getElementById('fpsCap').checked = fpsCap;
+  document.getElementById('capture').checked = capture;
 });
 
-document.addEventListener('mousedown', (e) => {
-  inspectingoverride = true;
-  inspecting = false;
-  if (e.button === 2) scoped = true;
-});
-
-document.addEventListener('mouseup', (e) => {
-  inspectingoverride = false;
-  if (e.button === 2) scoped = false;
-  if (e.button === 3 || e.button === 4) e.preventDefault();
-});
-
-let inspectedWeapon;
-let clearInspectFunc;
-
-gui.addEventListener('keydown', (e) => {
-  if (inspectListening) {
-    settings.set('inspectKey', e.key);
-    document.getElementById('inspBindButton').innerText = e.key.toUpperCase();
-    inspectListening = false;
-  }
-  if (menuListening) {
-    settings.set('menuKey', e.key);
-    document.getElementById('menuBindButton').innerText = e.key.toUpperCase();
-    menuListening = false;
+function keyup(e) {
+  if (e.key === 'PageUp') {
     toggleGui();
   }
-});
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === settings.get('inspectKey').toLowerCase() && !inspectingoverride) {
-    try {
-      clearTimeout(clearInspect);
-    } catch {}
-    try {
-      clearTimeout(clearInspectFunc);
-    } catch {}
-    inspecting = true;
-    if (!frameFuncs.includes(inspectingFunc)) {
-      frameFuncs.push(inspectingFunc);
-    }
-    if (!frameFuncs.includes(InitweaponFunc)) {
-          frameFuncs.unshift(InitweaponFunc);
-        }
-    // prettier-ignore
-  } else if (e.key.toLowerCase() === settings.get('menuKey')?.toLowerCase() || e.key === 'PageUp') {
-    toggleGui();
-  }
-});
-
-document.addEventListener('keyup', (e) => {
-  if (e.key === settings.get('inspectKey').toLowerCase()) {
-    try {
-      clearTimeout(clearInspect);
-    } catch {}
-    try {
-      clearTimeout(clearInspectFunc);
-    } catch {}
-    clearInspect = setTimeout(() => {
-      inspecting = false;
-      inspectingoverride = false;
-      clearInspectFunc = setTimeout(() => {
-        frameFuncsRemove(inspectingFunc);
-        CleanweaponFunc();
-      }, 100);
-    }, 3000);
-  }
-});
-
-if (discord) {
-  // eslint-disable-next-line no-global-assign
-  XMLHttpRequest = class extends XMLHttpRequest {
-    get response() {
-      if (this.marketReq && marketNames) {
-        this.marketReq = false;
-
-        let newResponse = [];
-
-        for (const listing of this.response) {
-          listing.market = listing.market + ' | ' + listing.userId;
-          newResponse.push(listing);
-        }
-
-        return newResponse;
-      }
-
-      return super.response;
-    }
-
-    open(method, url) {
-      this.url = url;
-      if (url === 'https://api.kirka.io/api/market') this.marketReq = true;
-      // eslint-disable-next-line prefer-rest-params
-      return super.open(...arguments);
-    }
-
-    async send(data) {
-      if (this.url === 'https://api.kirka.io/api/inventory/market' && customPrice) {
-        let json = JSON.parse(data);
-        if (json.price > 0) {
-          let result = await ipcRenderer.sendSync('pricePrompt');
-
-          if (result == null) {
-            json.price = -1;
-          } else if (result !== '') {
-            // eslint-disable-next-line no-shadow, radix
-            let customPrice = Number.parseInt(result);
-            // eslint-disable-next-line no-restricted-globals
-            if (!isNaN(customPrice)) {
-              json.price = customPrice;
-            }
-          }
-
-          data = JSON.stringify(json);
-        }
-      }
-
-      return super.send(data);
-    }
-  };
-
-  let updating = false;
-
-  // eslint-disable-next-line no-inner-declarations
-  async function marketUsers() {
-    const countElements = document.getElementsByClassName('count');
-    const itemElements = document.getElementsByClassName('item-name');
-
-    let count = 0;
-
-    for (let i = 0; i < countElements.length; i++) {
-      let sellerId = countElements[i].innerText.split(' | ')[1];
-
-      itemElements[i].innerText = itemElements[i].innerText.split(' - ')[0];
-
-      fetch('https://api.kirka.io/api/user/getProfile', {
-        headers: {
-          accept: 'application/json, text/plain, */*',
-          'content-type': 'application/json;charset=UTF-8',
-          Referer: 'https://kirka.io/',
-          'Referrer-Policy': 'strict-origin-when-cross-origin',
-        },
-        body: `{"id":"${sellerId}"}`,
-        method: 'POST',
-      }) // eslint-disable-next-line no-shadow
-        .then((r) => r.json())
-        .then((seller) => {
-          count++;
-          if (count >= countElements.length) updating = false;
-          countElements[i].innerHTML = countElements[i].innerHTML.split(' | ')[0];
-          itemElements[i].innerText += ' - ' + seller.name + '#' + seller.shortId;
-        });
-    }
-  }
-
-  document.addEventListener('DOMContentLoaded', () => {
-    new MutationObserver(() => {
-      if (window.location.href === 'https://kirka.io/hub/market') {
-        if (document.getElementsByClassName('subjects').length === 2) {
-          // prettier-ignore
-          if (!document.getElementsByClassName("item-name")[0]?.innerText.includes(" - ")) {
-                        if (!updating && marketNames) {
-                            marketUsers();
-                            updating = true;
-                        }
-                    }
-        }
-      }
-    }).observe(document.querySelector('#view'), {
-      subtree: true,
-      childList: true,
-    });
-  });
 }
+
+document.addEventListener('keyup', keyup);
 
 animateState = (Newstate = 'false') => {
   if (Newstate === 'true') {
@@ -2333,217 +1236,36 @@ animateState = (Newstate = 'false') => {
   }
 };
 
-// eslint-disable-next-line no-global-assign
-XMLHttpRequest = class extends XMLHttpRequest {
-  get responseText() {
-    if (this.invReq) {
-      this.invReq = false;
-      let entries = JSON.parse(this.responseText);
-      let sortedItems = { legendary: [], epic: [], rare: [], common: [] };
-
-      for (let entry of entries) {
-        sortedItems[entry.item.rarity.toLowerCase()].push(entry);
-      }
-
-      let editEntries = [];
-      // eslint-disable-next-line guard-for-in
-      for (let rarity in sortedItems) {
-        editEntries = [].concat(editEntries, sortedItems[rarity]);
-      }
-
-      return JSON.stringify(editEntries);
-    }
-
-    return super.responseText;
-  }
-
-  open(method, url) {
-    if (url === 'https://api.kirka.io/api/inventory') this.invReq = true;
-    // eslint-disable-next-line prefer-rest-params
-    return super.open(...arguments);
-  }
-};
-
-function minutesLeft(e) {
-  return Math.ceil(480 - (Date.now() - Date.parse(e)) / 1000);
-}
-
-document.onkeydown = (event) => {
-  if (event.key === 'F7' && autoJoin) {
-    responseCount = 0;
-    allLobbyData = [];
-
-    fetch('https://eu1.kirka.io/matchmake')
-      .then((response) => response.json())
-      .then((dataEU) => {
-        for (let i = 0; i < dataEU.length; i++) {
-          dataEU[i].region = 'EU';
-        }
-        if (euLobbies) {
-          for (let i = 0; i < dataEU.length; i++) {
-            allLobbyData.push(dataEU[i]);
-          }
-        }
-        responseCount++;
-        checkSearchLobby();
-      });
-    fetch('https://na1.kirka.io/matchmake')
-      .then((response) => response.json())
-      .then((dataNA) => {
-        for (let i = 0; i < dataNA.length; i++) {
-          dataNA[i].region = 'NA';
-        }
-        if (naLobbies) {
-          for (let i = 0; i < dataNA.length; i++) {
-            allLobbyData.push(dataNA[i]);
-          }
-        }
-        responseCount++;
-        checkSearchLobby();
-      });
-    fetch('https://asia1.kirka.io/matchmake')
-      .then((response) => response.json())
-      .then((dataASIA) => {
-        for (let i = 0; i < dataASIA.length; i++) {
-          dataASIA[i].region = 'ASIA';
-        }
-        if (asiaLobbies) {
-          for (let i = 0; i < dataASIA.length; i++) {
-            allLobbyData.push(dataASIA[i]);
-          }
-        }
-        responseCount++;
-        checkSearchLobby();
-      });
-  }
-};
-
-function checkSearchLobby() {
-  if (responseCount < 3) return;
-
-  if (parkourLobbies) {
-    gameModes.push('ParkourRoom');
-  }
-  if (ffaLobbies) {
-    gameModes.push('DeathmatchRoom');
-  }
-  if (tdmLobbies) {
-    gameModes.push('TeamDeathmatchRoom');
-  }
-
-  let fittingLobbies = [];
-  for (let i = 0; i < allLobbyData.length; i++) {
-    if (allLobbyData[i].metadata.custom === true && !customGames) continue;
-    if (allLobbyData[i].locked === false && allLobbyData[i].clients >= minPlayers && allLobbyData[i].clients <= maxPlayers && gameModes.includes(allLobbyData[i].name) && minutesLeft(allLobbyData[i].createdAt) >= minTimeLeft && (maps.includes(allLobbyData[i].metadata.mapName.toLowerCase()) || !filterMaps)) {
-      if (avoidSameLobby) {
-        if (!currentURL.includes(allLobbyData[i].roomId)) {
-          fittingLobbies.push(allLobbyData[i]);
-        }
-      } else {
-        fittingLobbies.push(allLobbyData[i]);
-      }
-    }
-  }
-
-  if (fittingLobbies.length !== 0) {
-    bestLobby = fittingLobbies[0];
-    if (fittingLobbies.length > 0) {
-      for (let i = 0; i < fittingLobbies.length; i++) {
-        if (bestLobby.clients < fittingLobbies[i].clients) {
-          bestLobby = fittingLobbies[i];
-        } else if (bestLobby.clients === fittingLobbies[i].clients) {
-          if (minutesLeft(bestLobby.createdAt) < minutesLeft(fittingLobbies[i].createdAt)) {
-            bestLobby = fittingLobbies[i];
-          }
-        }
-      }
-    }
-  } else if (preferredFilter === 'Time') {
-    bestLobby = fittingLobbies[0];
-    if (fittingLobbies.length > 0) {
-      for (let i = 0; i < fittingLobbies.length; i++) {
-        if (minutesLeft(bestLobby.createdAt) < minutesLeft(fittingLobbies[i].createdAt)) {
-          bestLobby = fittingLobbies[i];
-        }
-      }
-    }
-  }
-  if (fittingLobbies.length !== 0 && bestLobby !== '') {
-    let joinURL = 'https://kirka.io/games/' + bestLobby.region + '~' + bestLobby.roomId;
-    window.open(joinURL);
-    // prettier-ignore
-  } else alert('No Lobby found - consider changing your settings'); // popup ohne alert?
-}
-
 function toggleGui() {
   menuVisible = !menuVisible;
   if (menuVisible) {
-    menuVisibleFunc();
     document.exitPointerLock();
     gui.style.display = 'flex';
+    if (!GuiResizeObserver) {
+      GuiResizeObserver = new ResizeObserver(SaveGuiSize);
+    }
+    GuiResizeObserver.observe(gui);
   } else {
     gui.style.display = 'none';
+    GuiResizeObserver.disconnect();
   }
   settings.set('menuOpen', menuVisible);
 }
 
 function hexToRgb(hex) {
-  // prettier-ignore
   let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  // prettier-ignore
-  return result ? {
+  return result
+    ? {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : null;
+        b: parseInt(result[3], 16),
+      }
+    : null;
 }
-
-let oldDefine = Object.defineProperty;
-Object.defineProperty = (...args) => {
-  if (args[0] && args[1] && args[1] === 'renderer' && args[0].constructor.name.startsWith('_0x')) {
-    if (args[0].WnNMwm) {
-        Object.defineProperty(args[0].camera, "fov", {
-            get() {
-                // eslint-disable-next-line radix
-                let returnValue = Number.parseInt(args[0].WnNMwm.fov);
-                if(!adspower && this.vFov) returnValue = this.vFov;
-                return returnValue;
-            },
-            set(v) {
-                this.vFov = v;
-            }
-        });
-    }
-}
-return oldDefine(...args);
-};
 
 const proxy = Function.prototype.constructor;
-// eslint-disable-next-line no-extend-native
+
 Function.prototype.constructor = function (...args) {
   if (args[0] === 'while (true) {}' || args[0] === 'debugger') return proxy.apply(this);
-  // eslint-disable-next-line prefer-rest-params
   return proxy.apply(this, arguments);
 };
-
-// eslint-disable-next-line no-extend-native
-Object.defineProperty(Object.prototype, 'gain', {
-  set(v) {
-    if (v.gain) {
-      v.gain.value = volume;
-      gains.push(v.gain);
-    }
-    this._v = v;
-  },
-  get() {
-    return this._v;
-  },
-});
-
-Object.defineProperty(Audio.prototype, 'muted', {
-  // eslint-disable-next-line no-unused-vars
-  set(v) {},
-  get() {
-    return noKillSound;
-  },
-});
