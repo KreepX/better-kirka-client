@@ -147,8 +147,7 @@ function playerHighLightFunc() {
     let localPlayerClass = scene['children']['0']['parent']['entity']['_entityManager']['mWnwM']['systemManager']['_systems']['0']['_queries']['player']['entities']['0']['_components']['38'].wnWmN;
     let qNum = 2;
 
-    if (!scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players 
-    && !scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][++qNum]['_queries'].players) return;
+    if (!scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players && !scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][++qNum]['_queries'].players) return;
 
     for (let i = 0; i < scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players?.entities?.length; i++) {
       let mat = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players.entities[i]['_components'][0].value.children[0].children[0].children[1].material;
@@ -195,9 +194,6 @@ function settingsSetGit(setting, value) {
 
 let Sessionids = [];
 function JoinLobbyWhenUnlocked() {
-  // adds checkboxes beside server lobby join buttons
-  // to attenmpt to join them when they become unlocked
-
   let children = document.querySelector('html body div#app div#view div.background div.container div.content div.servers div.container-games div.list-cont div.list')?.children;
   if (children) {
     for (var i = 0; i < children.length; i++) {
@@ -225,7 +221,6 @@ function JoinLobbyWhenUnlocked() {
           });
           continue;
         }
-
         if (Sessionids.length) {
           let ThisIdd = children[i].getElementsByClassName('session-id')[0]?.innerHTML;
           if (Sessionids.includes(ThisIdd)) {
@@ -393,6 +388,7 @@ let TwitchTop = typeof settings.get('TwitchTop') === 'undefined' ? settingsSetGi
 let guiHeight = typeof settings.get('guiHeight') === 'undefined' ? settingsSetGit('guiHeight', '95%') : settings.get('guiHeight');
 let guiWidth = typeof settings.get('guiWidth') === 'undefined' ? settingsSetGit('guiWidth', '51%') : settings.get('guiWidth');
 let capture = typeof settings.get('capture') === 'undefined' ? false : settings.get('capture');
+let cssLinks = typeof settings.get('cssLinks') === 'undefined' ? {} : settings.get('cssLinks');
 let fpsCap = typeof settings.get('fpsCap') === 'undefined' ? false : settings.get('fpsCap');
 let playerHighLight = !!settings.get('playerHighLight');
 let permCrosshair = !!settings.get('permCrosshair');
@@ -413,9 +409,9 @@ let livestreamers;
 let notificationsonclick;
 let GuiResizeObserver;
 let TwitchResizeObserver;
-let cssLinkElem;
 let QuestInterval;
 let permcrossstyle;
+let cssSelect;
 let claimedQuest = false;
 let gamemodee = false;
 let flagmodeset = false;
@@ -659,7 +655,6 @@ const Questobserver = new MutationObserver(() => {
 function NotificationsOpenMenus() {
   let n;
   let p = document.querySelector('#notifications');
-
   if (p) {
     n = p.onclick = (e) => {
       let text = (e.target?.innerHTML || e.target.parentElement.nextSibling.innerHTML).toLowerCase();
@@ -673,7 +668,6 @@ function NotificationsOpenMenus() {
         }
       }
     };
-
     Questobserver.observe(p, {
       childList: true,
       attributes: true,
@@ -768,45 +762,40 @@ Object.defineProperty(window, 'aiptag', {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  if (customCss && !document.querySelector('#custom-css')) {
-    cssLinkElem = document.createElement('link');
-    cssLinkElem.id = 'custom-css';
-    cssLinkElem.href = settings.get('cssLink');
-    cssLinkElem.rel = 'stylesheet';
-    cssLinkElem = document.head.appendChild(cssLinkElem);
-  }
-
+  applyCss();
   gui.id = 'gui';
-
   let guistyles = `
-
   #gui {
-    border: 0!important;
-    background-color: rgba(24,25,28,0.95);
+    border: 0 !important;
+    background-color: rgba(24, 25, 28, 0.95);
     box-shadow: 0 0 8px 2px #000;
     position: absolute;
     left: 5%;
     top: 2.5%;
     z-index: 300;
     color: #fff;
-    font-family: "Titillium Web",serif;
+    font-family: 'Titillium Web', serif;
     line-height: 1.6;
     border-radius: 3px;
     max-height: 95%;
     max-width: 90%;
-    min-width: 21%;
+    min-width: 25.2%;
     min-height: 45%;
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
     place-content: stretch space-between;
-    align-items: stretch;
+    align-items: flex-start;
     resize: both;
     overflow: auto;
     margin: auto;
-  }
-
-  .heading {
+    --bkc-new-back-hover: rgb(133, 133, 133);
+    --bkc-show-delete-back-hover: rgb(133, 133, 133);
+    --bkc-delete-back-hover: rgba(19, 19, 19, 0.5);
+    --bkc-new-border-hover: 0.2rem 0 0 0.2rem;
+    --bkc-show-delete-border-hover: 0 0.2rem 0.2rem 0;
+}
+.heading {
     min-height: 2.3rem;
     max-height: 3.3rem;
     justify-content: center;
@@ -819,120 +808,114 @@ document.addEventListener('DOMContentLoaded', () => {
     overflow: hidden;
     display: flex;
     padding: 0.1rem 0;
-  }
-
-.footer, .heading {
-  background-color: #18191c;
-  font-family: "Titillium Web",serif;
-  font-weight: 700;
-  text-align: center;
 }
-
+.footer,
+.heading {
+    background-color: #18191c;
+    font-family: 'Titillium Web', serif;
+    font-weight: 700;
+    text-align: center;
+}
 .module-wrapper {
-  display: flex;
-  flex-wrap: wrap;
-  max-height: 80%;
-  align-content: flex-start;
-  align-items: flex-start;
-  flex-direction: column;
-  padding: 0 0.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    max-height: 90%;
+    align-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 0 0.5rem;
+    overflow-x: hidden;
+    width: 100%;
+    height: 100%;
 }
-
 .module {
-  overflow-wrap: anywhere;
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
-  place-content: center;
+    overflow-wrap: anywhere;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    place-content: center;
+    padding-left: 0.5rem;
+    border-radius: 0.3rem;
+    margin: 0.5rem 0;
 }
-
 .footer {
-  min-height: 0%;
-  max-height: 8%;
-  justify-content: center;
-  align-items: center;
-  margin: 6px -6px 0px;
-  font-size: 11px;
-  border-top: 2px solid #8c8c8c;
-  line-height: 1.6rem;
+    min-height: 0%;
+    max-height: 8%;
+    justify-content: center;
+    align-items: center;
+    margin: 6px -6px 0px;
+    font-size: 11px;
+    border-top: 2px solid #8c8c8c;
+    line-height: 1.6rem;
 }
-
 .footer {
-  min-height: 2.3rem;
-  max-height: 3.3rem;
-  justify-content: center;
-  align-items: center;
-  margin: 0px 0px 0px 0;
-  min-width: 100%;
-  overflow: hidden;
-  display: flex;
-  padding: 0.1rem 0;
-  font-size: 11px;
-  border-top: 2px solid #8c8c8c;
+    min-height: 2.3rem;
+    max-height: 3.3rem;
+    justify-content: center;
+    align-items: center;
+    margin: 0px 0px 0px 0;
+    min-width: 100%;
+    overflow: hidden;
+    display: flex;
+    padding: 0.1rem 0;
+    font-size: 11px;
+    border-top: 2px solid #8c8c8c;
 }
-
 .autojoin-hr {
-  width: 100%;
-  min-width: 10%;
-  height: 1px;
-  background-color: #8c8c8c;
-  margin: .5rem .3rem .5rem 0;
-  pointer-events: none;
+    width: 100%;
+    min-width: 10%;
+    height: 1px;
+    background-color: #8c8c8c;
+    margin: 0.5rem 0.3rem 0.5rem 0;
+    pointer-events: none;
 }
-
 input:disabled {
-  background: #fff;
-  border: 1px solid #000;
-  width: 50px
+    background: #fff;
+    border: 1px solid #000;
+    width: 50px;
 }
-
-.module:hover {
-  background-color: rgb(0, 0, 0, .1)
+.module:hover,
+div#custom-css-wrapper:hover {
+    background-color: rgb(0, 0, 0, 0.1);
 }
-
-div.tabs>div.mods.tabmods>div>label.custom-checkbox>input {
-  position: absolute;
-  z-index: -1;
-  opacity: 0;
+div.tabs > div.mods.tabmods > div > label.custom-checkbox > input {
+    position: absolute;
+    z-index: -1;
+    opacity: 0;
 }
-
-div.tabs>div.mods.tabmods>div>label.custom-checkbox>span{
-  display: inline-flex;
-  align-items: center;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
+div.tabs > div.mods.tabmods > div > label.custom-checkbox > span {
+    display: inline-flex;
+    align-items: center;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
-
-div.tabs>div.mods.tabmods>div>label.custom-checkbox>input:checked+span:before {
-  background-color: #ffb914;
-  border-color: #b6830e;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='hsl(42, 85%, 100%)' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3e%3c/svg%3e");
+div.tabs > div.mods.tabmods > div > label.custom-checkbox > input:checked + span:before {
+    background-color: #ffb914;
+    border-color: #b6830e;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='hsl(42, 85%, 100%)' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3e%3c/svg%3e");
 }
-
-div.tabs>div.mods.tabmods>div>label.custom-checkbox>span:before {
-  content: "";
-  display: inline-block;
-  width: 1.3em;
-  height: 1.3em;
-  flex-shrink: 0;
-  flex-grow: 0;
-  border: .15rem solid #3c4b68;
-  border-radius: .25em;
-  margin-right: .5em;
-  background-repeat: no-repeat;
-  background-position: 50%;
-  background-size: 50% 50%;
-  background-color: #2f3957;
+div.tabs > div.mods.tabmods > div > label.custom-checkbox > span:before {
+    content: "";
+    display: inline-block;
+    width: 1.3em;
+    height: 1.3em;
+    flex-shrink: 0;
+    flex-grow: 0;
+    border: 0.15rem solid #3c4b68;
+    border-radius: 0.25em;
+    margin-right: 0.5em;
+    background-repeat: no-repeat;
+    background-position: 50%;
+    background-size: 50% 50%;
+    background-color: #2f3957;
 }
-
-div#live-streams-menu>div.list{
-  max-height:95vh!important;
-  overflow:hidden hidden!important;
+div#live-streams-menu > div.list {
+    max-height: 95vh !important;
+    overflow: hidden hidden !important;
 }
-
-  input.gui-color-input {
+input.gui-color-input {
     -webkit-appearance: none !important;
     border: none !important;
     width: 3vw !important;
@@ -941,96 +924,143 @@ div#live-streams-menu>div.list{
     background-color: #00000000 !important;
     cursor: pointer !important;
     --b-radius: 0.4rem;
-    border-radius: .4rem !important;
-  }
-  
-  input.gui-color-input::-webkit-color-swatch-wrapper {
+    border-radius: 0.4rem !important;
+}
+input.gui-color-input::-webkit-color-swatch-wrapper {
     padding: 0 !important;
-    border-radius: calc(var(--b-radius) - 0.1rem)!important;
-  }
-  
-  input.gui-color-input::-webkit-color-swatch {
+    border-radius: calc(var(--b-radius) - 0.1rem) !important;
+}
+input.gui-color-input::-webkit-color-swatch {
     border: none !important;
-    border-radius: calc(var(--b-radius) - 0.2rem)!important;
-    box-shadow: rgba(0,0,0,0.5) 2px 1px 6px!important;
-  }
-
-  div.module-wrapper div.module input[type=checkbox] {
+    border-radius: calc(var(--b-radius) - 0.2rem) !important;
+    box-shadow: rgba(0, 0, 0, 0.5) 2px 1px 6px !important;
+}
+div.module-wrapper div.module input[type='checkbox'] {
     margin: auto;
-  }
-
-  div.module label {
+}
+div.module label {
     margin: 0 0.5rem;
-  }
-  html>body>div#app>div#view{user-select:text!important;}
+    height: 100%;
+}
+html > body > div#app > div#view {
+    user-select: text !important;
+}
+.loading-scene,
+#qc-cmp2-container,
+#cmpPersistentLink {
+    display: none !important;
+}
+button#bkc-save:hover {
+    background-color: var(--bkc-new-back-hover) !important;
+}
 
-  .loading-scene,
-  #qc-cmp2-container,
-  #cmpPersistentLink {
-    display:none!important;
-  }
+button#bkc-delete:hover {
+    background-color: var(--bkc-delete-back-hover) !important;
+}
+button#bkc-new:hover {
+    background-color: var(--bkc-new-back-hover) !important;
+    border-radius: var(--bkc-new-border-hover) !important;
+}
+button#bkc-show-delete:hover {
+    background-color: var(--bkc-show-delete-back-hover) !important;
+    border-radius: var(--bkc-show-delete-border-hover) !important;
+}
+select#custom-css-select:focus {
+    outline: none;
+}
+:focus {
+    outline: none;
+}
+.module.high {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    place-content: center space-between;
+    align-items: center;
+    margin-left: 1rem !important;
+}
 `;
 
   gui.innerHTML = `
-    <style id="BKC-permcrosshair"></style><style id="BKC-Styles">@import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300&display=swap');${guistyles}</style>
-
+  <style id="BKC-permcrosshair"></style>
+  <style id="BKC-Styles">
+          @import url('https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300&display=swap');
+          ${guistyles}
+  </style>
+  
   <div id="infi" class="heading">Client Settings</div>
-      <div class="module-wrapper">
-           <div class="module">
-               <input type="checkbox" id="crosshair" name="crosshair">
-               <label for="crosshair">Perm. Crosshair</label>
-           </div>
-       
-           <div class="module">
-               <input type="checkbox" id="customCSS" name="customCSS">
-               <label for="customCSS">CSS Link: </label>
-               <input type="text" id="cssLink" placeholder="Paste CSS Link Here">
-           </div>
-       
+  <div class="module-wrapper">
+          <div id="bkc-css-container" style="display: flex; flex-direction: column; flex-wrap: nowrap; align-content: center; justify-content: flex-start; align-items: stretch; margin-right: 0.5rem; margin: 0.5rem 0">
+                  <div id="custom-css-wrapper" style="display: flex; flex-direction: row; flex-wrap: nowrap; align-content: center; justify-content: flex-start; align-items: center; padding: 0 0.5rem; border-radius: 0.3rem">
+                          <input type="checkbox" id="customCSS" name="customCSS" />
+                          <label id="custom-css-header" style="margin: 0 0 0 0.5rem; white-space: nowrap">Custom Css:</label>
+                          <div id="bkc-custom-css-header-button-wrapper" style="display: flex; flex-direction: row; flex-wrap: nowrap; align-content: center; justify-content: flex-start; align-items: center; margin: auto 0; height: 1.786rem; width: max-content; border-width: 1px; border-style: solid; border-color: rgb(133, 133, 133); box-shadow: rgba(0, 0, 0, 0.5) 2px 1px 7px !important; border-radius: 0.3rem">
+                                  <button id="bkc-new" title="Add New" style="width: 2rem; display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-content: center; justify-content: center; align-items: center; line-height: unset; text-transform: none; text-indent: 0px; text-align: start; cursor: pointer; border-width: 0 1px 0 0; border-color: #00000000; font-weight: 100; border-radius: 0px; color: #fff; background-color: inherit">＋</button>
+                                  <button id="bkc-show-delete" title="Delete" style="display: inline-flex; flex-direction: row; flex-wrap: nowrap; align-content: center; justify-content: center; align-items: center; line-height: unset; text-indent: 0px; text-shadow: none; text-align: start; background-color: inherit; cursor: pointer; border-width: 0 0 0 1px; font-weight: 100; font-size: unset; color: #fff; width: 2rem">&#128465;</button>
+                          </div>
+                  </div>
+                  <button id="bkc-delete" title="Delete" style="display: none; flex-flow: row nowrap; place-content: center; align-items: center; line-height: unset; background-color: inherit; cursor: pointer; font-weight: bolder; color: currentcolor; margin: 1.5rem 0.5rem 0.5rem; height: 1.5rem; border-radius: 0.3rem; border-width: 1px; border-style: solid; white-space: nowrap; box-shadow: rgba(0, 0, 0, 0.5) 2px 1px 6px !important"><span>Delete Selected Css &#013; &#128465;</span></button>
+          </div>
+  
+          <div id="add-new-css-menu" style="display: none; margin: 0.5rem; flex-flow: column nowrap; place-content: flex-start; align-items: flex-start; border-radius: 0.3rem; padding: 1rem; box-shadow: rgba(0, 0, 0, 0.5) 2px 1px 6px !important; background-color: inherit; border: 1px solid rgb(133, 133, 133)">
+                  <div class="required-warning" style="display: none; flex-flow: row nowrap; place-content: center center; align-items: center; color: red; padding-bottom: 1rem; width: 100%; font-weight: bolder">
+                          <span id="required-warning-span">Name & Url required</span>
+                  </div>
+                  <div class="thing" style="width: 100%; display: flex; flex-wrap: nowrap; margin: 0.1rem 0">
+                          <label style="margin: 0 0.5rem 0 0">Name:</label>
+                          <input type="text" id="css-new-title-input" style="width: 100%; background-color: inherit; border: 1px solid rgb(133, 133, 133); border-radius: 0.3rem; color: #fff" />
+                  </div>
+                  <div class="thing" style="width: 100%; display: flex; flex-wrap: nowrap; margin: 0.5rem 0 0.1rem 0">
+                          <label style="margin: 0 0.5rem 0 0">Url:</label>
+                          <input type="text" id="css-new-url-input" style="width: 100%; background-color: inherit; border: 1px solid rgb(133, 133, 133); border-radius: 0.3rem; color: #fff" />
+                  </div>
+  
+                  <div class="thing" style="width: 100%; margin: 0.1rem 0; display: flex; flex-direction: row; flex-wrap: nowrap; align-content: center; justify-content: flex-start; align-items: center">
+                          <button id="bkc-save" style="margin: 0.5rem 0.5rem 0 0; line-height: unset; padding-top: 0; box-shadow: rgba(0, 0, 0, 0.5) 2px 1px 6px !important; background-color: inherit; border: 1px solid rgb(133, 133, 133); border-radius: 0.3rem; color: #fff">save</button>
+                  </div>
+          </div>
+  
           <div class="module">
-               <input type="checkbox" id="hideflag" name="hideflag">
-               <label for="hideflag">Hide Flag ADS</label>
-           </div>
-
-           <div class="module autojoin autojoin-hr"></div>
-       
-           <div class="module">
-               <input type="checkbox" id="highlight" name="highlight">
-               <label for="highlight">Highlight Players</label>
-           </div>
-       
-           <div class="module">
-           <label for="customColor">Custom Enemy Highlight Color:  </label>
-           <input type="color" id="EnemyhighlightColor" class="gui-color-input">
-           </div>
-
-           <div class="module autojoin autojoin-hr"></div>
-
-           <div class="module">
-           <label for="customColor">Custom Team Highlight Color:  </label>
-           <input type="color" id="TeamhighlightColor" class="gui-color-input">
-           </div>
-
-           <div class="module autojoin autojoin-hr"></div>
-    
-           <div class="module">
-               <input type="checkbox" id="fpsCap" name="fpsCap">
-               <label for="fpsCap">Cap FPS</label>
-           </div>
-       
-           <div class="module">
-               <input type="checkbox" id="capture" name="capture">
-               <label for="capture">Window Capture</label>
-           </div>
-       
-           <div class="module">
-           <input type="checkbox" id="ShowTwitch" name="ShowTwitch">
-           <label title="Show Live Kirka Twitch Streams &#013; Click And Drag The Titlebar To Move The Menu  &#013; Click And Drag The Bottom Right Corner To Resize The Menu" for="ShowTwitch">Show Live Kirka Twitch Streams Menu</label>
-           </div>
-
-           <div class="module autojoin autojoin-hr"></div>
-
-      </div><div class="footer">Toggle With "PageUp" Key</div>
+                  <input type="checkbox" id="highlight" name="highlight" />
+                  <label for="highlight">Highlight Players</label>
+          </div>
+  
+          <div class="module high">
+                  <label for="customColor">Custom Enemy Highlight Color: </label>
+                  <input type="color" id="EnemyhighlightColor" class="gui-color-input" />
+          </div>
+  
+          <div class="module high">
+                  <label for="customColor">Custom Team Highlight Color: </label>
+                  <input type="color" id="TeamhighlightColor" class="gui-color-input" />
+          </div>
+  
+          <div class="module">
+                  <input type="checkbox" id="fpsCap" name="fpsCap" />
+                  <label for="fpsCap">Cap FPS</label>
+          </div>
+  
+          <div class="module">
+                  <input type="checkbox" id="hideflag" name="hideflag" />
+                  <label for="hideflag">Hide Flag ADS</label>
+          </div>
+  
+          <div class="module">
+                  <input type="checkbox" id="crosshair" name="crosshair" />
+                  <label for="crosshair">Perm. Crosshair</label>
+          </div>
+  
+          <div class="module">
+                  <input type="checkbox" id="capture" name="capture" />
+                  <label for="capture">Window Capture</label>
+          </div>
+  
+          <div class="module">
+                  <input type="checkbox" id="ShowTwitch" name="ShowTwitch" />
+                  <label title="Show Live Kirka Twitch Streams &#013; Click And Drag The Titlebar To Move The Menu  &#013; Click And Drag The Bottom Right Corner To Resize The Menu" for="ShowTwitch">Show Live Kirka Twitch Streams Menu</label>
+          </div>
+  </div>
+  <div class="footer">Toggle With "PageUp" Key</div>
 `;
 
   gui.onclick = (e) => {
@@ -1086,20 +1116,7 @@ div#live-streams-menu>div.list{
     if (e.target.id === 'customCSS') {
       customCss = e.target.checked;
       settings.set('customCss', customCss);
-
-      if (customCss) {
-        if (cssField.value !== '') {
-          if (!cssLinkElem) {
-            cssLinkElem = document.createElement('link');
-            cssLinkElem.rel = 'stylesheet';
-            cssLinkElem.id = 'custom-css';
-          }
-          cssLinkElem.href = settings.get('cssLink');
-          cssLinkElem = document.head.appendChild(cssLinkElem);
-        }
-      } else if (document.head.querySelector('#custom-css')) {
-        cssLinkElem = document.head.removeChild(cssLinkElem);
-      }
+      applyCss();
     }
 
     if (e.target.id === 'fpsCap') {
@@ -1128,26 +1145,6 @@ div#live-streams-menu>div.list{
   if (settings.get('menuOpen') === undefined || settings.get('menuOpen')) {
     toggleGui();
   }
-
-  let cssField = document.getElementById('cssLink');
-  if (settings.get('cssLink') === undefined) settings.set('cssLink', '');
-  cssField.value = settings.get('cssLink');
-
-  cssField.oninput = () => {
-    if (customCss && cssField.value !== '') {
-      if (!cssLinkElem) {
-        cssLinkElem = document.createElement('link');
-        cssLinkElem.rel = 'stylesheet';
-        cssLinkElem.id = 'custom-css';
-      }
-
-      cssLinkElem.href = cssField.value;
-      cssLinkElem = document.head.appendChild(cssLinkElem);
-    } else if (document.head.querySelector('#custom-css')) {
-      cssLinkElem = document.head.removeChild(cssLinkElem);
-    }
-    settings.set('cssLink', cssField.value);
-  };
 
   function AnotherFunction(a) {
     return {
@@ -1200,6 +1197,125 @@ div#live-streams-menu>div.list{
       }
     });
   }
+
+  function addNewCssOption(obj, set = false) {
+    let newoptions = document.createElement('option');
+    newoptions.style = 'color:rgb(0, 0, 0)';
+    newoptions.title = obj.title;
+    newoptions.url = obj.url;
+    newoptions.innerHTML = `${obj.title} - ${obj.url}`;
+    newoptions = cssSelect.appendChild(newoptions);
+    if (cssLinks?.currentCss?.title === obj.title || set) {
+      newoptions.selected = true;
+    }
+  }
+
+  if (!cssSelect) {
+    cssSelect = document.createElement('select');
+    cssSelect.id = 'custom-css-select';
+    cssSelect.style = 'max-width:10vw;min-width:10vw;margin:0 0.5rem;color:rgb(255, 255, 255);background-color:initial;border-radius:.3rem;box-shadow:rgba(0, 0, 0, 0.5) 2px 1px 6px!important;';
+    for (const cssOptions in cssLinks) {
+      if (cssLinks[cssOptions] !== cssLinks.currentCss) addNewCssOption(cssLinks[cssOptions]);
+    }
+    cssSelect = document.querySelector('#custom-css-wrapper').insertBefore(cssSelect, document.querySelector('#bkc-custom-css-header-button-wrapper'));
+  }
+
+  let cssNew = document.querySelector('#bkc-new');
+  let cssSave = document.querySelector('#bkc-save');
+  let cssDelete = document.querySelector('#bkc-delete');
+  let cssShowDelete = document.querySelector('#bkc-show-delete');
+  let cssUrlInput = document.querySelector('#css-new-url-input');
+  let cssTitleInput = document.querySelector('#css-new-title-input');
+  let cssRequiredWarning = document.querySelector('.required-warning');
+  let cssAddNewContainer = document.querySelector('#add-new-css-menu');
+  let cssRequiredWarningSpan = document.querySelector('#required-warning-span');
+
+  function resetCssWrapper() {
+    if (cssRequiredWarning.style.display !== 'none') {
+      cssRequiredWarning.style.display = 'none';
+    }
+    if (cssAddNewContainer.style.display !== 'none') {
+      cssAddNewContainer.style.display = 'none';
+    }
+    cssUrlInput.value = '';
+    cssTitleInput.value = '';
+  }
+
+  function applyCss() {
+    let p = document.querySelector('#custom-css');
+    if (p) document.head.removeChild(p);
+    if (customCss && cssLinks.currentCss) {
+      let cssLinkElem = document.createElement('link');
+      cssLinkElem.rel = 'stylesheet';
+      cssLinkElem.id = 'custom-css';
+      cssLinkElem.href = cssLinks.currentCss.url;
+      document.head.appendChild(cssLinkElem);
+    }
+  }
+
+  cssSelect.oninput = () => {
+    if (cssSelect.value) {
+      cssLinks.currentCss = cssLinks[cssSelect.options[cssSelect.selectedIndex].title];
+      resetCssWrapper();
+      settings.set('cssLinks', cssLinks);
+      applyCss();
+    }
+  };
+
+  cssNew.onclick = () => {
+    if (cssAddNewContainer.style.display !== 'flex') {
+      cssAddNewContainer.style.display = 'flex';
+    } else {
+      resetCssWrapper();
+    }
+  };
+
+  cssShowDelete.onclick = () => {
+    if (cssDelete.style.display === 'none') {
+      cssDelete.style.display = 'flex';
+    } else {
+      cssDelete.style.display = 'none';
+    }
+  };
+
+  cssDelete.onclick = () => {
+    if (cssLinks[cssSelect.options[cssSelect.selectedIndex].title]) {
+      delete cssLinks[cssSelect.options[cssSelect.selectedIndex].title];
+    }
+    cssSelect.removeChild(cssSelect.options[cssSelect.selectedIndex]);
+    cssLinks.currentCss = cssSelect.value ? cssLinks[cssSelect.options[cssSelect.selectedIndex].title] : null;
+    settings.set('cssLinks', cssLinks);
+    cssDelete.style.display = 'none';
+    applyCss();
+  };
+
+  cssSave.onclick = () => {
+    if (!cssTitleInput.value || !cssUrlInput.value) {
+      if (cssRequiredWarningSpan.innerHTML !== 'Name & Url Required') {
+        cssRequiredWarningSpan.innerHTML = 'Name & Url Required';
+      }
+      if (cssRequiredWarning.style.display !== 'flex') {
+        cssRequiredWarning.style.display = 'flex';
+      }
+    } else if (cssLinks[cssTitleInput.value]) {
+      if (cssRequiredWarningSpan.innerHTML !== 'Css Link Already Saved With This Name') {
+        cssRequiredWarningSpan.innerHTML = 'Css Link Already Saved With This Name';
+      }
+      if (cssRequiredWarning.style.display !== 'flex') {
+        cssRequiredWarning.style.display = 'flex';
+      }
+    } else {
+      cssLinks[cssTitleInput.value] = {
+        title: cssTitleInput.value,
+        url: cssUrlInput.value,
+      };
+      addNewCssOption(cssLinks[cssTitleInput.value], true);
+      resetCssWrapper();
+      cssLinks.currentCss = cssLinks[cssSelect.options[cssSelect.selectedIndex].title];
+      settings.set('cssLinks', cssLinks);
+      applyCss();
+    }
+  };
 
   document.getElementById('crosshair').checked = permCrosshair;
   document.getElementById('hideflag').checked = hideFlagAds;
