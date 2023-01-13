@@ -1071,18 +1071,17 @@ select#custom-css-select:focus {
       if (stremz) {
         stremz.style = `position:absolute;resize:both;overflow: auto hidden!important;opacity:1!important;z-index:3!important;min-height:5vh!important;pointer-events:all!important;top:${TwitchTop};left:${TwitchLeft};width:${TwitchWidth};height:${TwitchHeight};${ShowTwitch ? 'display:block!important;' : 'display:none!important;'}`;
       }
-    }
-
-    if (e.target.id === 'crosshair') {
+    } 
+    
+    else if (e.target.id === 'crosshair') {
       permCrosshair = e.target.checked;
       settings.set('permCrosshair', permCrosshair);
       permCrosshairToggleFunc();
-    }
-
-    if (e.target.id === 'hideflag') {
+    } 
+    
+    else if (e.target.id === 'hideflag') {
       hideFlagAds = e.target.checked;
       settings.set('hideFlagAds', hideFlagAds);
-
       if (hideFlagAds) {
         if (flagmodeset) {
           if (!frameFuncs.includes(hideFlagAdsFunc)) {
@@ -1099,9 +1098,9 @@ select#custom-css-select:focus {
         window.removeEventListener('mousedown', IsScoped);
         window.removeEventListener('mouseup', IsNotScoped);
       }
-    }
-
-    if (e.target.id === 'highlight') {
+    } 
+    
+    else if (e.target.id === 'highlight') {
       playerHighLight = e.target.checked;
       settings.set('playerHighLight', playerHighLight);
       if (playerHighLight) {
@@ -1111,24 +1110,79 @@ select#custom-css-select:focus {
       } else {
         frameFuncsRemove(playerHighLightFunc);
       }
-    }
-
-    if (e.target.id === 'customCSS') {
+    } 
+    
+    else if (e.target.id === 'customCSS') {
       customCss = e.target.checked;
       settings.set('customCss', customCss);
       applyCss();
-    }
-
-    if (e.target.id === 'fpsCap') {
+    } 
+    
+    else if (e.target.id === 'fpsCap') {
       fpsCap = e.target.checked;
       settings.set('fpsCap', fpsCap);
       BKC.tip('setting will apply after client restart');
-    }
-
-    if (e.target.id === 'capture') {
+    } 
+    
+    else if (e.target.id === 'capture') {
       capture = e.target.checked;
       settings.set('capture', capture);
       BKC.tip('setting will apply after client restart');
+    } 
+    
+    else if (e.target.id === 'bkc-new') {
+      if (cssAddNewContainer.style.display !== 'flex') {
+        cssAddNewContainer.style.display = 'flex';
+      } else {
+        resetCssWrapper();
+      }
+    } 
+    
+    else if (e.target.id === 'bkc-show-delete') {
+      if (cssDelete.style.display === 'none') {
+        cssDelete.style.display = 'flex';
+      } else {
+        cssDelete.style.display = 'none';
+      }
+    } 
+    
+    else if (e.target.id === 'bkc-delete' || e.target.parentElement.id === 'bkc-delete') {
+      if (cssLinks[cssSelect.options[cssSelect.selectedIndex].title]) {
+        delete cssLinks[cssSelect.options[cssSelect.selectedIndex].title];
+      }
+      cssSelect.removeChild(cssSelect.options[cssSelect.selectedIndex]);
+      cssLinks.currentCss = cssSelect.value ? cssLinks[cssSelect.options[cssSelect.selectedIndex].title] : null;
+      settings.set('cssLinks', cssLinks);
+      cssDelete.style.display = 'none';
+      applyCss();
+    } 
+    
+    else if (e.target.id === 'bkc-save') {
+      if (!cssTitleInput.value || !cssUrlInput.value) {
+        if (cssRequiredWarningSpan.innerHTML !== 'Name & Url Required') {
+          cssRequiredWarningSpan.innerHTML = 'Name & Url Required';
+        }
+        if (cssRequiredWarning.style.display !== 'flex') {
+          cssRequiredWarning.style.display = 'flex';
+        }
+      } else if (cssLinks[cssTitleInput.value]) {
+        if (cssRequiredWarningSpan.innerHTML !== 'Css Link Already Saved With This Name') {
+          cssRequiredWarningSpan.innerHTML = 'Css Link Already Saved With This Name';
+        }
+        if (cssRequiredWarning.style.display !== 'flex') {
+          cssRequiredWarning.style.display = 'flex';
+        }
+      } else {
+        cssLinks[cssTitleInput.value] = {
+          title: cssTitleInput.value,
+          url: cssUrlInput.value,
+        };
+        addNewCssOption(cssLinks[cssTitleInput.value], true);
+        resetCssWrapper();
+        cssLinks.currentCss = cssLinks[cssSelect.options[cssSelect.selectedIndex].title];
+        settings.set('cssLinks', cssLinks);
+        applyCss();
+      }
     }
   };
 
@@ -1140,10 +1194,6 @@ select#custom-css-select:focus {
 
   if (permCrosshair) {
     permcrossstyle.innerHTML = 'img#crosshair-static{opacity:1!important;}';
-  }
-
-  if (settings.get('menuOpen') === undefined || settings.get('menuOpen')) {
-    toggleGui();
   }
 
   function AnotherFunction(a) {
@@ -1220,15 +1270,16 @@ select#custom-css-select:focus {
     cssSelect = document.querySelector('#custom-css-wrapper').insertBefore(cssSelect, document.querySelector('#bkc-custom-css-header-button-wrapper'));
   }
 
-  let cssNew = document.querySelector('#bkc-new');
-  let cssSave = document.querySelector('#bkc-save');
   let cssDelete = document.querySelector('#bkc-delete');
-  let cssShowDelete = document.querySelector('#bkc-show-delete');
   let cssUrlInput = document.querySelector('#css-new-url-input');
   let cssTitleInput = document.querySelector('#css-new-title-input');
   let cssRequiredWarning = document.querySelector('.required-warning');
   let cssAddNewContainer = document.querySelector('#add-new-css-menu');
   let cssRequiredWarningSpan = document.querySelector('#required-warning-span');
+
+  if (settings.get('menuOpen') === undefined || settings.get('menuOpen')) {
+    toggleGui();
+  }
 
   function resetCssWrapper() {
     if (cssRequiredWarning.style.display !== 'none') {
@@ -1257,61 +1308,6 @@ select#custom-css-select:focus {
     if (cssSelect.value) {
       cssLinks.currentCss = cssLinks[cssSelect.options[cssSelect.selectedIndex].title];
       resetCssWrapper();
-      settings.set('cssLinks', cssLinks);
-      applyCss();
-    }
-  };
-
-  cssNew.onclick = () => {
-    if (cssAddNewContainer.style.display !== 'flex') {
-      cssAddNewContainer.style.display = 'flex';
-    } else {
-      resetCssWrapper();
-    }
-  };
-
-  cssShowDelete.onclick = () => {
-    if (cssDelete.style.display === 'none') {
-      cssDelete.style.display = 'flex';
-    } else {
-      cssDelete.style.display = 'none';
-    }
-  };
-
-  cssDelete.onclick = () => {
-    if (cssLinks[cssSelect.options[cssSelect.selectedIndex].title]) {
-      delete cssLinks[cssSelect.options[cssSelect.selectedIndex].title];
-    }
-    cssSelect.removeChild(cssSelect.options[cssSelect.selectedIndex]);
-    cssLinks.currentCss = cssSelect.value ? cssLinks[cssSelect.options[cssSelect.selectedIndex].title] : null;
-    settings.set('cssLinks', cssLinks);
-    cssDelete.style.display = 'none';
-    applyCss();
-  };
-
-  cssSave.onclick = () => {
-    if (!cssTitleInput.value || !cssUrlInput.value) {
-      if (cssRequiredWarningSpan.innerHTML !== 'Name & Url Required') {
-        cssRequiredWarningSpan.innerHTML = 'Name & Url Required';
-      }
-      if (cssRequiredWarning.style.display !== 'flex') {
-        cssRequiredWarning.style.display = 'flex';
-      }
-    } else if (cssLinks[cssTitleInput.value]) {
-      if (cssRequiredWarningSpan.innerHTML !== 'Css Link Already Saved With This Name') {
-        cssRequiredWarningSpan.innerHTML = 'Css Link Already Saved With This Name';
-      }
-      if (cssRequiredWarning.style.display !== 'flex') {
-        cssRequiredWarning.style.display = 'flex';
-      }
-    } else {
-      cssLinks[cssTitleInput.value] = {
-        title: cssTitleInput.value,
-        url: cssUrlInput.value,
-      };
-      addNewCssOption(cssLinks[cssTitleInput.value], true);
-      resetCssWrapper();
-      cssLinks.currentCss = cssLinks[cssSelect.options[cssSelect.selectedIndex].title];
       settings.set('cssLinks', cssLinks);
       applyCss();
     }
@@ -1352,6 +1348,13 @@ animateState = (Newstate = 'false') => {
   }
 };
 
+function cssSelectKeyDown(mwNMWnmWnMwNMandM) {
+  if (mwNMWnmWnMwNMandM.key === 'PageUp' || mwNMWnmWnMwNMandM.key === 'PageDown') {
+    mwNMWnmWnMwNMandM.preventDefault();
+    mwNMWnmWnMwNMandM.stopPropagation();
+  }
+}
+
 function toggleGui() {
   menuVisible = !menuVisible;
   if (menuVisible) {
@@ -1361,9 +1364,11 @@ function toggleGui() {
       GuiResizeObserver = new ResizeObserver(SaveGuiSize);
     }
     GuiResizeObserver.observe(gui);
+    cssSelect.addEventListener('keydown', cssSelectKeyDown, false);
   } else {
     gui.style.display = 'none';
     GuiResizeObserver.disconnect();
+    cssSelect.removeEventListener('keydown', cssSelectKeyDown, false);
   }
   settings.set('menuOpen', menuVisible);
 }
