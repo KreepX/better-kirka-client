@@ -382,9 +382,9 @@ let GameModesShowDM = typeof settings.get('GameModesShowDM') === 'undefined' ? s
 let GameModesShowP = typeof settings.get('GameModesShowP') === 'undefined' ? settingsSetGit('GameModesShowP', true) : settings.get('GameModesShowP');
 let TwitchHeight = typeof settings.get('TwitchHeight') === 'undefined' ? settingsSetGit('TwitchHeight', 'auto') : settings.get('TwitchHeight');
 let TwitchWidth = typeof settings.get('TwitchWidth') === 'undefined' ? settingsSetGit('TwitchWidth', 'auto') : settings.get('TwitchWidth');
-let TwitchLeft = typeof settings.get('TwitchLeft') === 'undefined' ? settingsSetGit('TwitchLeft', '-65vw') : settings.get('TwitchLeft');
+let TwitchLeft = typeof settings.get('TwitchLeft') === 'undefined' ? settingsSetGit('TwitchLeft', '10vw') : settings.get('TwitchLeft');
 let ShowTwitch = typeof settings.get('ShowTwitch') === 'undefined' ? settingsSetGit('ShowTwitch', true) : settings.get('ShowTwitch');
-let TwitchTop = typeof settings.get('TwitchTop') === 'undefined' ? settingsSetGit('TwitchTop', '40vw') : settings.get('TwitchTop');
+let TwitchTop = typeof settings.get('TwitchTop') === 'undefined' ? settingsSetGit('TwitchTop', '20vw') : settings.get('TwitchTop');
 let guiHeight = typeof settings.get('guiHeight') === 'undefined' ? settingsSetGit('guiHeight', '95%') : settings.get('guiHeight');
 let guiWidth = typeof settings.get('guiWidth') === 'undefined' ? settingsSetGit('guiWidth', '51%') : settings.get('guiWidth');
 let capture = typeof settings.get('capture') === 'undefined' ? false : settings.get('capture');
@@ -465,12 +465,8 @@ function MoveTwitchMenu(TwitchHead) {
   let lsmpos2 = 0;
   let lsmpos3 = 0;
   let lsmpos4 = 0;
-
-  if (TwitchHead.getElementsByClassName('head')[0]) {
-    TwitchHead.getElementsByClassName('head')[0].onmousedown = TwitchDrag;
-  } else {
-    TwitchHead.onmousedown = TwitchDrag;
-  }
+  let p = TwitchHead.getElementsByClassName('head')[0];
+  if (p) p.onmousedown = TwitchDrag;
 
   function TwitchDrag(peepoHappy) {
     peepoHappy = peepoHappy || window.event;
@@ -488,10 +484,8 @@ function MoveTwitchMenu(TwitchHead) {
     lsmpos2 = lsmpos4 - xip.clientY;
     lsmpos3 = xip.clientX;
     lsmpos4 = xip.clientY;
-    window.requestAnimationFrame(() => {
-      TwitchHead.style.top = `${TwitchHead.offsetTop - lsmpos2}px`;
-      TwitchHead.style.left = `${TwitchHead.offsetLeft - lsmpos1}px`;
-    });
+    TwitchHead.style.top = `${TwitchHead.offsetTop - lsmpos2}px`;
+    TwitchHead.style.left = `${TwitchHead.offsetLeft - lsmpos1}px`;
   }
 
   function TwitchStopDragPlz() {
@@ -531,13 +525,8 @@ function ShowliveStreams() {
       streamsmenu = document.getElementsByClassName('live-streams')[0].cloneNode(true);
       streamsmenu.style = `position:absolute;resize:both;overflow: auto hidden!important;opacity:1!important;z-index:3!important;min-height:5vh!important;pointer-events:all!important;
       top:${TwitchTop};left:${TwitchLeft};width:${TwitchWidth};height:${TwitchHeight};${ShowTwitch ? 'display:block!important;' : 'display:none!important;'}`;
-      for (let crap of streamsmenu.getAttributeNames()) {
-        if (/data-v/.test(crap)) {
-          streamsmenu.removeAttribute(crap);
-        }
-      }
       streamsmenu.id = 'live-streams-menu';
-      streamsmenu = document.querySelector('#right-interface').appendChild(streamsmenu);
+      streamsmenu = document.querySelector('.interface.text-2').appendChild(streamsmenu);
       livestreamers = defStremzMenu.querySelectorAll('[target="_blank"]').length;
       TwitchResizeObserver.observe(streamsmenu);
       MoveTwitchMenu(streamsmenu);
@@ -696,7 +685,6 @@ const SomeObserver = new MutationObserver(() => {
     btn.onclick = () => {
       window.open(clipboard.readText());
     };
-
     document.getElementsByClassName('play-content')[0].append(btn);
   }
 
@@ -766,7 +754,7 @@ document.addEventListener('DOMContentLoaded', () => {
   gui.id = 'gui';
   let guistyles = `
   #gui {
-    border: 0 !important;
+    border: none;
     background-color: rgba(24, 25, 28, 0.95);
     box-shadow: 0 0 8px 2px #000;
     position: absolute;
@@ -815,6 +803,7 @@ document.addEventListener('DOMContentLoaded', () => {
     font-family: 'Titillium Web', serif;
     font-weight: 700;
     text-align: center;
+    pointer-events: none;
 }
 .module-wrapper {
     display: flex;
@@ -838,37 +827,22 @@ document.addEventListener('DOMContentLoaded', () => {
     border-radius: 0.3rem;
     margin: 0.5rem 0;
 }
-.footer {
-    min-height: 0%;
-    max-height: 8%;
-    justify-content: center;
-    align-items: center;
-    margin: 6px -6px 0px;
-    font-size: 11px;
-    border-top: 2px solid #8c8c8c;
-    line-height: 1.6rem;
-}
+
 .footer {
     min-height: 2.3rem;
     max-height: 3.3rem;
     justify-content: center;
     align-items: center;
-    margin: 0px 0px 0px 0;
+    margin: 0;
     min-width: 100%;
     overflow: hidden;
     display: flex;
     padding: 0.1rem 0;
     font-size: 11px;
     border-top: 2px solid #8c8c8c;
+    line-height: 1.6rem;
 }
-.autojoin-hr {
-    width: 100%;
-    min-width: 10%;
-    height: 1px;
-    background-color: #8c8c8c;
-    margin: 0.5rem 0.3rem 0.5rem 0;
-    pointer-events: none;
-}
+
 input:disabled {
     background: #fff;
     border: 1px solid #000;
@@ -950,10 +924,9 @@ html > body > div#app > div#view {
 #cmpPersistentLink {
     display: none !important;
 }
-button#bkc-save:hover {
+button#bkc-save:hover, button#bkc-browse:hover {
     background-color: var(--bkc-new-back-hover) !important;
 }
-
 button#bkc-delete:hover {
     background-color: var(--bkc-delete-back-hover) !important;
 }
@@ -965,12 +938,6 @@ button#bkc-show-delete:hover {
     background-color: var(--bkc-show-delete-back-hover) !important;
     border-radius: var(--bkc-show-delete-border-hover) !important;
 }
-select#custom-css-select:focus {
-    outline: none;
-}
-:focus {
-    outline: none;
-}
 .module.high {
     display: flex;
     flex-direction: row;
@@ -978,6 +945,22 @@ select#custom-css-select:focus {
     place-content: center space-between;
     align-items: center;
     margin-left: 1rem !important;
+}
+.bkc-drop {
+    box-shadow: 0 0 1px 2px rgba(255,255,255,0.8),0 0 8px 100vw rgba(0,0,0,0.4)!important;
+    outline: #8c8c8c dashed .2rem!important;
+}
+@media screen and (min-width: 0px) {
+    #live-streams-menu {
+      margin:0 0 0 0!important;
+  }
+}
+#gui *:focus {
+    outline-color: #8c8c8c;
+}
+button#bkc-new:focus, button#bkc-show-delete:focus {
+    border: 1px solid rgb(118,118,118);
+    z-index: 1;
 }
 `;
 
@@ -1006,17 +989,19 @@ select#custom-css-select:focus {
                   <div class="required-warning" style="display: none; flex-flow: row nowrap; place-content: center center; align-items: center; color: red; padding-bottom: 1rem; width: 100%; font-weight: bolder">
                           <span id="required-warning-span">Name & Url required</span>
                   </div>
-                  <div class="thing" style="width: 100%; display: flex; flex-wrap: nowrap; margin: 0.1rem 0">
-                          <label style="margin: 0 0.5rem 0 0">Name:</label>
+                  <div class="thing" style="width: 100%;display: flex;flex-wrap: nowrap;">
+                          <label style="margin-right: 0.5rem;">Name:</label>
                           <input type="text" id="css-new-title-input" style="width: 100%; background-color: inherit; border: 1px solid rgb(133, 133, 133); border-radius: 0.3rem; color: #fff" />
                   </div>
-                  <div class="thing" style="width: 100%; display: flex; flex-wrap: nowrap; margin: 0.5rem 0 0.1rem 0">
+                  <div class="thing" style="width: 100%;display: flex;flex-wrap: nowrap;margin-top: 0.5rem;">
                           <label style="margin: 0 0.5rem 0 0">Url:</label>
                           <input type="text" id="css-new-url-input" style="width: 100%; background-color: inherit; border: 1px solid rgb(133, 133, 133); border-radius: 0.3rem; color: #fff" />
                   </div>
   
-                  <div class="thing" style="width: 100%; margin: 0.1rem 0; display: flex; flex-direction: row; flex-wrap: nowrap; align-content: center; justify-content: flex-start; align-items: center">
-                          <button id="bkc-save" style="margin: 0.5rem 0.5rem 0 0; line-height: unset; padding-top: 0; box-shadow: rgba(0, 0, 0, 0.5) 2px 1px 6px !important; background-color: inherit; border: 1px solid rgb(133, 133, 133); border-radius: 0.3rem; color: #fff">save</button>
+                  <div class="thing" style="width: 100%;margin-top: 0.5rem;display: flex;flex-direction: row;flex-wrap: nowrap;align-content: center;justify-content: flex-start;align-items: center;">
+                          <button id="bkc-browse" style="cursor: pointer;filter: grayscale(1);line-height: unset;padding-top: 0;box-shadow: rgba(0, 0, 0, 0.5) 2px 1px 6px !important;background-color: inherit;border: 1px solid rgb(133, 133, 133);border-radius: 0.3rem;color: #fff;" title="Choose File Or Drag And Drop Css File Onto Menu">browse 📁⼁ drag & drop</button>        
+                          <button id="bkc-save" style="cursor: pointer;margin-left: 0.5rem;line-height: unset;padding-top: 0;box-shadow: rgba(0, 0, 0, 0.5) 2px 1px 6px !important;background-color: inherit;border: 1px solid rgb(133, 133, 133);border-radius: 0.3rem;color: #fff;">save</button>
+                          <input type="file" accept="text/css" id="bkc-file-picker" style="display:none"></input>
                   </div>
           </div>
   
@@ -1063,6 +1048,7 @@ select#custom-css-select:focus {
   <div class="footer">Toggle With "PageUp" Key</div>
 `;
 
+  //prettier-ignore
   gui.onclick = (e) => {
     if (e.target.id === 'ShowTwitch') {
       ShowTwitch = e.target.checked;
@@ -1183,6 +1169,10 @@ select#custom-css-select:focus {
         settings.set('cssLinks', cssLinks);
         applyCss();
       }
+    } 
+    
+    else if (e.target.id === 'bkc-browse') {
+      cssFilePicker.click();
     }
   };
 
@@ -1270,6 +1260,7 @@ select#custom-css-select:focus {
     cssSelect = document.querySelector('#custom-css-wrapper').insertBefore(cssSelect, document.querySelector('#bkc-custom-css-header-button-wrapper'));
   }
 
+  let cssFilePicker = document.querySelector('#bkc-file-picker');
   let cssDelete = document.querySelector('#bkc-delete');
   let cssUrlInput = document.querySelector('#css-new-url-input');
   let cssTitleInput = document.querySelector('#css-new-title-input');
@@ -1297,9 +1288,9 @@ select#custom-css-select:focus {
     if (p) document.head.removeChild(p);
     if (customCss && cssLinks.currentCss) {
       let cssLinkElem = document.createElement('link');
+      cssLinkElem.href = cssLinks.currentCss.url;
       cssLinkElem.rel = 'stylesheet';
       cssLinkElem.id = 'custom-css';
-      cssLinkElem.href = cssLinks.currentCss.url;
       document.head.appendChild(cssLinkElem);
     }
   }
@@ -1310,6 +1301,14 @@ select#custom-css-select:focus {
       resetCssWrapper();
       settings.set('cssLinks', cssLinks);
       applyCss();
+    }
+  };
+
+  cssFilePicker.oninput = () => {
+    if (cssFilePicker.files[0].type === 'text/css') {
+      cssUrlInput.value = `file:///${cssFilePicker.files[0].path.replace(/\\/g, '/')}`;
+    } else {
+      BKC.tip('Invalid FileType');
     }
   };
 
@@ -1355,6 +1354,36 @@ function cssSelectKeyDown(mwNMWnmWnMwNMandM) {
   }
 }
 
+let droptimeout;
+function cssAddFromDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  cssDropEnd();
+  let cssAddNewContainer = document.querySelector('#add-new-css-menu');
+  if (e.dataTransfer.files[0].type === 'text/css') {
+    if (cssAddNewContainer.style.display !== 'flex') {
+      cssAddNewContainer.style.display = 'flex';
+    }
+    document.querySelector('#css-new-url-input').value = `file:///${e.dataTransfer.files[0].path.replace(/\\/g, '/')}`;
+  } else {
+    BKC.tip('Invalid FileType');
+  }
+}
+
+function cssWhileDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (droptimeout) droptimeout = clearTimeout(droptimeout);
+  if (!gui.classList.contains('bkc-drop')) gui.classList.add('bkc-drop');
+}
+
+function cssDropEnd() {
+  if (droptimeout) droptimeout = clearTimeout(droptimeout);
+  droptimeout = setTimeout(() => {
+    if (gui.classList.contains('bkc-drop')) gui.classList.remove('bkc-drop');
+  }, 100);
+}
+
 function toggleGui() {
   menuVisible = !menuVisible;
   if (menuVisible) {
@@ -1365,10 +1394,18 @@ function toggleGui() {
     }
     GuiResizeObserver.observe(gui);
     cssSelect.addEventListener('keydown', cssSelectKeyDown, false);
+    gui.addEventListener('drop', cssAddFromDrop, false);
+    gui.addEventListener('dragover', cssWhileDrop, false);
+    gui.addEventListener('dragenter', cssWhileDrop, false);
+    gui.addEventListener('dragleave', cssDropEnd, false);
   } else {
-    gui.style.display = 'none';
     GuiResizeObserver.disconnect();
+    gui.style.display = 'none';
     cssSelect.removeEventListener('keydown', cssSelectKeyDown, false);
+    gui.removeEventListener('drop', cssAddFromDrop, false);
+    gui.removeEventListener('dragover', cssWhileDrop, false);
+    gui.removeEventListener('dragenter', cssWhileDrop, false);
+    gui.removeEventListener('dragleave', cssDropEnd, false);
   }
   settings.set('menuOpen', menuVisible);
 }
