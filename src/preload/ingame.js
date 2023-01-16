@@ -136,7 +136,7 @@ function frameFuncsRemove(pos) {
 
 function permCrosshairToggleFunc() {
   if (permCrosshair) {
-    permcrossstyle.innerHTML = 'img#crosshair-static{opacity:1!important;}';
+    permcrossstyle.innerHTML = 'img#crosshair-static{opacity:1!important;visibility:visible!important;display:block!important;}';
   } else {
     permcrossstyle.innerHTML = '';
   }
@@ -1181,10 +1181,7 @@ button#bkc-new:focus, button#bkc-show-delete:focus {
   gui = document.body.appendChild(gui);
 
   permcrossstyle = gui.querySelector('#BKC-permcrosshair');
-
-  if (permCrosshair) {
-    permcrossstyle.innerHTML = 'img#crosshair-static{opacity:1!important;}';
-  }
+  permCrosshairToggleFunc();
 
   function AnotherFunction(a) {
     return {
