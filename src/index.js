@@ -87,12 +87,23 @@ if (!settings.get('fpsCap')) {
 }
 
 if (settings.get('capture')) {
+  app.commandLine.appendSwitch('use-angle', 'd3d9');
   app.commandLine.appendSwitch('enable-webgl2-compute-context');
   app.commandLine.appendSwitch('renderer-process-limit', 100);
   app.commandLine.appendSwitch('max-active-webgl-contexts', 100);
 }
 
+function setFlags() {
+  let myDarling = `${app.getPath('documents')}/BetterKirkaClient/appflags.json`;
+  if (fs.existsSync(myDarling)) {
+    for (const [Zero, Two] of Object.entries(JSON.parse(fs.readFileSync(myDarling, 'utf8').replace(/^(\uFEFF)?((\u00EF)?\u00BB\u00BF)?/gm, '')))) {
+      if (!app.commandLine.hasSwitch(Zero)) app.commandLine.appendSwitch(Zero, Two);
+    }
+  }
+}
+
 app.commandLine.appendSwitch('ignore-gpu-blacklist');
+setFlags();
 app.allowRendererProcessReuse = true;
 
 const browserOptions = {
@@ -133,7 +144,6 @@ const createWindow = () => {
 
   shortcuts.register(win, 'Escape', () => win.webContents.executeJavaScript('document.exitPointerLock()', true));
   shortcuts.register(win, 'F4', () => win.loadURL('https://kirka.io/'));
-  shortcuts.register(win, 'Alt+F4', () => app.quit());
   shortcuts.register(win, 'F5', () => win.reload());
   shortcuts.register(win, 'F6', () => win.loadURL(clipboard.readText()));
   shortcuts.register(win, 'F12', () => win.webContents.openDevTools());
@@ -179,7 +189,7 @@ const createWindow = () => {
   win.on('leave-full-screen', () => setTimeout(() => trayRun(), 100));
 
   win.on('closed', () => {
-    if (tray) tray.destroy();
+    if (tray) tray = tray.destroy();
     win = null;
   });
 
@@ -276,12 +286,14 @@ const initResourceSwapper = () => {
         allFilesSync(filePath);
       } else {
         let kirk = '*://' + (useAssets ? 'kirka.io' : '') + filePath.replace(swapperFolder, '').replace(/\\/g, '/') + '*';
-        swap.filter.urls.push(kirk);
-        swap.files[kirk.replace(/\*/g, '')] = url.format({
-          pathname: filePath,
-          protocol: '',
-          slashes: false,
-        });
+        if (!swap.filter.urls.includes(kirk)) {
+          swap.filter.urls.push(kirk);
+          swap.files[kirk.replace(/\*/g, '')] = url.format({
+            pathname: filePath,
+            protocol: '',
+            slashes: false,
+          });
+        }
       }
     });
   };
@@ -292,6 +304,17 @@ const initResourceSwapper = () => {
       callback({ cancel: false, redirectURL: redirect });
     });
   }
+  fs.watch(swapperFolder, { recursive: true, persistent: true }, (_eventType, filename) => {
+    if (fs.existsSync(`${swapperFolder}/${filename}`)) allFilesSync(swapperFolder);
+    else {
+      let file = filename.replace(/\\/g, '/');
+      let index = swap.filter.urls.indexOf(`*://kirka.io/${file}*`);
+      if (index > -1) {
+        swap.filter.urls.splice(index, 1);
+        delete swap.files[`://kirka.io/${file}`];
+      }
+    }
+  });
 };
 
 let iconanim;

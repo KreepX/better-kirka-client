@@ -148,7 +148,6 @@ function playerHighLightFunc() {
     let qNum = 2;
 
     if (!scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players && !scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][++qNum]['_queries'].players) return;
-
     for (let i = 0; i < scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players?.entities?.length; i++) {
       let mat = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players.entities[i]['_components'][0].value.children[0].children[0].children[1].material;
 
@@ -409,11 +408,12 @@ let livestreamers;
 let notificationsonclick;
 let GuiResizeObserver;
 let TwitchResizeObserver;
-let QuestInterval;
 let permcrossstyle;
 let cssSelect;
+let clockInterval;
+let statsUpdated = false;
 let claimedQuest = false;
-let gamemodee = false;
+let inGame = false;
 let flagmodeset = false;
 let scoped = false;
 let ShouldHiglight = false;
@@ -578,7 +578,6 @@ async function CheckQuest() {
 
   for (let quest of quests) {
     if (quest.progress.completed && !quest.progress.rewardTaken) {
-      //prettier-ignore
       BKC.tip(`${toTitleCase(quest.type)} Quest Completed:
 ${quest.amount} ${toTitleCase(quest.name)} ${quest.weapon !== 'undefined' ? quest.weapon : ''}
 XP:  ${quest['rewards'][0].amount}   COINS:  ${quest['rewards'][1].amount}`);
@@ -605,18 +604,105 @@ XP:  ${quest['rewards'][0].amount}   COINS:  ${quest['rewards'][1].amount}`);
 }
 
 function checkclaimQuest() {
-  CheckQuest()
-    .then((result) => {
-      if (!result) {
-        QuestInterval = setTimeout(() => {
-          checkclaimQuest();
-        }, 15000);
-        BKC.tip(`Failed Claiming Quest Trying Again In 15 Seconds`);
+  if (!inGame) {
+    CheckQuest()
+      .then((result) => {
+        if (!result) {
+          setTimeout(() => {
+            checkclaimQuest();
+          }, 15000);
+          BKC.tip(`Failed Claiming Quest Trying Again In 15 Seconds`);
+        }
+      })
+      .catch((error) => {
+        BKC.tip(error);
+      });
+  }
+}
+
+function clock() {
+  if (!clockInterval) {
+    clockInterval = setInterval(() => {
+      let titTok = document.querySelector('#free-clock');
+      if (titTok) titTok.innerHTML = new Date().toLocaleTimeString();
+    }, 1000);
+  }
+}
+
+async function getStats() {
+  let id = document.querySelector('.username')?.innerHTML.slice(1);
+  let statsContainer = document.querySelector('#bkc-daily-stats-container');
+  if (!id || !statsContainer) return 'NAAHHHH AINTNOWAY';
+  let stats = await fetch('https://api.kirka.io/api/user/getProfile', {
+    headers: {
+      accept: 'application/json, text/plain, */*',
+      authorization: 'Bearer ' + localStorage.token,
+      'cache-control': 'no-cache',
+      'content-type': 'application/json;charset=UTF-8',
+      csrf: 'token',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-site': 'same-site',
+    },
+    referrer: 'https://kirka.io/',
+    referrerPolicy: 'strict-origin-when-cross-origin',
+    body: `{"id":"${id}","isShortId":true}`,
+    method: 'POST',
+    mode: 'cors',
+    credentials: 'include',
+  });
+
+  if (!stats.ok) return false;
+  stats = await stats.json();
+  let dailyStats = typeof settings.get('dailyStats') === 'undefined' ? {} : settings.get('dailyStats');
+  let date = new Date().toLocaleString('en-US', { timeZone: 'America/Denver', day: 'numeric', month: 'numeric', year: 'numeric' });
+
+  if (!dailyStats[id] || date !== dailyStats[id].date) {
+    dailyStats[id] = {
+      games: stats.stats.games,
+      wins: stats.stats.wins,
+      kills: stats.stats.kills,
+      deaths: stats.stats.deaths,
+      headshots: stats.stats.headshots,
+      scores: stats.stats.scores,
+      totalXp: stats.totalXp,
+      coins: stats.coins,
+      diamonds: stats.diamonds,
+      kd: 0,
+      date,
+    };
+    settings.set('dailyStats', dailyStats);
+  }
+
+  stats.stats.kd = Math.round(((stats['stats']['kills'] - dailyStats[id]['kills']) / (stats['stats']['deaths'] - dailyStats[id]['deaths']) + Number.EPSILON) * 100) / 100;
+  if (Number.isNaN(stats.stats.kd)) stats.stats.kd = 0;
+  for (const key in dailyStats[id]) {
+    if (key !== 'date') {
+      let statElem = gui.querySelector(`#bkc-${key}`);
+      if (!statElem) {
+        let newStat = document.createElement('div');
+        newStat.className = 'module';
+        newStat.innerHTML = `<label id="bkc-${key}-stat">${toTitleCase(key)}: </label><span id="bkc-${key}">${(stats[key] || stats['stats'][key]) - dailyStats[id][key]}</span>`;
+        statsContainer.appendChild(newStat);
+      } else {
+        statElem.innerHTML = (stats[key] || stats['stats'][key]) - dailyStats[id][key];
       }
-    })
-    .catch((error) => {
-      BKC.tip(error);
-    });
+    }
+  }
+  return 'W';
+}
+
+function fetchStats(fCount) {
+  if (!inGame) {
+    getStats()
+      .then((result) => {
+        if (result !== 'W') {
+          let retryDelay = result === 'NAAHHHH AINTNOWAY' ? 1000 : ++fCount > 2 ? 15000 : 5000;
+          setTimeout(() => fetchStats(fCount), retryDelay);
+          BKC.tip(`Failed Fetching Stats Trying Again In ${retryDelay} Seconds`);
+        }
+      })
+      .catch((error) => BKC.tip(error));
+  }
 }
 
 const Questobserver = new MutationObserver(() => {
@@ -697,25 +783,38 @@ const SomeObserver = new MutationObserver(() => {
     let p = (document.querySelector('.soc-icon.svg-icon.svg-icon--gamepad2').parentElement.onclick = () => shell.openExternal('https://github.com/42infi/better-kirka-client/releases'));
     gitclick = !!p;
   }
+
+  if (!statsUpdated && document.querySelector('.username')?.innerHTML) {
+    statsUpdated = true;
+    fetchStats(0);
+  }
+
+  let freeClockElem = document.querySelector('#ad-bottom');
+  if (freeClockElem) {
+    freeClockElem.id = 'free-clock';
+    freeClockElem.innerHTML = new Date().toLocaleTimeString();
+    freeClockElem.className = 'free-clock';
+    freeClockElem.style = 'position:absolute;overflow:hidden;text-align:center;top:0.25rem;';
+    clock();
+  }
 });
 
 SomeObserver.observe(document, { childList: true, subtree: true });
 
 const MainObserverr = new MutationObserver(() => {
-  if (!gamemodee && /kirka[.]io[/]game/.test(window.location.href) && !document.querySelector('.end-modal')) {
-    gamemodee = true;
+  if (!inGame && /kirka[.]io[/]game/.test(window.location.href) && !document.querySelector('.end-modal')) {
+    inGame = true;
     SomeObserver.disconnect();
     if (!animate) animateState('true');
     if (TwitchResizeObserver) TwitchResizeObserver.disconnect();
-    if (QuestInterval) QuestInterval = clearTimeout(QuestInterval);
-
+    if (clockInterval) clockInterval = clearInterval(clockInterval);
     document.removeEventListener('keyup', keyup);
-  } else if (gamemodee && (!/kirka[.]io[/]game/.test(window.location.href) || document.querySelector('.end-modal'))) {
+  } else if (inGame && (!/kirka[.]io[/]game/.test(window.location.href) || document.querySelector('.end-modal'))) {
     ShouldHiglight = false;
     if (animate) {
       animateState();
     }
-    gamemodee = false;
+    inGame = false;
     gitclick = false;
     discclick = false;
     if (flagmodeset) {
@@ -726,6 +825,7 @@ const MainObserverr = new MutationObserver(() => {
     }
     SomeObserver.observe(document, { childList: true, subtree: true });
     claimedQuest = false;
+    statsUpdated = false;
     Sessionids = [];
     document.addEventListener('keyup', keyup);
   }
@@ -962,6 +1062,48 @@ button#bkc-new:focus, button#bkc-show-delete:focus {
     border: 1px solid rgb(118,118,118);
     z-index: 1;
 }
+
+div#bkc-daily-stats-wrapper {
+  overflow-wrap: unset;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  place-content: center center;
+  padding-left: 0rem;
+  margin: 0.5rem 0;
+  background-color: rgba(0,0,0,0.3);
+  border: 1px solid rgb(133, 133, 133);
+  box-shadow: rgba(0, 0, 0, 0.5) 2px 1px 6px !important;
+  border-radius: 0.3rem;
+  pointer-events: none;
+}
+div#bkc-daily-stats-header {
+  margin: auto;
+}
+div#bkc-daily-stats-wrapper > div.module {
+  place-content: center space-around;
+  flex-wrap: wrap;
+  padding: 0;
+  flex-direction: row;
+  word-break: keep-all;
+  overflow-wrap: unset;
+  min-width: 17rem;
+  max-width: 21.5rem;
+  border-top: 2px solid #8c8c8c;
+  border-radius: 0;
+  margin: 0;
+  display: flex;
+}
+div#bkc-daily-stats-container > div.module {
+  border-radius: 0rem;
+  padding: 0;
+  min-width: 8rem;
+  margin: 0.1rem;
+  word-break: keep-all;
+  overflow-wrap: unset;
+}
+div#bkc-daily-stats-container > div.module > label {
+  margin-left: 0;
+}
 `;
 
   gui.innerHTML = `
@@ -1043,6 +1185,9 @@ button#bkc-new:focus, button#bkc-show-delete:focus {
           <div class="module">
                   <input type="checkbox" id="ShowTwitch" name="ShowTwitch" />
                   <label title="Show Live Kirka Twitch Streams &#013; Click And Drag The Titlebar To Move The Menu  &#013; Click And Drag The Bottom Right Corner To Resize The Menu" for="ShowTwitch">Show Live Kirka Twitch Streams Menu</label>
+          </div>
+          <div id="bkc-daily-stats-wrapper" class="module"><div id="bkc-daily-stats-header">Daily Stats</div>
+          <div id="bkc-daily-stats-container" class="module"></div>
           </div>
   </div>
   <div class="footer">Toggle With "PageUp" Key</div>
@@ -1302,10 +1447,12 @@ button#bkc-new:focus, button#bkc-show-delete:focus {
   };
 
   cssFilePicker.oninput = () => {
-    if (cssFilePicker.files[0].type === 'text/css') {
-      cssUrlInput.value = `file:///${cssFilePicker.files[0].path.replace(/\\/g, '/')}`;
-    } else {
-      BKC.tip('Invalid FileType');
+    if (cssFilePicker.value) {
+      if (cssFilePicker.files[0].type === 'text/css') {
+        cssUrlInput.value = `file:///${cssFilePicker.files[0].path.replace(/\\/g, '/')}`;
+      } else {
+        BKC.tip('Invalid FileType');
+      }
     }
   };
 
