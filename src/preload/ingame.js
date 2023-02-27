@@ -1,3 +1,4 @@
+/* eslint-disable guard-for-in */
 /* eslint-disable getter-return */
 /* eslint-disable no-extend-native */
 /* eslint-disable no-await-in-loop */
@@ -18,12 +19,13 @@ const BKC = {
     }
   },
   tip(...Msg) {
-    let tipchilds = document.querySelectorAll('.vue-notification-wrapper');
     let span = document.getElementsByClassName('vue-notification-group')[0].getElementsByTagName('span')[0];
-    if (tipchilds.length >= DevTooltipsMaxTips) {
-      let trimLen = tipchilds.length - DevTooltipsMaxTips;
-      for (let i = -1; i < trimLen; i++) {
-        span.removeChild(tipchilds[i]);
+    let tipchilds = span?.childNodes;
+    if (tipchilds?.length >= DevTooltipsMaxTips) {
+      let trimLen = tipchilds.length - 1 - DevTooltipsMaxTips;
+      for (let i = 0; i < trimLen; i++) {
+        let p = span?.firstChild;
+        if (p) span.removeChild(p);
       }
     }
     let newtip = document.createElement('div');
@@ -197,11 +199,11 @@ function JoinLobbyWhenUnlocked() {
   if (children) {
     for (var i = 0; i < children.length; i++) {
       if (!children[i].classList.contains('available-rooms') && !children[i].classList.contains('no-free')) {
-        if (!children[i]?.querySelector('#JWF-cb') && children[i].getElementsByClassName('right')?.[0]) {
+        if (!children[i]?.querySelector('#bkc-JWF-cb') && children[i].getElementsByClassName('right')?.[0]) {
           var x = document.createElement('INPUT');
           x.type = 'checkbox';
           x.className = 'input-checkbox  button';
-          x.id = 'JWF-cb';
+          x.id = 'bkc-JWF-cb';
           x.title = 'Join Lobby When Available';
           x.style = 'margin-right:0.5rem;margin-left:1rem;--hover-color:var(--primary-2);display:flex;justify-content:center;align-items:center;border:none;position:relative;color:var(--white);font-size:1rem;transition:all .3s ease;font-family:Rowdies;padding:.9em 1.4em;transform:skew(-10deg);font-weight:900;overflow:hidden;text-transform:uppercase;border-radius:.2em;outline:none;text-shadow:0 .1em 0 #000;-webkit-text-stroke:1px var(--black);box-shadow:0 .15rem 0 rgba(0,0,0,.315);cursor:pointer;';
           children[i].getElementsByClassName('right')[0].appendChild(x);
@@ -223,12 +225,12 @@ function JoinLobbyWhenUnlocked() {
         if (Sessionids.length) {
           let ThisIdd = children[i].getElementsByClassName('session-id')[0]?.innerHTML;
           if (Sessionids.includes(ThisIdd)) {
-            children[i].querySelector('#JWF-cb').checked = true;
+            children[i].querySelector('#bkc-JWF-cb').checked = true;
             if (!children[i].classList.contains('locked')) {
               children[i].getElementsByClassName('button join')[0].click();
             }
           } else {
-            children[i].querySelector('#JWF-cb').checked = false;
+            children[i].querySelector('#bkc-JWF-cb').checked = false;
           }
         }
       }
@@ -273,6 +275,22 @@ async function ShowHideGameModes() {
       }
     }
   }
+
+  document.querySelectorAll('div.list-cont div.list div[style*="display: flex;"] div.right div.online').forEach((playerCnt) => {
+    let player = Number(playerCnt.innerHTML.split('/')[0]);
+    if (!Number.isNaN(player)) {
+      if (player >= minPlayers && player < 8 && !playerCnt.parentElement.parentElement.classList.contains('locked')) {
+        if (playerCnt.style.color !== 'var(--green-1)') playerCnt.style.color = 'var(--green-1)';
+        if (playerCnt?.title !== 'available') playerCnt.title = 'available';
+      } else if (player < minPlayers) {
+        if (playerCnt.style.color !== 'var(--red-3)') playerCnt.style.color = 'var(--red-3)';
+        if (playerCnt?.title !== 'below min players') playerCnt.title = 'below min players';
+      } else {
+        if (playerCnt.style.color !== 'var(--primary-1)') playerCnt.style.color = 'var(--primary-1)';
+        if (playerCnt?.title !== 'below min time, lobby full or game has ended') playerCnt.title = 'below min time, lobby full or game has ended';
+      }
+    }
+  });
 }
 
 function GameModesCheckBoxChangeHandler(event) {
@@ -291,6 +309,12 @@ function GameModesCheckBoxChangeHandler(event) {
   } else if (event.target.className === 'PHY-checkbox') {
     GameModesShowPHY = event.target.checked;
     settings.set('GameModesShowPHY', GameModesShowPHY);
+  } else if (event.target.id === 'bkc-min-time') {
+    minTime = Number(event.target.options[event.target.selectedIndex].value);
+    settings.set('minTime', minTime);
+  } else if (event.target.id === 'bkc-min-players') {
+    minPlayers = Number(event.target.options[event.target.selectedIndex].value);
+    settings.set('minPlayers', minPlayers);
   }
   ShowHideGameModes();
 }
@@ -301,56 +325,90 @@ const gamemodesobserver = new MutationObserver(() => {
 });
 
 function SetGameModesCheckBoxes() {
-  let p = document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div.tabs');
-  if (p && !p.querySelector('div.mods.tabmods')) {
+  let list = document.querySelector('#view div.background div.container div.content div.servers div.container-games div.list-cont div.list');
+  if (list && !document.querySelector('#bkc-minmax-selects')) {
+    let bkcMinSelect = document.createElement('div');
+    bkcMinSelect.id = 'bkc-minmax-selects';
+    bkcMinSelect.innerHTML = `
+    <label title="Minimum Players" id="bkc-min-players-label">Players:</label>
+    <select id="bkc-min-players" title="Minimum Players">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option selected="selected" value="7">7</option>
+  </select>
+  <label title="Minimum Time Remaining" id="bkc-min-time-label">Time:</label>
+  <select id="bkc-min-time" title="Minimum Time Remaining">
+    <option value="1" selected="selected">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+  </select>
+    `;
+
     let modesCont = document.createElement('div');
     modesCont.className = 'mods tabmods';
-    modesCont.setAttribute('style', 'display:flex;font-size:1rem!important;margin:0 0 0 auto;');
-    modesCont.innerHTML = `
-    <div class="DM" style="margin-right:.5rem!important;height:3.1vh;margin:auto;">
-    <label class="custom-checkbox checkbox-size">
-    <input type="checkbox" class="DM-checkbox">
-    <span> Solo </span>
-    </label>
-    </div>
-    
-    <div class="TDM" style="margin-right:.5rem!important;height:3.1vh;margin:auto;">
-    <label class="custom-checkbox checkbox-size">
-    <input type="checkbox" class="TDM-checkbox">
-    <span> Team </span>
-    </label>
-    </div>
-    
-    <div class="POINT" style="margin-right:.5rem!important;height:3.1vh;margin:auto;">
-    <label class="custom-checkbox checkbox-size">
-    <input type="checkbox" class="POINT-checkbox">
-    <span> Point </span>
-    </label>
-    </div>
-    
-    <div class="P" style="margin-right:.5rem!important;height:3.1vh;margin:auto;">
-    <label class="custom-checkbox checkbox-size">
-    <input type="checkbox" class="P-checkbox">
-    <span> Parkour </span>
-    </label>
-    </div>
-    
-    <div class="PHY" style="margin-right:.5rem!important;height:3.1vh;margin:auto;">
-    <label class="custom-checkbox checkbox-size">
-    <input type="checkbox" class="PHY-checkbox">
-    <span> Physics </span>
-    </label>
-    </div>
+    modesCont.style = `
+    display: flex;
+    margin: auto;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-content: center;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
     `;
-    modesCont = p.appendChild(modesCont);
+    modesCont.innerHTML = `
+      <div class="DM">
+      <label class="custom-checkbox checkbox-size">
+      <input type="checkbox" class="DM-checkbox">
+      <span> Solo </span>
+      </label>
+      </div>
+      
+      <div class="TDM">
+      <label class="custom-checkbox checkbox-size">
+      <input type="checkbox" class="TDM-checkbox">
+      <span> Team </span>
+      </label>
+      </div>
+      
+      <div class="POINT">
+      <label class="custom-checkbox checkbox-size">
+      <input type="checkbox" class="POINT-checkbox">
+      <span> Point </span>
+      </label>
+      </div>
+      
+      <div class="P">
+      <label class="custom-checkbox checkbox-size">
+      <input type="checkbox" class="P-checkbox">
+      <span> Parkour </span>
+      </label>
+      </div>
+      
+      <div class="PHY">
+      <label class="custom-checkbox checkbox-size">
+      <input type="checkbox" class="PHY-checkbox">
+      <span> Physics </span>
+      </label>
+      </div>
+      `;
+    modesCont = bkcMinSelect.appendChild(modesCont);
     modesCont.getElementsByClassName('DM-checkbox')[0].checked = GameModesShowDM;
     modesCont.getElementsByClassName('TDM-checkbox')[0].checked = GameModesShowTDM;
     modesCont.getElementsByClassName('P-checkbox')[0].checked = GameModesShowP;
     modesCont.getElementsByClassName('POINT-checkbox')[0].checked = GameModesShowPOINT;
     modesCont.getElementsByClassName('PHY-checkbox')[0].checked = GameModesShowPHY;
-    modesCont.addEventListener('change', GameModesCheckBoxChangeHandler);
-
-    gamemodesobserver.observe(document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div.list'), {
+    bkcMinSelect.addEventListener('input', GameModesCheckBoxChangeHandler);
+    gamemodesobserver.observe(list, {
       childList: true,
       attributes: true,
       subtree: true,
@@ -358,6 +416,9 @@ function SetGameModesCheckBoxes() {
       characterData: true,
       characterDataOldValue: true,
     });
+    bkcMinSelect = list.parentElement.insertBefore(bkcMinSelect, list);
+    bkcMinSelect.querySelector(`#bkc-min-players option[value="${minPlayers}"]`).selected = true;
+    bkcMinSelect.querySelector(`#bkc-min-time option[value="${minTime}"]`).selected = true;
   }
 }
 
@@ -368,9 +429,83 @@ if (typeof settings.get('pendingImport') !== 'undefined') {
   window.location.reload();
 }
 
+let id;
+let gigaJSONParse = function () {
+  let data = boringJSONParse.apply(this, arguments);
+  if (typeof data[0]?.metadata?.serverName !== 'undefined') {
+    let currentTime = Date.now();
+    for (let key in data) {
+      if (data[key]['metadata']['custom'] === false && (data[key].clients < minPlayers || Math.ceil((480 - (currentTime - Date.parse(data[key]['createdAt'])) / 1e3) / 60) < minTime)) {
+        data[key].locked = true;
+      }
+    }
+  } else if (data?.adReward && data?.shortId) {
+    id = data.shortId;
+  }
+  return data;
+};
+let boringJSONParse = window.JSON.parse;
+window.JSON.parse = gigaJSONParse;
+
+let stremzInfo;
+function gigaInfiRequest() {
+  window.XMLHttpRequest = class extends XMLHttpRequest {
+    constructor() {
+      super();
+      this.send = (...sendArgs) => {
+        let oldChange = this.onreadystatechange;
+        this.onreadystatechange = (...args) => {
+          if (this.readyState === 4 && this.status === 200) {
+            if (this.responseURL === 'https://api.twitch.tv/helix/streams?first=10&game_id=356609813') {
+              stremzInfo = boringJSONParse(this.response);
+              initTwitchMenu();
+            } else if (new URL(this.responseURL).pathname === '/helix/users') {
+              let stremzNew = boringJSONParse(this.response);
+              if (initTwitchMenu()) {
+                newStremz(stremzNew);
+              }
+            } else if (this.responseURL === 'https://api.kirka.io/api/notification' && this.response !== '[]') {
+              let data = boringJSONParse(this.response);
+              let keys = Object.keys(data);
+              if (keys.filter((key) => data[key].object?.message === 'You completed a quest').length > 0) {
+                if (!claimedQuest) {
+                  claimedQuest = true;
+                  checkclaimQuest();
+                }
+              }
+            }
+          }
+          if (oldChange) oldChange.apply(this, ...args);
+        };
+        super.send(...sendArgs);
+      };
+    }
+  };
+  return window.XMLHttpRequest;
+}
+let boringXMLHttpRequest = window.XMLHttpRequest;
+let gigaXMLHttpRequest = gigaInfiRequest();
+window.XMLHttpRequest = gigaXMLHttpRequest;
+
+let inputtoggle = false;
+let gigaAddEventListener = function (...args) {
+  if (this?.id === 'WMNn' && args[0] === 'keyup' && window.location.pathname !== '/servers/main' && window.location.pathname !== '/servers/custom') {
+    boringAddEventListener.apply(this, [args[0], args[1], { capture: false, passive: true }]);
+    EventTarget.prototype.addEventListener = boringAddEventListener;
+    this.addEventListener('keyup', (e) => {
+      if (e.key === 'Enter') {
+        inputtoggle = !inputtoggle;
+        if (!inputtoggle && this.value === '') this.blur();
+      }
+    });
+  } else boringAddEventListener.apply(this, args);
+};
+let boringAddEventListener = EventTarget.prototype.addEventListener;
+EventTarget.prototype.addEventListener = gigaAddEventListener;
+
 let DevToolTips = true;
 let DevTooltipsTimeout = 10000;
-let DevTooltipsMaxTips = 5;
+let DevTooltipsMaxTips = 20;
 let devid = 0;
 let EnemyhighlightColor = typeof settings.get('EnemyhighlightColor') === 'undefined' ? settingsSetGit('EnemyhighlightColor', '#ff00ff') : settings.get('EnemyhighlightColor');
 let TeamhighlightColor = typeof settings.get('TeamhighlightColor') === 'undefined' ? settingsSetGit('TeamhighlightColor', '#0000ff') : settings.get('TeamhighlightColor');
@@ -386,6 +521,8 @@ let ShowTwitch = typeof settings.get('ShowTwitch') === 'undefined' ? settingsSet
 let TwitchTop = typeof settings.get('TwitchTop') === 'undefined' ? settingsSetGit('TwitchTop', '20vw') : settings.get('TwitchTop');
 let guiHeight = typeof settings.get('guiHeight') === 'undefined' ? settingsSetGit('guiHeight', '95%') : settings.get('guiHeight');
 let guiWidth = typeof settings.get('guiWidth') === 'undefined' ? settingsSetGit('guiWidth', '51%') : settings.get('guiWidth');
+let minPlayers = typeof settings.get('minPlayers') === 'undefined' ? 1 : settings.get('minPlayers');
+let minTime = typeof settings.get('minTime') === 'undefined' ? 0 : settings.get('minTime');
 let capture = typeof settings.get('capture') === 'undefined' ? false : settings.get('capture');
 let cssLinks = typeof settings.get('cssLinks') === 'undefined' ? {} : settings.get('cssLinks');
 let fpsCap = typeof settings.get('fpsCap') === 'undefined' ? false : settings.get('fpsCap');
@@ -404,13 +541,13 @@ let flagMaterial;
 let animate;
 let animateState;
 let streamsmenu;
-let livestreamers;
 let notificationsonclick;
 let GuiResizeObserver;
 let TwitchResizeObserver;
 let permcrossstyle;
 let cssSelect;
 let clockInterval;
+let timeContainer;
 let statsUpdated = false;
 let claimedQuest = false;
 let inGame = false;
@@ -499,47 +636,108 @@ function MoveTwitchMenu(TwitchHead) {
 function SaveTwitchSize() {
   if (TwitchWidth !== streamsmenu.style.width) {
     TwitchWidth = settingsSetGit('TwitchWidth', streamsmenu.style.width);
+    streamsmenu.style.setProperty('--bkc-stremz-menu-width', streamsmenu.style.width);
   }
   if (TwitchHeight !== streamsmenu.style.height) {
     TwitchHeight = settingsSetGit('TwitchHeight', streamsmenu.style.height);
   }
 }
 
-function SetTwitchLinks() {
-  for (let link of streamsmenu.querySelectorAll('div.list>div.item')) {
-    let l = link.querySelector('.name')?.innerHTML;
-    if (l) {
-      link.onclick = () => {
-        shell.openExternal(`https://www.twitch.tv/${l}`);
-      };
+TwitchResizeObserver = new ResizeObserver(SaveTwitchSize);
+
+function newStremz(data) {
+  let twitchinfo = getTwitchInfo(data['data'][0].id);
+  if (twitchinfo && !streamsmenu.querySelector(`img[src="${data['data'][0].profile_image_url}"]`)) {
+    let item = document.createElement('div');
+    let viewers = `${twitchinfo.viewer_count} ${twitchinfo.viewer_count === 1 ? 'viewer' : 'viewers'}`;
+    item.className = 'item';
+    item.title = `
+Click to watch ${data['data'][0].display_name} stream kirka.io on twitch
+Title:  ${twitchinfo.title}
+Started at:  ${new Date(twitchinfo.started_at).toLocaleString()}
+Streaming to:  ${viewers}
+Tags:  ${twitchinfo.tags.toString()}
+Language:  ${twitchinfo.language}
+      𝙍𝙞𝙜𝙝𝙩 𝙘𝙡𝙞𝙘𝙠 𝙩𝙤 𝙘𝙤𝙥𝙮 𝙡𝙞𝙣𝙠 𝙩𝙤 𝙘𝙡𝙞𝙥𝙗𝙤𝙖𝙧𝙙 ⠀⠀
+    `;
+    item.innerHTML = `
+<img src="${data['data'][0].profile_image_url}" alt="avatar" class="avatar" style="height: 2.188rem;width: 2.188rem;margin-top: .3rem;border-radius: 20px;border: 2px solid #7235cb;"/>
+<div class="content" style="display: flex;flex-direction: column;align-items: flex-start;margin-left: .7rem;text-shadow: 0 2px 0 rgba(0,0,0,.5);">
+<div id="bkc-twitch-name" style="display: flex;flex-direction: row;flex-wrap: nowrap;align-content: center;justify-content: center;align-items: center;">  
+<div style="font-weight: 700;" class="name">${data['data'][0].display_name}</div>${twitchinfo.broadcaster_type === 'affiliate' ? '<svg width="16px" height="16px" version="1.1" viewBox="0 0 16 16" x="0px" y="0px" style="fill: rgb(191,148,255);"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.5 3.5L8 2L3.5 3.5L2 8L3.5 12.5L8 14L12.5 12.5L14 8L12.5 3.5ZM7.00008 11L11.5 6.5L10 5L7.00008 8L5.5 6.5L4 8L7.00008 11Z"></path></svg>' : ''}
+</div>
+<div class="count">${twitchinfo.title}</div>
+<div class="count">${viewers} • ${twitchinfo.time}</div>
+</div>
+`;
+    item.onmouseup = (e) => {
+      if (e.button === 0) shell.openExternal(`https://www.twitch.tv/${data['data'][0].display_name}`);
+      else if (e.button === 2) {
+        clipboard.writeText(`https://www.twitch.tv/${data['data'][0].display_name}`);
+        BKC.tip('Link Copied');
+      }
+    };
+    streamsmenu.querySelector('div.list').appendChild(item);
+  }
+}
+
+function getTwitchInfo(userid) {
+  for (let i = 0; i < stremzInfo?.data?.length; i++) {
+    if (stremzInfo.data[i].user_id === userid) {
+      if (!stremzInfo.data[i].time) {
+        let time = Date.now() - Date.parse(stremzInfo.data[i]['started_at']);
+        let s = Math.round((time + Number.EPSILON) / 1e3);
+        let m = Math.round((time + Number.EPSILON) / 6e4);
+        let h = Number((time / 36e5).toFixed(1));
+        let d = Number((time / 864e5).toFixed(1));
+        if (s < 60) {
+          stremzInfo.data[i].time = `live for ${s} ${s === 1 ? 'sec' : 'secs'}`;
+        } else if (m < 60) {
+          stremzInfo.data[i].time = `live for ${m} ${m === 1 ? 'min' : 'mins'}`;
+        } else if (h < 24) {
+          stremzInfo.data[i].time = `live for ${h} ${h === 1 ? 'hr' : 'hrs'}`;
+        } else {
+          stremzInfo.data[i].time = `live for ${d} ${d === 1 ? 'day' : 'days'}`;
+        }
+      }
+      return stremzInfo.data[i];
     }
   }
 }
 
-TwitchResizeObserver = new ResizeObserver(SaveTwitchSize);
-
-function ShowliveStreams() {
-  let defStremzMenu = document.querySelector('.live-streams');
-  if (defStremzMenu) {
+function initTwitchMenu() {
+  let interface = document.querySelector('.interface.text-2');
+  if (interface) {
     if (!document.querySelector('#live-streams-menu')) {
-      streamsmenu = document.getElementsByClassName('live-streams')[0].cloneNode(true);
-      streamsmenu.style = `position:absolute;resize:both;overflow: auto hidden!important;opacity:1!important;z-index:3!important;min-height:5vh!important;pointer-events:all!important;
-      top:${TwitchTop};left:${TwitchLeft};width:${TwitchWidth};height:${TwitchHeight};${ShowTwitch ? 'display:block!important;' : 'display:none!important;'}`;
+      streamsmenu = document.createElement('div');
+      streamsmenu.style = `z-index:998!important;min-width: 15.5rem;min-height: 4rem;position:absolute;resize:both;overflow: auto hidden!important;opacity:1!important;pointer-events:all!important;
+      top:${TwitchTop};left:${TwitchLeft};--bkc-stremz-menu-width:${TwitchWidth};width:${TwitchWidth};height:${TwitchHeight};${ShowTwitch ? 'display:block!important;' : 'display:none!important;'}`;
       streamsmenu.id = 'live-streams-menu';
-      streamsmenu = document.querySelector('.interface.text-2').appendChild(streamsmenu);
-      livestreamers = defStremzMenu.querySelectorAll('[target="_blank"]').length;
+      streamsmenu.innerHTML = `
+      <div class="head" style="display: flex; align-items: center; font-size: 1.5rem; font-weight: 700; text-shadow: 0 3px 1px rgba(0, 0, 0, 0.5); border-bottom: 2px solid #191919; padding: 10px 10px 10px 1rem; background: var(--secondary-2)">
+      LIVE STREAMS<svg style="fill: currentColor; height: 2.375rem; width: 2.063rem; margin-left: 1.125rem" xmlns="http://www.w3.org/2000/svg" class="icon-twitch svg-icon svg-icon--twitch">
+        <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/img/icons.6e41b8dd.svg#twitch"></use>
+      </svg>
+      </div>
+      <div class="list"></div>
+      <div class="item">Stream kirka on twitch to show up here</div>
+      `;
+      streamsmenu = interface.appendChild(streamsmenu);
+      let kirkaItem = streamsmenu.querySelector('.item');
+      kirkaItem.onmouseup = (e) => {
+        if (e.button === 0) shell.openExternal('https://www.twitch.tv/directory/game/Kirka.io');
+        else if (e.button === 2) {
+          clipboard.writeText(`https://www.twitch.tv/directory/game/Kirka.io`);
+          BKC.tip('Link Copied');
+        }
+      };
+      kirkaItem.title = `Click to visit kirka.io on twitch
+      𝙍𝙞𝙜𝙝𝙩 𝙘𝙡𝙞𝙘𝙠 𝙩𝙤 𝙘𝙤𝙥𝙮 𝙡𝙞𝙣𝙠 𝙩𝙤 𝙘𝙡𝙞𝙥𝙗𝙤𝙖𝙧𝙙 ⠀⠀
+`;
       TwitchResizeObserver.observe(streamsmenu);
       MoveTwitchMenu(streamsmenu);
-      SetTwitchLinks();
-    } else {
-      let currentlen = defStremzMenu.querySelectorAll('[target="_blank"]').length;
-      if (currentlen > livestreamers) {
-        livestreamers = currentlen;
-        streamsmenu.innerHTML = defStremzMenu.innerHTML;
-        MoveTwitchMenu(streamsmenu);
-        SetTwitchLinks();
-      }
     }
+    return streamsmenu;
   }
 }
 
@@ -552,37 +750,14 @@ function toTitleCase(str) {
   return rts.trim();
 }
 
-async function CheckQuest() {
-  if (localStorage.token === '') return true;
-
-  let quests = await fetch('https://api.kirka.io/api/quests', {
-    headers: {
-      accept: 'application/json, text/plain, */*',
-      authorization: 'Bearer ' + localStorage.token,
-      'content-type': 'application/json;charset=UTF-8',
-      csrf: 'token',
-      'sec-fetch-mode': 'cors',
-      'sec-fetch-site': 'same-site',
-    },
-    referrer: 'https://kirka.io/',
-    referrerPolicy: 'strict-origin-when-cross-origin',
-    body: '{}',
-    method: 'POST',
-    mode: 'cors',
-    credentials: 'include',
-  });
-
-  if (quests.status >= 400) return false;
-
-  quests = await quests.json();
-
-  for (let quest of quests) {
-    if (quest.progress.completed && !quest.progress.rewardTaken) {
-      BKC.tip(`${toTitleCase(quest.type)} Quest Completed:
-${quest.amount} ${toTitleCase(quest.name)} ${quest.weapon !== 'undefined' ? quest.weapon : ''}
-XP:  ${quest['rewards'][0].amount}   COINS:  ${quest['rewards'][1].amount}`);
-
-      await fetch('https://api.kirka.io/api/rewards/take', {
+async function CheckQuest(_index) {
+  if (localStorage.token === '') return;
+  let requests = [];
+  let failed = [];
+  let types = _index || ['hourly', 'daily', 'event'];
+  types.forEach((type) => {
+    requests.push(
+      fetch('https://api.kirka.io/api/quests', {
         headers: {
           accept: 'application/json, text/plain, */*',
           authorization: 'Bearer ' + localStorage.token,
@@ -593,30 +768,64 @@ XP:  ${quest['rewards'][0].amount}   COINS:  ${quest['rewards'][1].amount}`);
         },
         referrer: 'https://kirka.io/',
         referrerPolicy: 'strict-origin-when-cross-origin',
-        body: JSON.stringify({ source: 'quest:' + quest.id }),
+        body: `{"type": "${type}"}`,
         method: 'POST',
         mode: 'cors',
         credentials: 'include',
-      });
+      })
+    );
+  });
+  let allQuests = await Promise.allSettled(requests);
+  allQuests.forEach(async (result, index) => {
+    if (result.status === 'rejected' || result.value.status >= 400) failed.push(types[index]);
+    else {
+      let quests = await result.value.json();
+      for (let quest of quests) {
+        if (quest.progress.completed && !quest.progress.rewardTaken) {
+          let request = await fetch('https://api.kirka.io/api/rewards/take', {
+            headers: {
+              accept: 'application/json, text/plain, */*',
+              authorization: 'Bearer ' + localStorage.token,
+              'content-type': 'application/json;charset=UTF-8',
+              csrf: 'token',
+              'sec-fetch-mode': 'cors',
+              'sec-fetch-site': 'same-site',
+            },
+            referrer: 'https://kirka.io/',
+            referrerPolicy: 'strict-origin-when-cross-origin',
+            body: JSON.stringify({ source: 'quest:' + quest.id }),
+            method: 'POST',
+            mode: 'cors',
+            credentials: 'include',
+          });
+          if (request.ok) {
+            BKC.tip(`${toTitleCase(quest.type)} Quest Completed:
+${quest.amount} ${toTitleCase(quest.name)} ${quest.weapon !== 'undefined' ? quest.weapon : ''}
+XP:  ${quest['rewards'][0].amount}   COINS:  ${quest['rewards'][1].amount}`);
+          } else {
+            if (!failed.includes(types[index])) failed.push(types[index]);
+            BKC.tip(`Failed Claiming ${toTitleCase(quest.type)}
+Quest: ${toTitleCase(quest.name)}
+Trying Again In 15 Seconds`);
+          }
+        }
+      }
     }
-  }
-  return true;
+  });
+  if (failed.length) return [...failed];
 }
 
-function checkclaimQuest() {
+function checkclaimQuest(type) {
   if (!inGame) {
-    CheckQuest()
+    CheckQuest(type)
       .then((result) => {
-        if (!result) {
+        if (Array.isArray(result)) {
           setTimeout(() => {
-            checkclaimQuest();
+            checkclaimQuest(result);
           }, 15000);
-          BKC.tip(`Failed Claiming Quest Trying Again In 15 Seconds`);
         }
       })
-      .catch((error) => {
-        BKC.tip(error);
-      });
+      .catch((error) => BKC.tip(error));
   }
 }
 
@@ -630,9 +839,12 @@ function clock() {
 }
 
 async function getStats() {
-  let id = document.querySelector('.username')?.innerHTML.slice(1);
+  if (!id) {
+    id = document.querySelector('.username')?.innerHTML.slice(1);
+  }
   let statsContainer = document.querySelector('#bkc-daily-stats-container');
   if (!id || !statsContainer) return 'NAAHHHH AINTNOWAY';
+
   let stats = await fetch('https://api.kirka.io/api/user/getProfile', {
     headers: {
       accept: 'application/json, text/plain, */*',
@@ -672,12 +884,11 @@ async function getStats() {
     };
     settings.set('dailyStats', dailyStats);
   }
-
   stats.stats.kd = Math.round(((stats['stats']['kills'] - dailyStats[id]['kills']) / (stats['stats']['deaths'] - dailyStats[id]['deaths']) + Number.EPSILON) * 100) / 100;
   if (Number.isNaN(stats.stats.kd)) stats.stats.kd = 0;
   for (const key in dailyStats[id]) {
     if (key !== 'date') {
-      let statElem = gui.querySelector(`#bkc-${key}`);
+      let statElem = gui?.querySelector(`#bkc-${key}`);
       if (!statElem) {
         let newStat = document.createElement('div');
         newStat.className = 'module';
@@ -710,19 +921,11 @@ const Questobserver = new MutationObserver(() => {
   let notis = document.querySelectorAll('html body div#app div#notifications span div.vue-notification-wrapper div span.text');
   for (let i = 0; i < notis.length; i++) {
     remElement = notis[i].parentElement.parentElement;
-    if (/you completed a quest/i.test(notis[i]?.innerHTML)) {
-      if (remElement.style.display !== 'none') {
-        remElement.setAttribute('style', 'display: none!important');
-      }
-      if (!claimedQuest) {
-        claimedQuest = true;
-        checkclaimQuest();
-      }
-    } else if (/Failed to connect to the room/i.test(notis[i]?.innerHTML) && !window.location.href.startsWith('https://kirka.io/servers/')) {
-      if (remElement.style.display !== 'none') {
-        remElement.setAttribute('style', 'display: none!important');
-        document.querySelector('.icon-btn.text-1.SERVERS').click();
-      }
+    if (notis[i]?.innerHTML === 'You completed a quest' && remElement.style.display !== 'none') {
+      remElement.setAttribute('style', 'display: none!important');
+    } else if (/Failed to connect to the room/i.test(notis[i]?.innerHTML) && !window.location.href.startsWith('https://kirka.io/servers/') && remElement.style.display !== 'none') {
+      remElement.setAttribute('style', 'display: none!important');
+      document.querySelector('.icon-btn.text-1.SERVERS').click();
     }
   }
 });
@@ -752,10 +955,26 @@ function NotificationsOpenMenus() {
   return !!n;
 }
 
+function moveTime() {
+  // moves ingame time to tab button menu thing
+  if (!timeContainer) {
+    timeContainer = document.querySelector('#app > div.game-interface > div.desktop-game-interface > div.state-cont > div.left');
+    let tabInfo = document.querySelectorAll('#app > div.game-interface > div.desktop-game-interface > div.tab-info > div.head.text-2,#app > div.game-interface > div.desktop-game-interface > div.tab-parkour-info > div.head.text-2')[0];
+    let serverThing = tabInfo?.querySelectorAll('div.server-id,div.label.blue')[0];
+    if (serverThing && timeContainer) {
+      timeContainer = tabInfo.insertBefore(timeContainer, serverThing);
+    }
+  }
+  return timeContainer;
+}
+
 const SomeObserver = new MutationObserver(() => {
-  if (window.location.href === 'https://kirka.io/') {
-    ShowliveStreams();
-  } else if (/kirka[.]io[/]servers/.test(window.location.href) && !document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div.tabs > div.mods.tabmods')) {
+  if (inGame) {
+    if (moveTime()) SomeObserver.disconnect();
+    return;
+  }
+
+  if (/kirka[.]io[/]servers/.test(window.location.href) && !document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div#bkc-minmax-selects > div.mods.tabmods')) {
     SetGameModesCheckBoxes();
   }
 
@@ -774,17 +993,47 @@ const SomeObserver = new MutationObserver(() => {
     document.getElementsByClassName('play-content')[0].append(btn);
   }
 
-  if (!discclick && document.querySelector('.soc-icon.svg-icon.svg-icon--discord')) {
-    let p = (document.querySelector('.soc-icon.svg-icon.svg-icon--discord').parentElement.onclick = () => shell.openExternal('https://discord.com/invite/cNwzjsFHpg'));
-    discclick = !!p;
+  if (!discclick) {
+    let discButton = document.querySelector('.soc-icon.svg-icon.svg-icon--discord');
+    if (discButton) {
+      discButton.parentElement.addEventListener(
+        'click',
+        (e) => {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          shell.openExternal('https://discord.com/invite/cNwzjsFHpg');
+        },
+        {
+          capture: true,
+          useCapture: true,
+          passive: false,
+        }
+      );
+      discclick = !!discclick;
+    }
   }
 
-  if (!gitclick && document.querySelector('.soc-icon.svg-icon.svg-icon--gamepad2')) {
-    let p = (document.querySelector('.soc-icon.svg-icon.svg-icon--gamepad2').parentElement.onclick = () => shell.openExternal('https://github.com/42infi/better-kirka-client/releases'));
-    gitclick = !!p;
+  if (!gitclick) {
+    let gitButton = document.querySelector('.soc-icon.svg-icon.svg-icon--gamepad2');
+    if (gitButton) {
+      gitButton.parentElement.addEventListener(
+        'click',
+        (e) => {
+          e.preventDefault();
+          e.stopImmediatePropagation();
+          shell.openExternal('https://github.com/42infi/better-kirka-client/releases');
+        },
+        {
+          capture: true,
+          useCapture: true,
+          passive: false,
+        }
+      );
+      gitclick = !!gitclick;
+    }
   }
 
-  if (!statsUpdated && document.querySelector('.username')?.innerHTML) {
+  if (!statsUpdated && (id || document.querySelector('.username')?.innerHTML)) {
     statsUpdated = true;
     fetchStats(0);
   }
@@ -797,24 +1046,58 @@ const SomeObserver = new MutationObserver(() => {
     freeClockElem.style = 'position:absolute;overflow:hidden;text-align:center;top:0.25rem;';
     clock();
   }
+
+  if (!document.querySelector('#bkc-back-forward-button')) {
+    let homeButton = document.querySelector('#view > div > div > div.top-bar > div.left > div.home');
+    if (homeButton) {
+      let backForwardButton = document.createElement('div');
+      let backbutton = document.createElement('a');
+      let forwardbutton = document.createElement('a');
+      backForwardButton.id = 'bkc-back-forward-button';
+      backbutton.id = 'bkc-menu-back-button';
+      forwardbutton.id = 'bkc-menu-forward-button';
+      backbutton.title = 'Back';
+      forwardbutton.title = 'Forward';
+      backbutton.innerHTML = `
+      <svg height="100%" version="1.1" viewBox="0 0 36 36" width="100%">
+      <path d="m 12,12 h 2 v 12 h -2 z m 3.5,6 8.5,6 V 12 z" style="fill:#fff"></path>
+      </svg>
+      `;
+      forwardbutton.innerHTML = `
+      <svg height="100%" version="1.1" viewBox="0 0 36 36" width="100%">
+      <path d="M 12,24 20.5,18 12,12 V 24 z M 22,12 v 12 h 2 V 12 h -2 z" style="fill:#fff"></path>
+      </svg>
+      `;
+      backbutton.onclick = () => window.history.back();
+      forwardbutton.onclick = () => window.history.forward();
+      backbutton = backForwardButton.appendChild(backbutton);
+      forwardbutton = backForwardButton.appendChild(forwardbutton);
+      backForwardButton = homeButton.parentElement.insertBefore(backForwardButton, homeButton);
+    }
+  }
 });
 
 SomeObserver.observe(document, { childList: true, subtree: true });
 
 const MainObserverr = new MutationObserver(() => {
-  if (!inGame && /kirka[.]io[/]game/.test(window.location.href) && !document.querySelector('.end-modal')) {
+  let endmodal = document.querySelector('.end-modal');
+  if (!inGame && /kirka[.]io[/]game/.test(window.location.href) && !endmodal) {
     inGame = true;
-    SomeObserver.disconnect();
-    if (!animate) animateState('true');
+    window.JSON.parse = boringJSONParse;
+    window.XMLHttpRequest = boringXMLHttpRequest;
+    if (!animate && frameFuncs.length) animateState('true');
     if (TwitchResizeObserver) TwitchResizeObserver.disconnect();
     if (clockInterval) clockInterval = clearInterval(clockInterval);
     document.removeEventListener('keyup', keyup);
-  } else if (inGame && (!/kirka[.]io[/]game/.test(window.location.href) || document.querySelector('.end-modal'))) {
+    if (timeContainer) SomeObserver.disconnect();
+  } else if (inGame && (endmodal || !/kirka[.]io[/]game/.test(window.location.href))) {
     ShouldHiglight = false;
-    if (animate) {
-      animateState();
-    }
     inGame = false;
+    window.XMLHttpRequest = gigaXMLHttpRequest;
+    window.JSON.parse = gigaJSONParse;
+    EventTarget.prototype.addEventListener = gigaAddEventListener;
+    inputtoggle = false;
+    if (animate) animateState();
     gitclick = false;
     discclick = false;
     if (flagmodeset) {
@@ -828,12 +1111,14 @@ const MainObserverr = new MutationObserver(() => {
     statsUpdated = false;
     Sessionids = [];
     document.addEventListener('keyup', keyup);
+    timeContainer = null;
   }
 });
 
 window.addEventListener('load', () => {
-  if (document.querySelector('html body div#app')) {
-    MainObserverr.observe(document.querySelector('html body div#app'), {
+  let app = document.querySelector('html body div#app');
+  if (app) {
+    MainObserverr.observe(app, {
       childList: true,
       attributes: true,
       attributeOldValue: true,
@@ -988,6 +1273,8 @@ div.tabs > div.mods.tabmods > div > label.custom-checkbox > span:before {
 div#live-streams-menu > div.list {
     max-height: 95vh !important;
     overflow: hidden hidden !important;
+    padding: .5rem;
+    font-size: 1.3rem;
 }
 input.gui-color-input {
     -webkit-appearance: none !important;
@@ -1054,6 +1341,9 @@ button#bkc-show-delete:hover {
     #live-streams-menu {
       margin:0 0 0 0!important;
   }
+  .live-streams {
+    display:none!important;
+  }
 }
 #gui *:focus {
     outline-color: #8c8c8c;
@@ -1103,6 +1393,100 @@ div#bkc-daily-stats-container > div.module {
 }
 div#bkc-daily-stats-container > div.module > label {
   margin-left: 0;
+}
+div#bkc-minmax-selects {
+  display: flex;
+  height: 2.3rem;
+  width: 100%;
+  background-color: var(--secondary-2);
+  border-top: 1px solid var(--secondary-1);
+  color: var(--white);
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-content: center;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+#bkc-min-players-label, #bkc-min-time-label {
+  margin: 0.5rem;
+}
+
+.mods.tabmods {
+  display: flex;
+  margin: auto;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-content: center;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 100%;
+}
+
+.mods.tabmods div label.custom-checkbox.checkbox-size {
+  display: flex;
+  color: var(--white);
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-content: center;
+  justify-content: space-evenly;
+  align-items: center;
+}
+
+.mods.tabmods div label.custom-checkbox.checkbox-size span {
+  margin-right: 0;
+  margin-left: .2rem;
+}
+
+.mods.tabmods div label, .mods.tabmods div label input {
+  cursor: pointer;
+}
+
+.home {
+  border-top-left-radius: 0rem!important;
+}
+
+#bkc-back-forward-button,#bkc-menu-back-button {
+  border-top-left-radius: .313rem;
+}
+
+div#bkc-back-forward-button {
+  display: flex;
+  justify-content: flex-start;
+  width: max-content;
+  background-color: var(--secondary-4);
+}
+
+#bkc-menu-forward-button, #bkc-menu-back-button {
+  cursor: pointer;
+  width: 2.563rem;
+  height: 2.188rem;
+  transition: background-color .3s ease;
+  border-right: .125rem solid #2f3957;
+}
+
+#bkc-menu-forward-button:hover, #bkc-menu-back-button:hover {
+  background-color: var(--secondary-5);
+}
+
+div#live-streams-menu>div.list>div.item {
+  display: flex;
+  margin-top: .4rem;
+  cursor: pointer;
+  border-radius: 10px;
+  padding-left: 10px;
+  padding-bottom: .3rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+div#live-streams-menu>div.list>div.item:first-child {
+margin-top: 0.3rem;
+}
+div#live-streams-menu>div.list>div.item>div.content>div.count {
+text-overflow: ellipsis!important;
+white-space: nowrap;
+overflow: hidden;
+max-width:calc(var(--bkc-stremz-menu-width) - 80px)!important;
 }
 `;
 
