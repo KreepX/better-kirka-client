@@ -273,6 +273,12 @@ async function ShowHideGameModes() {
       } else {
         modecards[i].parentElement.parentElement.style.display = 'flex';
       }
+    } else if (/^BW_/.test(mci)) {
+      if (!GameModesShowBW) {
+        modecards[i].parentElement.parentElement.style.display = 'none';
+      } else {
+        modecards[i].parentElement.parentElement.style.display = 'flex';
+      }
     }
   }
 
@@ -303,6 +309,9 @@ function GameModesCheckBoxChangeHandler(event) {
   } else if (event.target.className === 'DM-checkbox') {
     GameModesShowDM = event.target.checked;
     settings.set('GameModesShowDM', GameModesShowDM);
+  } else if (event.target.className === 'BW-checkbox') {
+    GameModesShowBW = event.target.checked;
+    settings.set('GameModesShowBW', GameModesShowBW);
   } else if (event.target.className === 'POINT-checkbox') {
     GameModesShowPOINT = event.target.checked;
     settings.set('GameModesShowPOINT', GameModesShowPOINT);
@@ -373,6 +382,13 @@ function SetGameModesCheckBoxes() {
       </label>
       </div>
       
+      <div class="BW">
+      <label class="custom-checkbox checkbox-size">
+      <input type="checkbox" class="BW-checkbox">
+      <span> Sabotage </span>
+      </label>
+      </div>
+
       <div class="TDM">
       <label class="custom-checkbox checkbox-size">
       <input type="checkbox" class="TDM-checkbox">
@@ -403,6 +419,7 @@ function SetGameModesCheckBoxes() {
       `;
     modesCont = bkcMinSelect.appendChild(modesCont);
     modesCont.getElementsByClassName('DM-checkbox')[0].checked = GameModesShowDM;
+    modesCont.getElementsByClassName('BW-checkbox')[0].checked = GameModesShowBW;
     modesCont.getElementsByClassName('TDM-checkbox')[0].checked = GameModesShowTDM;
     modesCont.getElementsByClassName('P-checkbox')[0].checked = GameModesShowP;
     modesCont.getElementsByClassName('POINT-checkbox')[0].checked = GameModesShowPOINT;
@@ -513,6 +530,7 @@ let GameModesShowPOINT = typeof settings.get('GameModesShowPOINT') === 'undefine
 let GameModesShowTDM = typeof settings.get('GameModesShowTDM') === 'undefined' ? settingsSetGit('GameModesShowTDM', true) : settings.get('GameModesShowTDM');
 let GameModesShowPHY = typeof settings.get('GameModesShowPHY') === 'undefined' ? settingsSetGit('GameModesShowPHY', true) : settings.get('GameModesShowPHY');
 let GameModesShowDM = typeof settings.get('GameModesShowDM') === 'undefined' ? settingsSetGit('GameModesShowDM', true) : settings.get('GameModesShowDM');
+let GameModesShowBW = typeof settings.get('GameModesShowBW') === 'undefined' ? settingsSetGit('GameModesShowBW', true) : settings.get('GameModesShowBW');
 let GameModesShowP = typeof settings.get('GameModesShowP') === 'undefined' ? settingsSetGit('GameModesShowP', true) : settings.get('GameModesShowP');
 let TwitchHeight = typeof settings.get('TwitchHeight') === 'undefined' ? settingsSetGit('TwitchHeight', 'auto') : settings.get('TwitchHeight');
 let TwitchWidth = typeof settings.get('TwitchWidth') === 'undefined' ? settingsSetGit('TwitchWidth', 'auto') : settings.get('TwitchWidth');
