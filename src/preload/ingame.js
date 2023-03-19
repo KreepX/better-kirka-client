@@ -19,32 +19,34 @@ const BKC = {
     }
   },
   tip(...Msg) {
-    let span = document.getElementsByClassName('vue-notification-group')[0].getElementsByTagName('span')[0];
-    let tipchilds = span?.childNodes;
-    if (tipchilds?.length >= DevTooltipsMaxTips) {
-      let trimLen = tipchilds.length - 1 - DevTooltipsMaxTips;
-      for (let i = 0; i < trimLen; i++) {
-        let p = span?.firstChild;
-        if (p) span.removeChild(p);
+    let span = document?.getElementsByClassName('vue-notification-group')[0]?.getElementsByTagName('span')[0];
+    if (span) {
+      let tipchilds = span?.childNodes;
+      if (tipchilds?.length >= DevTooltipsMaxTips) {
+        let trimLen = tipchilds.length - 1 - DevTooltipsMaxTips;
+        for (let i = 0; i < trimLen; i++) {
+          let p = span?.firstChild;
+          if (p) span.removeChild(p);
+        }
       }
-    }
-    let newtip = document.createElement('div');
-    newtip.setAttribute('data-id', tipchilds ? tipchilds.length + 1 : '1');
-    newtip.className = 'vue-notification-wrapper vn-fade-move';
-    newtip.style = 'transition-timing-function:ease;transition-delay:0s;transition-property:all;';
-    newtip.id = `BKC-dev-tip${++devid}`;
-    newtip.innerHTML = `<div class="alert-default error" style="white-space:break-spaces;display:flex;align-items:center;padding:.9rem 1.1rem;margin-bottom:.5rem;color:var(--white);cursor:pointer;box-shadow:0 0 .7rem rgba(0,0,0,.25);border-radius:.2rem;background:linear-gradient(262.54deg,#202639 9.46%,#223163 100.16%);margin-left:1rem;border:solid .15rem var(--primary-1);font-family:Exo\\ 2;">
+      let newtip = document.createElement('div');
+      newtip.setAttribute('data-id', tipchilds ? tipchilds.length + 1 : '1');
+      newtip.className = 'vue-notification-wrapper vn-fade-move';
+      newtip.style = 'transition-timing-function:ease;transition-delay:0s;transition-property:all;';
+      newtip.id = `BKC-dev-tip${++devid}`;
+      newtip.innerHTML = `<div class="alert-default error" style="white-space:break-spaces;display:flex;align-items:center;padding:.9rem 1.1rem;margin-bottom:.5rem;color:var(--white);cursor:pointer;box-shadow:0 0 .7rem rgba(0,0,0,.25);border-radius:.2rem;background:linear-gradient(262.54deg,#202639 9.46%,#223163 100.16%);margin-left:1rem;border:solid .15rem var(--primary-1);font-family:Exo\\ 2;">
                         <img alt="" style="width:2rem;min-width:2rem;height:2rem;margin-right:.9rem;color:var(--white);fill:currentColor;box-sizing:border-box;" src="data:image/png;base64,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" />
                         <span id="BKC-dev-tip-text" class="text" style="font-size:1rem;font-weight:600;text-align:center;overflow-wrap:anywhere;">${Msg}</span></div>`;
-    newtip = span.appendChild(newtip);
+      newtip = span.appendChild(newtip);
 
-    let timeoutID = setTimeout(() => {
-      BKC.cleartip(newtip, timeoutID);
-    }, DevTooltipsTimeout);
+      let timeoutID = setTimeout(() => {
+        BKC.cleartip(newtip, timeoutID);
+      }, DevTooltipsTimeout);
 
-    newtip.addEventListener('click', () => {
-      BKC.cleartip(newtip, timeoutID);
-    });
+      newtip.addEventListener('click', () => {
+        BKC.cleartip(newtip, timeoutID);
+      });
+    }
   },
 };
 
@@ -249,13 +251,13 @@ async function ShowHideGameModes() {
       } else {
         modecards[i].parentElement.parentElement.style.display = 'flex';
       }
-    } else if (/^P_/.test(mci)) {
+    } /*else if (/^P_/.test(mci)) {
       if (!GameModesShowP) {
         modecards[i].parentElement.parentElement.style.display = 'none';
       } else {
         modecards[i].parentElement.parentElement.style.display = 'flex';
       }
-    } else if (/^TDM_/.test(mci)) {
+    }*/ else if (/^TDM_/.test(mci)) {
       if (!GameModesShowTDM) {
         modecards[i].parentElement.parentElement.style.display = 'none';
       } else {
@@ -300,10 +302,10 @@ async function ShowHideGameModes() {
 }
 
 function GameModesCheckBoxChangeHandler(event) {
-  if (event.target.className === 'P-checkbox') {
+  /*if (event.target.className === 'P-checkbox') {
     GameModesShowP = event.target.checked;
     settings.set('GameModesShowP', GameModesShowP);
-  } else if (event.target.className === 'TDM-checkbox') {
+  } else*/ if (event.target.className === 'TDM-checkbox') {
     GameModesShowTDM = event.target.checked;
     settings.set('GameModesShowTDM', GameModesShowTDM);
   } else if (event.target.className === 'DM-checkbox') {
@@ -378,21 +380,21 @@ function SetGameModesCheckBoxes() {
       <div class="DM">
       <label class="custom-checkbox checkbox-size">
       <input type="checkbox" class="DM-checkbox">
-      <span> Solo </span>
+      <span> DM </span>
       </label>
       </div>
       
       <div class="BW">
       <label class="custom-checkbox checkbox-size">
       <input type="checkbox" class="BW-checkbox">
-      <span> Sabotage </span>
+      <span> BW </span>
       </label>
       </div>
 
       <div class="TDM">
       <label class="custom-checkbox checkbox-size">
       <input type="checkbox" class="TDM-checkbox">
-      <span> Team </span>
+      <span> TDM </span>
       </label>
       </div>
       
@@ -403,17 +405,19 @@ function SetGameModesCheckBoxes() {
       </label>
       </div>
       
+      <!--
       <div class="P">
       <label class="custom-checkbox checkbox-size">
       <input type="checkbox" class="P-checkbox">
-      <span> Parkour </span>
+      <span> P </span>
       </label>
       </div>
-      
+      -->
+
       <div class="PHY">
       <label class="custom-checkbox checkbox-size">
       <input type="checkbox" class="PHY-checkbox">
-      <span> Physics </span>
+      <span> PHY </span>
       </label>
       </div>
       `;
@@ -421,7 +425,7 @@ function SetGameModesCheckBoxes() {
     modesCont.getElementsByClassName('DM-checkbox')[0].checked = GameModesShowDM;
     modesCont.getElementsByClassName('BW-checkbox')[0].checked = GameModesShowBW;
     modesCont.getElementsByClassName('TDM-checkbox')[0].checked = GameModesShowTDM;
-    modesCont.getElementsByClassName('P-checkbox')[0].checked = GameModesShowP;
+    //modesCont.getElementsByClassName('P-checkbox')[0].checked = GameModesShowP;
     modesCont.getElementsByClassName('POINT-checkbox')[0].checked = GameModesShowPOINT;
     modesCont.getElementsByClassName('PHY-checkbox')[0].checked = GameModesShowPHY;
     bkcMinSelect.addEventListener('input', GameModesCheckBoxChangeHandler);
@@ -465,6 +469,7 @@ let boringJSONParse = window.JSON.parse;
 window.JSON.parse = gigaJSONParse;
 
 let stremzInfo;
+let skinzInfo;
 function gigaInfiRequest() {
   window.XMLHttpRequest = class extends XMLHttpRequest {
     constructor() {
@@ -473,6 +478,7 @@ function gigaInfiRequest() {
         let oldChange = this.onreadystatechange;
         this.onreadystatechange = (...args) => {
           if (this.readyState === 4 && this.status === 200) {
+            //if (this.readyState === 4 && (this.status === 200 || this.status === 201)) {
             if (this.responseURL === 'https://api.twitch.tv/helix/streams?first=10&game_id=356609813') {
               stremzInfo = boringJSONParse(this.response);
               initTwitchMenu();
@@ -483,14 +489,22 @@ function gigaInfiRequest() {
               }
             } else if (this.responseURL === 'https://api.kirka.io/api/notification' && this.response !== '[]') {
               let data = boringJSONParse(this.response);
-              let keys = Object.keys(data);
-              if (keys.filter((key) => data[key].object?.message === 'You completed a quest').length > 0) {
+              if (Object.keys(data).filter((key) => data[key].object?.message === 'You completed a quest').length > 0) {
                 if (!claimedQuest) {
                   claimedQuest = true;
                   checkclaimQuest();
                 }
               }
-            }
+            } else if (this.responseURL === 'https://api.kirka.io/api/inventory') {
+              skinzInfo = boringJSONParse(this.response);
+            } /*else if (this.responseURL === 'https://api.kirka.io/api/inventory/openChest' && typeof this.response === 'object' && skinzInfo) {
+              let skin = getSkin(this.response.name);
+              if (!skin) {
+                skinzInfo[skinzInfo.length] = {
+                  item: this.response,
+                };
+              }
+            }*/
           }
           if (oldChange) oldChange.apply(this, ...args);
         };
@@ -506,7 +520,7 @@ window.XMLHttpRequest = gigaXMLHttpRequest;
 
 let inputtoggle = false;
 let gigaAddEventListener = function (...args) {
-  if (this?.id === 'WMNn' && args[0] === 'keyup' && window.location.pathname !== '/servers/main' && window.location.pathname !== '/servers/custom') {
+  if (this?.id === 'WMNn' && args[0] === 'keyup' && !window.location.pathname.startsWith('/servers/')) {
     boringAddEventListener.apply(this, [args[0], args[1], { capture: false, passive: true }]);
     EventTarget.prototype.addEventListener = boringAddEventListener;
     this.addEventListener('keyup', (e) => {
@@ -520,6 +534,12 @@ let gigaAddEventListener = function (...args) {
 let boringAddEventListener = EventTarget.prototype.addEventListener;
 EventTarget.prototype.addEventListener = gigaAddEventListener;
 
+let meow = function () {
+  if (arguments[0].name === 'hover') arguments[0].src = MenuhoverAudio || arguments[0].src;
+  return originalHowl.apply(this, arguments);
+};
+
+let originalHowl;
 let DevToolTips = true;
 let DevTooltipsTimeout = 10000;
 let DevTooltipsMaxTips = 20;
@@ -531,7 +551,7 @@ let GameModesShowTDM = typeof settings.get('GameModesShowTDM') === 'undefined' ?
 let GameModesShowPHY = typeof settings.get('GameModesShowPHY') === 'undefined' ? settingsSetGit('GameModesShowPHY', true) : settings.get('GameModesShowPHY');
 let GameModesShowDM = typeof settings.get('GameModesShowDM') === 'undefined' ? settingsSetGit('GameModesShowDM', true) : settings.get('GameModesShowDM');
 let GameModesShowBW = typeof settings.get('GameModesShowBW') === 'undefined' ? settingsSetGit('GameModesShowBW', true) : settings.get('GameModesShowBW');
-let GameModesShowP = typeof settings.get('GameModesShowP') === 'undefined' ? settingsSetGit('GameModesShowP', true) : settings.get('GameModesShowP');
+//let GameModesShowP = typeof settings.get('GameModesShowP') === 'undefined' ? settingsSetGit('GameModesShowP', true) : settings.get('GameModesShowP');
 let TwitchHeight = typeof settings.get('TwitchHeight') === 'undefined' ? settingsSetGit('TwitchHeight', 'auto') : settings.get('TwitchHeight');
 let TwitchWidth = typeof settings.get('TwitchWidth') === 'undefined' ? settingsSetGit('TwitchWidth', 'auto') : settings.get('TwitchWidth');
 let TwitchLeft = typeof settings.get('TwitchLeft') === 'undefined' ? settingsSetGit('TwitchLeft', '10vw') : settings.get('TwitchLeft');
@@ -539,6 +559,9 @@ let ShowTwitch = typeof settings.get('ShowTwitch') === 'undefined' ? settingsSet
 let TwitchTop = typeof settings.get('TwitchTop') === 'undefined' ? settingsSetGit('TwitchTop', '20vw') : settings.get('TwitchTop');
 let guiHeight = typeof settings.get('guiHeight') === 'undefined' ? settingsSetGit('guiHeight', '95%') : settings.get('guiHeight');
 let guiWidth = typeof settings.get('guiWidth') === 'undefined' ? settingsSetGit('guiWidth', '51%') : settings.get('guiWidth');
+let randomFavoriteSkins = typeof settings.get('randomFavoriteSkins') === 'undefined' ? settingsSetGit('randomFavoriteSkins', false) : settings.get('randomFavoriteSkins');
+let allFavoriteSkins = typeof settings.get('allFavoriteSkins') === 'undefined' ? {} : settings.get('allFavoriteSkins');
+let MenuhoverAudio = typeof settings.get('MenuhoverAudio') === 'undefined' ? null : settings.get('MenuhoverAudio');
 let minPlayers = typeof settings.get('minPlayers') === 'undefined' ? 1 : settings.get('minPlayers');
 let minTime = typeof settings.get('minTime') === 'undefined' ? 0 : settings.get('minTime');
 let capture = typeof settings.get('capture') === 'undefined' ? false : settings.get('capture');
@@ -552,8 +575,10 @@ let gui = document.createElement('div');
 let customEnemyColorElem;
 let customTeamColorElem;
 let frameFuncs = [];
+let favoriteSkins;
 let colorEnemy;
 let colorTeam;
+let seenSkins;
 let scene;
 let flagMaterial;
 let animate;
@@ -573,8 +598,6 @@ let flagmodeset = false;
 let scoped = false;
 let ShouldHiglight = false;
 let menuVisible = false;
-let gitclick = false;
-let discclick = false;
 let SaveGuiSize = () => {
   if (guiWidth !== gui.style.width) {
     guiWidth = settingsSetGit('guiWidth', gui.style.width);
@@ -674,8 +697,8 @@ Click to watch ${data['data'][0].display_name} stream kirka.io on twitch
 Title:  ${twitchinfo.title}
 Started at:  ${new Date(twitchinfo.started_at).toLocaleString()}
 Streaming to:  ${viewers}
-Tags:  ${twitchinfo.tags.toString()}
-Language:  ${twitchinfo.language}
+Tags:  ${twitchinfo?.tags ? twitchinfo.tags.toString() : ''}
+Language:  ${twitchinfo?.language ? twitchinfo.language : ''}
       𝙍𝙞𝙜𝙝𝙩 𝙘𝙡𝙞𝙘𝙠 𝙩𝙤 𝙘𝙤𝙥𝙮 𝙡𝙞𝙣𝙠 𝙩𝙤 𝙘𝙡𝙞𝙥𝙗𝙤𝙖𝙧𝙙 ⠀⠀
     `;
     item.innerHTML = `
@@ -917,6 +940,51 @@ async function getStats() {
       }
     }
   }
+
+  if (!allFavoriteSkins[id]) {
+    allFavoriteSkins[id] = {
+      SCAR: [],
+      Shark: [],
+      Revolver: [],
+      M60: [],
+      MAC10: [],
+      LAR: [],
+      Bayonet: [],
+      VITA: [],
+      Weatie: [],
+      AR9: [],
+      Tomahawk: [],
+      BODY_SKIN: [],
+      Selected: [],
+    };
+  }
+  favoriteSkins = allFavoriteSkins[id];
+
+  if (!skinzInfo && randomFavoriteSkins) {
+    let inventory = await fetch('https://api.kirka.io/api/inventory', {
+      headers: {
+        accept: 'application/json, text/plain, */*',
+        'accept-language': 'en-US,en;q=0.9,fr;q=0.8',
+        authorization: 'Bearer ' + localStorage.token,
+        'cache-control': 'no-cache',
+        pragma: 'no-cache',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-site',
+      },
+      referrer: 'https://kirka.io/',
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      body: null,
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'include',
+    });
+    if (inventory.ok) skinzInfo = await inventory.json();
+  }
+  let currentSkin = stats.activeWeapon1Skin.parent.name.replace(/-/, '');
+  if (!seenSkins) seenSkins = Object.keys(favoriteSkins);
+  if (!seenSkins.includes(currentSkin)) seenSkins.push(currentSkin);
+  applyRandomSkins();
   return 'W';
 }
 
@@ -932,6 +1000,149 @@ function fetchStats(fCount) {
       })
       .catch((error) => BKC.tip(error));
   }
+}
+
+function seenSkinsListener() {
+  let changeWeaponsContainer = document.querySelector('#change-container');
+  if (changeWeaponsContainer) {
+    changeWeaponsContainer.addEventListener('mouseup', (e) => {
+      let skin = e.target?.innerText || e.target.parentElement.childNodes[0]?.innerText;
+      if (skin) skin = skin.replace(/-/, '').trim();
+      if (!seenSkins.includes(skin)) seenSkins.push(skin);
+    });
+    return changeWeaponsContainer;
+  }
+}
+
+function appendFavedButtons() {
+  document.querySelectorAll('#view > div.background > div.container > div.content > div.inventory > div.content > div.subjects > div.subject > div.hover-btns-group').forEach((hoverelement) => {
+    if (!hoverelement?.querySelector('.bkc-fav-button')) {
+      let bkcfavbut = document.createElement('a');
+      bkcfavbut.className = 'bkc-fav-button';
+      bkcfavbut.innerHTML = '⭐';
+      bkcfavbut.title = 'Add to favorites';
+      hoverelement.appendChild(bkcfavbut);
+    }
+  });
+}
+
+function appendFavedMarker(solo) {
+  if (favoriteSkins['Selected'].length) {
+    let favSpan = document.createElement('span');
+    favSpan.innerHTML = '★';
+    favSpan.id = 'bkc-fav-selected-span';
+    if (solo) return solo.appendChild(favSpan);
+    document.querySelectorAll('.item-name').forEach((element) => {
+      let parent = element.parentElement.parentElement;
+      if (favoriteSkins['Selected'].includes(element?.innerHTML) && !parent?.querySelector('#bkc-fav-selected-span')) {
+        parent.appendChild(favSpan.cloneNode(true));
+      }
+    });
+  }
+}
+
+function FavedButtonsHandler(e) {
+  function isSkinFaved(skin) {
+    let defaultskinName = skin.item.name.replace(/_/, '');
+    for (let key of Object.keys(favoriteSkins)) {
+      let result = favoriteSkins[key].findIndex((item) => item.name === skin.item.name);
+      if (result > -1) {
+        favoriteSkins[key].splice(result, 1);
+        let index = favoriteSkins['Selected'].indexOf(defaultskinName);
+        if (index > -1) favoriteSkins['Selected'].splice(index, 1);
+        return skin;
+      }
+    }
+    let parent = skin.item.type !== 'BODY_SKIN' ? skin.item.parent.name.replace(/-/g, '') : 'BODY_SKIN';
+    favoriteSkins[parent].push({
+      id: skin.item.id,
+      name: skin.item.name,
+      parentName: parent,
+      nameInInventory: defaultskinName,
+    });
+    favoriteSkins['Selected'].push(defaultskinName);
+  }
+
+  if (e.target?.className === 'bkc-fav-button') {
+    let skintext = e.target.previousSibling?.innerText;
+    let favedbutParent = e.target.parentElement.parentElement;
+    let favedbut = favedbutParent?.querySelector('#bkc-fav-selected-span');
+    if (skintext) {
+      let skin = getSkin(skintext);
+      if (skin) {
+        if (!isSkinFaved(skin)) {
+          if (!favedbut) appendFavedMarker(favedbutParent);
+        } else if (favedbut) favedbutParent.removeChild(favedbut);
+        settings.set('allFavoriteSkins', allFavoriteSkins);
+      }
+    }
+  }
+}
+
+function getSkin(skin) {
+  if (favoriteSkins[skin]) skin = `_${skin}`;
+  for (let i = 0; i < skinzInfo?.length; i++) {
+    if (skinzInfo[i].item.name === skin) {
+      return skinzInfo[i];
+    }
+  }
+}
+
+async function applyRandomSkins() {
+  let Dont = [];
+
+  function getRandomSkin(array) {
+    let Skin = array[Math.floor((window.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296) * array.length)];
+    if (Dont.includes(Skin.id) && array.length > 1) return getRandomSkin(array);
+    return Skin;
+  }
+
+  function stillHasSkin(skin) {
+    let isSkinAlive = skinzInfo.filter((item) => item.item.id === skin.id);
+    if (!isSkinAlive.length) {
+      let result = favoriteSkins[skin.parentName].findIndex((item) => item?.id === skin.id);
+      if (result > -1) {
+        favoriteSkins[skin.parentName].splice(result, 1);
+        let index = favoriteSkins['Selected'].indexOf(skin.nameInInventory);
+        if (index > -1) favoriteSkins['Selected'].splice(index, 1);
+      }
+    }
+  }
+
+  if (randomFavoriteSkins) {
+    skinzInfo
+      .filter((item) => item.isSelected === true && (item.item.type === 'WEAPON_SKIN' || item.item.type === 'BODY_SKIN' || item.item.type === 'WEAPON_3'))
+      .forEach((me) => {
+        if (me.item.type !== 'WEAPON_3') Dont.push(me.item.id);
+        else if (!seenSkins.includes(me.item.name)) seenSkins.push(me.item.name);
+      });
+
+    for (let skin of Object.keys(favoriteSkins)) {
+      if (seenSkins.includes(skin) && favoriteSkins[skin].length && skin !== 'Selected') {
+        let randomSkin = getRandomSkin(favoriteSkins[skin]);
+        if (!Dont.includes(randomSkin.id)) {
+          let result = await fetch('https://api.kirka.io/api/inventory/take', {
+            headers: {
+              accept: 'application/json, text/plain, */*',
+              authorization: 'Bearer ' + localStorage.token,
+              'content-type': 'application/json;charset=UTF-8',
+              csrf: 'token',
+              'sec-fetch-mode': 'cors',
+              'sec-fetch-site': 'same-site',
+            },
+            referrer: 'https://kirka.io/',
+            referrerPolicy: 'no-referrer-when-downgrade',
+            body: `{"id":"${randomSkin.id}"}`,
+            method: 'POST',
+            mode: 'cors',
+            credentials: 'include',
+          });
+          if (!result.ok) stillHasSkin(randomSkin);
+        }
+      }
+    }
+  }
+  seenSkins = ['BODY_SKIN', 'Shark'];
 }
 
 const Questobserver = new MutationObserver(() => {
@@ -986,13 +1197,91 @@ function moveTime() {
   return timeContainer;
 }
 
+function checkInputImage(e, datalist, index) {
+  let valve = e.value.trim();
+  if (valve) {
+    let AllInputImages = typeof settings.get('inputImageCache') === 'undefined' ? [[], [], [], [], [], [], [], [], []] : settings.get('inputImageCache');
+    let inputImageCache = AllInputImages[index];
+    let inputOption = `<option value="${valve}"></option>`;
+    if (!inputImageCache.includes(inputOption)) {
+      let img = document.createElement('img');
+      img.onerror = () => {
+        img = null;
+      };
+      img.onload = () => {
+        AllInputImages[index].push(inputOption);
+        datalist.innerHTML += inputOption;
+        settings.set('inputImageCache', AllInputImages);
+        img = null;
+      };
+      img.src = valve;
+    }
+  }
+}
+
+function clearInputImage(e) {
+  if (e.target.offsetWidth - e.offsetX < 39 && e.target.value !== '') e.target.value = '';
+}
+
+function fillInputImage(e) {
+  if (e.target.value !== e.target._value) e.target.value = e.target._value;
+}
+
+let Bark;
+function backForwardAudio() {
+  let uiVol = window.localStorage['mwNMWn/SOUND/VOLUME_UI'];
+  if (uiVol) uiVol = boringJSONParse(uiVol);
+  Bark.volume(uiVol || 1);
+  Bark.play();
+}
+
 const SomeObserver = new MutationObserver(() => {
   if (inGame) {
-    if (moveTime()) SomeObserver.disconnect();
+    if (moveTime() && seenSkinsListener()) SomeObserver.disconnect();
     return;
   }
 
-  if (/kirka[.]io[/]servers/.test(window.location.href) && !document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div#bkc-minmax-selects > div.mods.tabmods')) {
+  if (!originalHowl && typeof window?.Howl?.prototype?.init === 'function') {
+    originalHowl = window.Howl.prototype.init;
+    window.Howl.prototype.init = meow;
+    Bark = window.Howl.prototype.init({
+      src: 'data:audio/mpeg;base64,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',
+      name: 'hover',
+      volume: '1',
+    });
+  }
+
+  if (window.location.href === 'https://kirka.io/inventory') {
+    let subjects = document.querySelector('#view div div div.content div.inventory > div.content > div.subjects');
+    let tabBar = document.querySelector('#view > div > div > div.content > div.inventory > div.content > div.tab-bar');
+    if (randomFavoriteSkins && subjects && (tabBar.__vue__.tabs[0].active || tabBar.__vue__.tabs[2].active)) {
+      appendFavedMarker();
+      appendFavedButtons();
+      subjects.onclick = FavedButtonsHandler;
+    }
+  } else if (window.location.href === 'https://kirka.io/settings/mods') {
+    let inputLabels = document.querySelectorAll('.wrapper-input.wWmMn[placeholder="Paste image url..."]');
+    if (inputLabels?.length === 9) {
+      inputLabels.forEach((label, index) => {
+        let input = label?.querySelector('input');
+        if (input && !label?.querySelector('.bkc-textures')) {
+          let inputImageCache = typeof settings.get('inputImageCache') === 'undefined' ? [[], [], [], [], [], [], [], [], []] : settings.get('inputImageCache');
+          let inputDatalist = document.createElement('datalist');
+          let names = `bkc-textures${index}`;
+          input.onmousedown = clearInputImage;
+          input.onblur = fillInputImage;
+          input.name = names;
+          input.setAttribute('list', names);
+          inputDatalist.id = names;
+          inputDatalist.className = 'bkc-textures';
+          inputDatalist.innerHTML = inputImageCache[index].toString().split(',').join('');
+          inputDatalist = label.appendChild(inputDatalist);
+          input.oninput = () => checkInputImage(input, inputDatalist, index);
+          if (input.value) checkInputImage(input, inputDatalist, index);
+        }
+      });
+    }
+  } else if (/kirka[.]io[/]servers/.test(window.location.href) && !document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div#bkc-minmax-selects > div.mods.tabmods')) {
     SetGameModesCheckBoxes();
   }
 
@@ -1009,46 +1298,6 @@ const SomeObserver = new MutationObserver(() => {
       window.open(clipboard.readText());
     };
     document.getElementsByClassName('play-content')[0].append(btn);
-  }
-
-  if (!discclick) {
-    let discButton = document.querySelector('.soc-icon.svg-icon.svg-icon--discord');
-    if (discButton) {
-      discButton.parentElement.addEventListener(
-        'click',
-        (e) => {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          shell.openExternal('https://discord.com/invite/cNwzjsFHpg');
-        },
-        {
-          capture: true,
-          useCapture: true,
-          passive: false,
-        }
-      );
-      discclick = !!discclick;
-    }
-  }
-
-  if (!gitclick) {
-    let gitButton = document.querySelector('.soc-icon.svg-icon.svg-icon--gamepad2');
-    if (gitButton) {
-      gitButton.parentElement.addEventListener(
-        'click',
-        (e) => {
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          shell.openExternal('https://github.com/42infi/better-kirka-client/releases');
-        },
-        {
-          capture: true,
-          useCapture: true,
-          passive: false,
-        }
-      );
-      gitclick = !!gitclick;
-    }
   }
 
   if (!statsUpdated && (id || document.querySelector('.username')?.innerHTML)) {
@@ -1088,6 +1337,8 @@ const SomeObserver = new MutationObserver(() => {
       `;
       backbutton.onclick = () => window.history.back();
       forwardbutton.onclick = () => window.history.forward();
+      backbutton.onmouseenter = backForwardAudio;
+      forwardbutton.onmouseenter = backForwardAudio;
       backbutton = backForwardButton.appendChild(backbutton);
       forwardbutton = backForwardButton.appendChild(forwardbutton);
       backForwardButton = homeButton.parentElement.insertBefore(backForwardButton, homeButton);
@@ -1107,7 +1358,10 @@ const MainObserverr = new MutationObserver(() => {
     if (TwitchResizeObserver) TwitchResizeObserver.disconnect();
     if (clockInterval) clockInterval = clearInterval(clockInterval);
     document.removeEventListener('keyup', keyup);
-    if (timeContainer) SomeObserver.disconnect();
+    if (timeContainer && seenSkinsListener()) SomeObserver.disconnect();
+    skinzInfo = null;
+    window.Howl.prototype.init = originalHowl;
+    Bark = null;
   } else if (inGame && (endmodal || !/kirka[.]io[/]game/.test(window.location.href))) {
     ShouldHiglight = false;
     inGame = false;
@@ -1116,8 +1370,6 @@ const MainObserverr = new MutationObserver(() => {
     EventTarget.prototype.addEventListener = gigaAddEventListener;
     inputtoggle = false;
     if (animate) animateState();
-    gitclick = false;
-    discclick = false;
     if (flagmodeset) {
       flagmodeset = false;
       frameFuncsRemove(hideFlagAdsFunc);
@@ -1130,6 +1382,13 @@ const MainObserverr = new MutationObserver(() => {
     Sessionids = [];
     document.addEventListener('keyup', keyup);
     timeContainer = null;
+    window.Howl.prototype.init = meow;
+    Bark = window.Howl.prototype.init({
+      src: 'data:audio/mpeg;base64,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',
+      name: 'hover',
+      volume: '1',
+    });
+    console.dirxml('gg');
   }
 });
 
@@ -1355,6 +1614,7 @@ button#bkc-show-delete:hover {
     box-shadow: 0 0 1px 2px rgba(255,255,255,0.8),0 0 8px 100vw rgba(0,0,0,0.4)!important;
     outline: #8c8c8c dashed .2rem!important;
 }
+
 @media screen and (min-width: 0px) {
     #live-streams-menu {
       margin:0 0 0 0!important;
@@ -1362,7 +1622,11 @@ button#bkc-show-delete:hover {
   .live-streams {
     display:none!important;
   }
+  .wWmMn[placeholder="Paste image url..."] {
+    width: 100%!important;
+  }
 }
+
 #gui *:focus {
     outline-color: #8c8c8c;
 }
@@ -1506,6 +1770,67 @@ white-space: nowrap;
 overflow: hidden;
 max-width:calc(var(--bkc-stremz-menu-width) - 80px)!important;
 }
+
+.subject {
+  --bkc-fav-button-visibility: hidden;
+}
+
+.subject:hover {
+  --bkc-fav-button-visibility: visible;
+}
+
+a.bkc-fav-button {
+  z-index: 9;
+  visibility: var(--bkc-fav-button-visibility);
+  position: absolute;
+  bottom: 0.5rem;
+  user-select: none;
+  padding: 0 1.7rem;
+  cursor: pointer;
+}
+
+a.bkc-fav-button:hover {
+  filter: drop-shadow(0 0 2px rgb(255, 255, 0));
+}
+
+#bkc-fav-selected-span {
+  position: absolute;
+  left: .75rem;
+  bottom: .3rem;
+  color: red;
+  font-size: 1.05rem;
+  user-select:none;
+}
+
+#view > div > div > div.content > div.inventory > div.content > div.subjects > div.subject > div.hover-btns-group > button:nth-child(3) {
+  margin-bottom: 2rem;
+}
+
+input.input[placeholder="Paste image url..."] {
+  text-overflow:ellipsis;
+}
+
+input.input[placeholder="Paste image url..."]::-webkit-textfield-decoration-container {
+  max-width: var(--bkc-mod-input-text-width);
+  min-width: var(--bkc-mod-input-text-width);
+  --bkc-mod-input-text-width: calc(85% - 0.5rem);
+}
+
+input.input[placeholder="Paste image url..."]::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  position: absolute;
+  right: 0;
+  top: 0;
+  cursor: pointer;
+  padding: 1.2rem 1.3rem 1rem 0.5rem;
+  height: .4rem;
+  width: .66rem;
+  color: white;
+}
+input.input[type="color"] {
+  padding: 1px 2px;
+  cursor: pointer;
+}
 `;
 
   gui.innerHTML = `
@@ -1585,9 +1910,15 @@ max-width:calc(var(--bkc-stremz-menu-width) - 80px)!important;
           </div>
   
           <div class="module">
+                  <input type="checkbox" id="randomskin" name="randomskin" />
+                  <label for="randomskin">Random Favorite Skins</label>
+          </div>
+
+          <div class="module">
                   <input type="checkbox" id="ShowTwitch" name="ShowTwitch" />
                   <label title="Show Live Kirka Twitch Streams &#013; Click And Drag The Titlebar To Move The Menu  &#013; Click And Drag The Bottom Right Corner To Resize The Menu" for="ShowTwitch">Show Live Kirka Twitch Streams Menu</label>
           </div>
+
           <div id="bkc-daily-stats-wrapper" class="module"><div id="bkc-daily-stats-header">Daily Stats</div>
           <div id="bkc-daily-stats-container" class="module"></div>
           </div>
@@ -1606,6 +1937,11 @@ max-width:calc(var(--bkc-stremz-menu-width) - 80px)!important;
       }
     } 
     
+    else if (e.target.id === 'randomskin') {
+      randomFavoriteSkins = e.target.checked;
+      settings.set('randomFavoriteSkins', randomFavoriteSkins);
+    } 
+
     else if (e.target.id === 'crosshair') {
       permCrosshair = e.target.checked;
       settings.set('permCrosshair', permCrosshair);
@@ -1782,7 +2118,7 @@ max-width:calc(var(--bkc-stremz-menu-width) - 80px)!important;
     });
   }
 
-  function addNewCssOption(obj, set = false) {
+  function addNewCssOption(obj, set) {
     let newoptions = document.createElement('option');
     newoptions.style = 'color:rgb(0, 0, 0)';
     newoptions.title = obj.title;
@@ -1865,6 +2201,7 @@ max-width:calc(var(--bkc-stremz-menu-width) - 80px)!important;
   document.getElementById('ShowTwitch').checked = ShowTwitch;
   document.getElementById('fpsCap').checked = fpsCap;
   document.getElementById('capture').checked = capture;
+  document.getElementById('randomskin').checked = randomFavoriteSkins;
 });
 
 function keyup(e) {

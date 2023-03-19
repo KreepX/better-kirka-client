@@ -80,6 +80,7 @@ let swapperFolder = app.getPath('documents') + '\\BetterKirkaClient\\swapper';
 checkCreateFolder(app.getPath('documents') + '\\BetterKirkaClient\\swapper\\assets\\img');
 checkCreateFolder(app.getPath('documents') + '\\BetterKirkaClient\\swapper\\assets\\glb');
 checkCreateFolder(app.getPath('documents') + '\\BetterKirkaClient\\swapper\\assets\\media');
+checkCreateFolder(app.getPath('documents') + '\\BetterKirkaClient\\data\\media');
 
 if (!settings.get('fpsCap')) {
   app.commandLine.appendSwitch('disable-frame-rate-limit');
@@ -100,6 +101,13 @@ function setFlags() {
       if (!app.commandLine.hasSwitch(Zero)) app.commandLine.appendSwitch(Zero, Two);
     }
   }
+}
+
+let dataPath = `${app.getPath('documents')}\\BetterKirkaClient\\data\\media`;
+if (fs.existsSync(dataPath)) {
+  fs.readdirSync(dataPath)
+    .filter((file) => file.startsWith('menuhover'))
+    .forEach((file) => settings.set('MenuhoverAudio', `data:audio/wav;base64,${fs.readFileSync(`${dataPath}/${file}`, 'base64')}`));
 }
 
 app.commandLine.appendSwitch('ignore-gpu-blacklist');
@@ -170,11 +178,9 @@ const createWindow = () => {
 
   win.webContents.on('new-window', (e, urll) => {
     e.preventDefault();
-    if (!urll.startsWith('https://twitch.tv/') && !urll.startsWith('https://www.youtube.com/watch') && !urll.includes('login?client_id') && !urll.includes('authorize?approval_prompt')) {
-      win.loadURL(urll);
-    } else {
-      shell.openExternal(urll);
-    }
+    if (urll === 'https://client.kirka.io/') urll = 'https://github.com/42infi/better-kirka-client/releases';
+    else if (urll === 'https://discord.gg/eWTWVSs94e') urll = 'https://discord.com/invite/cNwzjsFHpg';
+    shell.openExternal(urll);
   });
 
   win.on('page-title-updated', (e) => {
