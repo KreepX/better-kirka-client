@@ -53,9 +53,9 @@ if (pending) {
   } else if (pending === 'cleanUp') {
     settings.set('pendingClean', 'cleartemp');
     fs.readdirSync(userData)
-      .filter((file) => file !== 'config.json')
+      .filter((file) => file !== 'config.json' && file !== 'lockfile')
       .forEach((file) => (fs.lstatSync(`${userData}/${file}`).isDirectory() ? fs.rmdirSync(`${userData}/${file}`, { recursive: true }) : fs.unlinkSync(`${userData}/${file}`)));
-    //fs.readdirSync(userData).filter((file) => file !== 'config.json').forEach((file) => shell.moveItemToTrash(`${userData}\\${file}`));
+    //fs.readdirSync(userData).filter((file) => file !== 'config.json' && file !== 'lockfile').forEach((file) => shell.moveItemToTrash(`${userData}\\${file}`));
     app.setPath('userData', userData);
     app.relaunch();
     app.quit();
