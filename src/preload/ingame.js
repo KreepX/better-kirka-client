@@ -34,15 +34,11 @@ const BKC = {
       newtip.className = 'vue-notification-wrapper vn-fade-move';
       newtip.style = 'transition-timing-function:ease;transition-delay:0s;transition-property:all;';
       newtip.id = `BKC-dev-tip${++devid}`;
-      newtip.innerHTML = `<div class="alert-default error" style="white-space:break-spaces;display:flex;align-items:center;padding:.9rem 1.1rem;margin-bottom:.5rem;color:var(--white);cursor:pointer;box-shadow:0 0 .7rem rgba(0,0,0,.25);border-radius:.2rem;background:linear-gradient(262.54deg,#202639 9.46%,#223163 100.16%);margin-left:1rem;border:solid .15rem var(--primary-1);font-family:Exo\\ 2;">
-                        <img alt="" style="width:2rem;min-width:2rem;height:2rem;margin-right:.9rem;color:var(--white);fill:currentColor;box-sizing:border-box;" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACYAAAAmCAYAAACoPemuAAABfGlDQ1BpY2MAACiRfZE9SMNAHMVfU6UqlSJ2EHHIUJ0siIo4ShWLYKG0FVp1MLn0C5o0JCkujoJrwcGPxaqDi7OuDq6CIPgB4ujkpOgiJf4vKbSI8eC4H+/uPe7eAUKjwlSzawJQNctIxWNiNrcqBl7RixAGMIiAxEw9kV7MwHN83cPH17soz/I+9+foV/ImA3wi8RzTDYt4g3hm09I57xOHWUlSiM+Jxw26IPEj12WX3zgXHRZ4ZtjIpOaJw8RisYPlDmYlQyWeJo4oqkb5QtZlhfMWZ7VSY6178hcG89pKmus0RxDHEhJIQoSMGsqowEKUVo0UEynaj3n4hx1/klwyucpg5FhAFSokxw/+B7+7NQtTk25SMAZ0v9j2xygQ2AWaddv+Prbt5gngfwautLa/2gBmP0mvt7XIERDaBi6u25q8B1zuAENPumRIjuSnKRQKwPsZfVMOGLwF+tbc3lr7OH0AMtTV8g1wcAiMFSl73ePdPZ29/Xum1d8PNwFyj5nJsJ8AAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB+YJDxEhI2qmjc4AAAHBelRYdFJhdyBwcm9maWxlIHR5cGUgaWNjAAA4jaVTW44cIQz85xQ5gvGzOU4PNFLuf4EYDPPa2UibWEKIMrbLpki/a02/hqlhgmF4glYlbUbANCFtehkbCrIxIsghRU4EsEvdXXx1gJx9jQBLmpWMDLgJsQrDP1j3qoNR3kAjbHdmP7T0w/tNnbaRRqGMC2ZI3hgYWrSUdTlIzXxCsPFyBJ7Z+R4+joWfNXCsycc5xxiO9gh4wa96x+0J34QcH4nYXyaoYl7DRvCAz/g399OgaqgtzrQd7LNwAawWnN0Lzhu33Ronh6uJvr/SfsmqopeI0A5Ybk/gIwR2PbGTkPFqo1EdShPf3aF+aQwZ2zpfcWdIQnAlwHcC6e8M8vlgILCKYRSbRSiKMHsi7eND+MoPBvD4Ek82FAxvAnZNKRHhsyAzVI5IaVcfRijzbGUy7K3AxG9nnntblajVmag6i08MtEdndPRISOUjU+TSg1E/5mvctPLHhFhs+u2Yez6aA5pdNvc2R6I9eVS3mRdPiyFImYEUMoNTbi+6C6OdCE5qM1A4BMa1zoullHNViMRd6ne628N+e3bYf+6L8P4j0asQ0x8VmCA0X5Y6uAAADAdJREFUWMPtmF2MXdV1x39r733OuffO3Lkz4/GMPWbsMcYxxnwPBZuP2EmhQCgVoShJVdKnKooqqqpV1YcqUlVVearUpyRtKqVpWtRUpVGilJJCAoTYJGDADsQf2Aab8cfYnrHn+36cc/beqw93DDhQqWnzmCUd6ZyHc85vr73W+q+94Ff2i5n8oi9M1G8mgnEwAKwXYQzoBTqqnDYix4adzL3cDqyy4vKoerxVBOcs3r/xywO7qX4zpntbBbakIjtqhu09ItetsrJ+tTN9VcGWSpwJujzl46H5oN8xQl+PyDYE34y6v1T9bo8xhwpV3b3w2v8d7Pa+CQoUgQEHDzSs+czGxNy6LbNDVyZG1jih14CoElAsQlvhnxdLznnVj/UksjnpLulQHni2VU6eKfWvEuEby1FVQKzBo/DS4r7/HdhHGxOsTmCq4PYBK39xS8Xu+nhPkm5NDTUjLMXI6bLkgvcUGlEFD7zSESKO3+9PGbLQ1ohF6DGGw0Xkb+fy2bfL+PUEhgXqufK8CI8rzDrghfd58gNgOxsTdCIY4f6NifnKZxvp+K1Vx1kfea3jOV5ELoRIK0YcMOyUTQkcL2ExOj4/kFKqZ6r05BqJKlSNYWuW8XapfGUu57fqCaut4YVWGfe2w7+U8EcWZt8PZn8ebH1lFA9Xb0rM1x4bzDZvTC2PLxQ80/QYEa7NLDuqCbdVE9anjvNB2NuB6SDc05NwMC95rlky5ZXzAV4vhNdz5dVOABHmorK9Yrm96ri56mTK67UnfVxwwp4N2SiT+dkPgu1sTPCjhYtsrdb+7LON9KHNqeHv5gvqVnik7pioGK6vOEacYSYoR4rIYlSmgzIXleNlpG4M2yopYHg1V65KHY/2Z1yZWN4plcN5pKMei2fIGcYSK6+0w8h81O84keUPBRuvjFJLqsM3Ze4v768nI99cLLi2YvlYTVgMngHrWIiRby4WPNsKjDjDptSwMTGscYYSqBnhusyyLXNsSS378sDmBDYmwvaqY9AZXu0ERqySirApS/hZHhqnfNyTiBwdr3S99gEwDx+5LrOPXYxarYpwd81wNC9YkyQ0Y+C7SwVvl/CHAxUGrbCn5ZksI0tRqQg0IzzV9OxpezIR6lb4absgwbMYIzdUUvbnEUdkxApjacrFoO5neVzyyvesoJP52Usl6j2rivSf8rFyNA/c02M5XZYUqsx4z9G84GgBD/QmnPeev5/PWesMY4mhJlBqYC5GBIiq7Ot4Bo2wqIIHlmNEUWoilAqFKl6VO2qODYl5OMKuuBJS7tcbE7apelMqcl9F5Aoruvm8j5WttYQ+A2+FQFBl2ntmAijCgFG+vVRwfZbQjsqBvKTXKBeCcFUSQYVJD1Uj9FkhKkSFXmuICHMxsi6BlirzITDmHA/1Jqu/Op9/YTnyeipccDl86qrU/vW9Pcm6isAPmp6qgY2JoRMjpSoAhwt4Ixd6jNCMkfkAO6qGZ5olOypKn4FvL8PRUriroiy0hBsrFgFSASewJnEcKyLtGBm04FU5U5ascpZdPQl7O+HO3S3/oMLXTU3kD36nka77TF9CIl2gQSPUjVCgKKDAGS9MVJKVOFKMQK5QFWEmwms5VI0BhKkAQ1Z4oDdhsowMWqXXGKpiebrpGU+UbKWCzoTA+dLTa2Bnzbkewyc7qlWTCJVVRojAyTIy5ITMCOWKzMhKFU4FvAYCysUQ2eCUPS1Pwwq72wLiuKPmaEblzcLw230ZDQMnisCwhSFnOVB0Y/UjSXexAEGVE0VBM0a2pIbV1lwXlfVmKeqLb3QCQaFQ6DXCKitMe6VqBLMCNmiUMz7SK8qhXNmSwmrrOZx7AJwIzzY9hQqP9KVcm8GLrQ6LK9vWbyz7O4ENTqm+T28EWIqRk0VJ3QgNI/3AiMlVv7Wn7aeng5KIkIgwnhhOlpFUDD3WosAVDhYjDFrljIcjBYwncHOm9Ajsbnnmo/K5gZRbK8KhTodpH7BAjwg1Y+nE97bw/abAWe9pxoh2H9UY5JVTZXxhX8czYGEhKptTy2JUznm4InEADFpYa2HKCzdlyrFS+H5LOFgIaxwMW/h0PeHOquVYntOO+m4tEuk2a4tROekhfEgnUcTIW4XnYtBpI5w2qdBpK0/8uB2KNc7wVhHoNcKW1PLDVslalzDkunA3ZkpHYSYKH68q99WUT/QoVyfKamu4tzdhPgSWYyQAmXS7jvMevrGQUygsR0MzXt49CFACzzQ9MyH+J8qk6bpSX3gzDwdWHvhpx3Nvj+PNPHIwj2zNMurGUDPw0aoyH2B3W1iO3Z/nChH4SdvzxJLn2VbXm3vawsUAT7egVMPnB1J6jdDR94AMsBzhx23hQK4xwnSvFex4ZRRnpNmMrBt2snNH1fHkcsmOqmPAGv59qWTYWTZnjnaMGJSxBBYi7O0Ip71wIQgt7YL2GcMqa/EYznilbg339Sb8biOl1MjulmeDU2oGliK8WcBLuZAJfKLuZDZw04zXU3YyP8t4NkqBtiM8/FA9qZ73gedbkd/oTRhywj8tFBwtlGUV3iqVyRKWVDAiZGLpd5Yh1y0581FZiMqANdzd4/hUX8o1mXDOF+xrFxwrYcjBwUI4WBg6amlHZVdNGbUwnLjawSKut5fEOyDzuepdV2d2020Vy+t5wZ525NeqjiFreL7lWessI84xniaMOktQoaVKjxHWJ4YtmXBDZpioGK7NhIaJXPQlk2XJfAhMlnC4EGaCUDXwSD3lwXrGq53AkFVWOeFcEA4V8cS7YE4o20p/Jtz/0Z5EeiUyFzxPNwNOhESgauDTfSnnfGRPOzCWGB6qp2yvGlaZAOppx8DF4HmrCLzaiezPleNlNwne8d2Q31lVtmVwZeoYdo6X2p4RZ5gOhu81w4GlyJ86VnrtnY0JBJ55pRNOH8zj2NZKSqGRERs5UBRMeeFADifKSN0Iv9dI2eDgVFlyJPd0VFmKcMbDaS94FcYSy0TVEIHnm57ZELm/poy6brKIdLffA8+31M+E+INm1D9vRfa799cTJ7SXoxaPLxT8yWDG9dUKieT028BMUN4shINF5MHeBNXIc82CCyFyMcCFIJQIo85yf6/lmsxSN8JsUI4UAbNSpEdWoDIRBq1hISjTXhfeKeMXDXxNYbZh4TKwdlQdTw1jifDluZxHGyk3VKpM+ZLesmSVjczFrvT8sNUV84iwxhquySzjiaHHCAtR+dZiyZSPLMVIRZSNiTLu3isRG9KUhrHsbXsuhPgjRb+UiLQvHUguAwvQ9Mr8rqrlxVbOl2c73Fx13FVzXF2xNENgyntOeeHe3oQDncDhosRr5HgRebsAK1AR6DfKVQkMGOgx3R4+AqkIG9OUDWnKbFCeaZbtZuTxTKR92e79nGYtLkY9eiEycWfNMGgDR4qCL3U8/daw1hm8Wt4pPaus8LmBlNfakamyK+SGLtgl4WcFRlfiacRaNqQpg9ZSKPzbUsGBPDwh8KRw+bny3Z5/vDJKJqIdpV4x8pvbq84UGljnYCxRMokshsByDBTAhQC3VhIGrX23oRR5T5R1Ba4iwkiSsDlNGV9RkJYq/7pY8h/L5XMd5Y+tMCPw7tHtMrDJ/OxKPWNqNuqdGxK7fktmWQjdHr7fwFoHYw7WOdifK0POsDm1DDpHzRgSESrGUDeG1c4xliRcmWWsSxLqxmCAd8rIP8wX4b+a5ZPtyGPACSeXe+sysEteQ2h2IpMnyrhrXeIa11VSnKwcHLiUUd3rJx1lLLGsdYY+axl2jjVJwtokYbVzNKylYrpuPO+Vp5ZL/nGhOL+/E/6mVL4AnEk+BOqSjl5mOxsTjGVwvMPdDSNfvKVqb7mr5swVTkAjbY3kGikUXm4rhwt4tJFyS8WRSveD2k0kmlE5VnRHC/s6YfpkGZ/qKF9NhFeiEl5c/J+nPh86VNnZN8G8KjWRUeDhuuGTo85cv9aZ/oYVFxXmYixPl3r+jI+7+43031ixd4w6U68YkVZUZoMWUz7OTpbxyFzQZz36pEUOKJQvLf4/xlDQHUW9eNs9bH/5+71RdZMIVxlkuJtteg44nIm8vRg0S4QbE5FtBvoiLHnV0x5OCEz2OVluBWXvh4ybfmW/LPtvINcVpo5Q7cwAAAAldEVYdGRhdGU6Y3JlYXRlADIwMjItMDktMTVUMTc6MzA6NDcrMDA6MDA5A5WhAAAAJXRFWHRkYXRlOm1vZGlmeQAyMDIyLTA5LTE1VDE3OjI5OjUzKzAwOjAwTSD9mgAAABt0RVh0aWNjOmNvcHlyaWdodABQdWJsaWMgRG9tYWlutpExWwAAACJ0RVh0aWNjOmRlc2NyaXB0aW9uAEdJTVAgYnVpbHQtaW4gc1JHQkxnQRMAAAAVdEVYdGljYzptYW51ZmFjdHVyZXIAR0lNUEyekMoAAAAOdEVYdGljYzptb2RlbABzUkdCW2BJQwAAAABJRU5ErkJggg==" />
-                        <span id="BKC-dev-tip-text" class="text" style="font-size:1rem;font-weight:600;text-align:center;overflow-wrap:anywhere;">${Msg}</span></div>`;
+      newtip.innerHTML = getTipInnerHtml(Msg);
       newtip = span.appendChild(newtip);
-
       let timeoutID = setTimeout(() => {
         BKC.cleartip(newtip, timeoutID);
       }, DevTooltipsTimeout);
-
       newtip.addEventListener('click', () => {
         BKC.cleartip(newtip, timeoutID);
       });
@@ -59,389 +55,6 @@ window.addEventListener('error', (event) => {
     }
   }
 });
-
-function hexToH(H) {
-  let r = 0;
-  let g = 0;
-  let b = 0;
-  if (H.length === 4) {
-    r = `0x${H[1]}${H[1]}`;
-    g = `0x${H[2]}${H[2]}`;
-    b = `0x${H[3]}${H[3]}`;
-  } else if (H.length === 7) {
-    r = `0x${H[1]}${H[2]}`;
-    g = `0x${H[3]}${H[4]}`;
-    b = `0x${H[5]}${H[6]}`;
-  }
-  r /= 255;
-  g /= 255;
-  b /= 255;
-  let cmin = Math.min(r, g, b);
-  let cmax = Math.max(r, g, b);
-  let delta = cmax - cmin;
-  let h = 0;
-  if (delta === 0) h = 0;
-  else if (cmax === r) h = ((g - b) / delta) % 6;
-  else if (cmax === g) h = (b - r) / delta + 2;
-  else h = (r - g) / delta + 4;
-  h *= 60;
-  if (h < 0) h += 360;
-  return h;
-}
-
-function hslToHex(h, s, l) {
-  l /= 100;
-  // eslint-disable-next-line no-mixed-operators
-  const a = (s * Math.min(l, 1 - l)) / 100;
-  const f = (n) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color)
-      .toString(16)
-      .padStart(2, '0');
-  };
-  return `#${f(0)}${f(8)}${f(4)}`;
-}
-
-function componentToHex(c) {
-  let hex = c.toString(16);
-  return hex.length === 1 ? '0' + hex : hex;
-}
-
-function rgbToHex(rr, gg, bb) {
-  return '#' + componentToHex(rr) + componentToHex(gg) + componentToHex(bb);
-}
-
-function scrollIntoView(t) {
-  if (typeof t !== 'object') return;
-  if (t.getRangeAt) {
-    if (t.rangeCount === 0) return;
-    t = t.getRangeAt(0);
-  }
-  if (t.cloneRange) {
-    var r = t.cloneRange();
-    r.collapse(true);
-    // eslint-disable-next-line no-redeclare
-    var t = r.startContainer;
-    if (t.nodeType === 1) t = t.childNodes[r.startOffset];
-  }
-  let o = t;
-  while (o && o.nodeType !== 1) o = o.previousSibling;
-  t = o || t.parentNode;
-  if (t) t.scrollIntoView();
-}
-
-function frameFuncsRemove(pos) {
-  let index = frameFuncs.indexOf(pos);
-  if (index > -1) {
-    frameFuncs.splice(index, 1);
-  }
-}
-
-function permCrosshairToggleFunc() {
-  if (permCrosshair) {
-    permcrossstyle.innerHTML = 'img#crosshair-static{opacity:1!important;visibility:visible!important;display:block!important;}';
-  } else {
-    permcrossstyle.innerHTML = '';
-  }
-}
-
-function playerHighLightFunc() {
-  if (ShouldHiglight) {
-    let localPlayerClass = scene['children']['0']['parent']['entity']['_entityManager']['mWnwM']['systemManager']['_systems']['0']['_queries']['player']['entities']['0']['_components']['38'].wnWmN;
-    let qNum = 2;
-
-    if (!scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players && !scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][++qNum]['_queries'].players) return;
-    for (let i = 0; i < scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players?.entities?.length; i++) {
-      let mat = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players.entities[i]['_components'][0].value.children[0].children[0].children[1].material;
-
-      if (mat.color.r === 1 && mat.color.g < 1 && mat.color.b < 1) continue;
-      let player = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players.entities[i]['_components'];
-      if (!localPlayerClass.team || localPlayerClass.team !== player['50'].team) {
-        if (mat.color !== colorEnemy) {
-          mat.map = null;
-          mat.color = colorEnemy;
-          mat.needsUpdate = true;
-        }
-      } else if (mat.color !== colorTeam) {
-        mat.map = null;
-        mat.color = colorTeam;
-        mat.needsUpdate = true;
-      }
-    }
-  }
-}
-
-function hideFlagAdsFunc() {
-  if (flagMaterial) {
-    if (hideFlagAds) {
-      flagMaterial.visible = !scoped;
-    } else {
-      flagMaterial.visible = true;
-    }
-  }
-}
-
-function IsScoped(e) {
-  if (e.button === 2) scoped = true;
-}
-
-function IsNotScoped(e) {
-  if (e.button === 2) scoped = false;
-}
-
-function settingsSetGit(setting, value) {
-  settings.set(setting, value);
-  return value;
-}
-
-let Sessionids = [];
-function JoinLobbyWhenUnlocked() {
-  let children = document.querySelector('html body div#app div#view div.background div.container div.content div.servers div.container-games div.list-cont div.list')?.children;
-  if (children) {
-    for (var i = 0; i < children.length; i++) {
-      if (!children[i].classList.contains('available-rooms') && !children[i].classList.contains('no-free')) {
-        if (!children[i]?.querySelector('#bkc-JWF-cb') && children[i].getElementsByClassName('right')?.[0]) {
-          var x = document.createElement('INPUT');
-          x.type = 'checkbox';
-          x.className = 'input-checkbox  button';
-          x.id = 'bkc-JWF-cb';
-          x.title = 'Join Lobby When Available';
-          x.style = 'margin-right:0.5rem;margin-left:1rem;--hover-color:var(--primary-2);display:flex;justify-content:center;align-items:center;border:none;position:relative;color:var(--white);font-size:1rem;transition:all .3s ease;font-family:Rowdies;padding:.9em 1.4em;transform:skew(-10deg);font-weight:900;overflow:hidden;text-transform:uppercase;border-radius:.2em;outline:none;text-shadow:0 .1em 0 #000;-webkit-text-stroke:1px var(--black);box-shadow:0 .15rem 0 rgba(0,0,0,.315);cursor:pointer;';
-          children[i].getElementsByClassName('right')[0].appendChild(x);
-          x.addEventListener('change', function () {
-            let thisId = this.parentElement.parentElement.getElementsByClassName('session-id')[0].innerHTML;
-            if (this.checked) {
-              if (thisId && !Sessionids.includes(thisId)) {
-                Sessionids.unshift(thisId);
-              }
-            } else {
-              let index = Sessionids.indexOf(thisId);
-              if (index > -1) {
-                Sessionids.splice(index, 1);
-              }
-            }
-          });
-          continue;
-        }
-        if (Sessionids.length) {
-          let ThisIdd = children[i].getElementsByClassName('session-id')[0]?.innerHTML;
-          if (Sessionids.includes(ThisIdd)) {
-            children[i].querySelector('#bkc-JWF-cb').checked = true;
-            if (!children[i].classList.contains('locked')) {
-              children[i].getElementsByClassName('button join')[0].click();
-            }
-          } else {
-            children[i].querySelector('#bkc-JWF-cb').checked = false;
-          }
-        }
-      }
-    }
-  }
-}
-
-async function ShowHideGameModes() {
-  let modecards = document.getElementsByClassName('list-cont')[0].getElementsByClassName('map');
-  let mci;
-  for (var i = 0; i < modecards.length; i++) {
-    mci = modecards[i].innerText;
-    if (/^PHY_/.test(mci)) {
-      if (!GameModesShowPHY) {
-        modecards[i].parentElement.parentElement.style.display = 'none';
-      } else {
-        modecards[i].parentElement.parentElement.style.display = 'flex';
-      }
-    } /*else if (/^P_/.test(mci)) {
-      if (!GameModesShowP) {
-        modecards[i].parentElement.parentElement.style.display = 'none';
-      } else {
-        modecards[i].parentElement.parentElement.style.display = 'flex';
-      }
-    }*/ else if (/^TDM_/.test(mci)) {
-      if (!GameModesShowTDM) {
-        modecards[i].parentElement.parentElement.style.display = 'none';
-      } else {
-        modecards[i].parentElement.parentElement.style.display = 'flex';
-      }
-    } else if (/^POINT_/.test(mci)) {
-      if (!GameModesShowPOINT) {
-        modecards[i].parentElement.parentElement.style.display = 'none';
-      } else {
-        modecards[i].parentElement.parentElement.style.display = 'flex';
-      }
-    } else if (/^DM_/.test(mci)) {
-      if (!GameModesShowDM) {
-        modecards[i].parentElement.parentElement.style.display = 'none';
-      } else {
-        modecards[i].parentElement.parentElement.style.display = 'flex';
-      }
-    } else if (/^BW_/.test(mci)) {
-      if (!GameModesShowBW) {
-        modecards[i].parentElement.parentElement.style.display = 'none';
-      } else {
-        modecards[i].parentElement.parentElement.style.display = 'flex';
-      }
-    }
-  }
-
-  document.querySelectorAll('div.list-cont div.list div[style*="display: flex;"] div.right div.online').forEach((playerCnt) => {
-    let player = Number(playerCnt.innerHTML.split('/')[0]);
-    if (!Number.isNaN(player)) {
-      if (player >= minPlayers && player < 8 && !playerCnt.parentElement.parentElement.classList.contains('locked')) {
-        if (playerCnt.style.color !== 'var(--green-1)') playerCnt.style.color = 'var(--green-1)';
-        if (playerCnt?.title !== 'available') playerCnt.title = 'available';
-      } else if (player < minPlayers) {
-        if (playerCnt.style.color !== 'var(--red-3)') playerCnt.style.color = 'var(--red-3)';
-        if (playerCnt?.title !== 'below min players') playerCnt.title = 'below min players';
-      } else {
-        if (playerCnt.style.color !== 'var(--primary-1)') playerCnt.style.color = 'var(--primary-1)';
-        if (playerCnt?.title !== 'below min time, lobby full or game has ended') playerCnt.title = 'below min time, lobby full or game has ended';
-      }
-    }
-  });
-}
-
-function GameModesCheckBoxChangeHandler(event) {
-  /*if (event.target.className === 'P-checkbox') {
-    GameModesShowP = event.target.checked;
-    settings.set('GameModesShowP', GameModesShowP);
-  } else*/ if (event.target.className === 'TDM-checkbox') {
-    GameModesShowTDM = event.target.checked;
-    settings.set('GameModesShowTDM', GameModesShowTDM);
-  } else if (event.target.className === 'DM-checkbox') {
-    GameModesShowDM = event.target.checked;
-    settings.set('GameModesShowDM', GameModesShowDM);
-  } else if (event.target.className === 'BW-checkbox') {
-    GameModesShowBW = event.target.checked;
-    settings.set('GameModesShowBW', GameModesShowBW);
-  } else if (event.target.className === 'POINT-checkbox') {
-    GameModesShowPOINT = event.target.checked;
-    settings.set('GameModesShowPOINT', GameModesShowPOINT);
-  } else if (event.target.className === 'PHY-checkbox') {
-    GameModesShowPHY = event.target.checked;
-    settings.set('GameModesShowPHY', GameModesShowPHY);
-  } else if (event.target.id === 'bkc-min-time') {
-    minTime = Number(event.target.options[event.target.selectedIndex].value);
-    settings.set('minTime', minTime);
-  } else if (event.target.id === 'bkc-min-players') {
-    minPlayers = Number(event.target.options[event.target.selectedIndex].value);
-    settings.set('minPlayers', minPlayers);
-  }
-  ShowHideGameModes();
-}
-
-const gamemodesobserver = new MutationObserver(() => {
-  ShowHideGameModes();
-  JoinLobbyWhenUnlocked();
-});
-
-function SetGameModesCheckBoxes() {
-  let list = document.querySelector('#view div.background div.container div.content div.servers div.container-games div.list-cont div.list');
-  if (list && !document.querySelector('#bkc-minmax-selects')) {
-    let bkcMinSelect = document.createElement('div');
-    bkcMinSelect.id = 'bkc-minmax-selects';
-    bkcMinSelect.innerHTML = `
-    <label title="Minimum Players" id="bkc-min-players-label">Players:</label>
-    <select id="bkc-min-players" title="Minimum Players">
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5</option>
-    <option value="6">6</option>
-    <option selected="selected" value="7">7</option>
-  </select>
-  <label title="Minimum Time Remaining" id="bkc-min-time-label">Time:</label>
-  <select id="bkc-min-time" title="Minimum Time Remaining">
-    <option value="1" selected="selected">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5</option>
-    <option value="6">6</option>
-    <option value="7">7</option>
-    <option value="8">8</option>
-  </select>
-    `;
-
-    let modesCont = document.createElement('div');
-    modesCont.className = 'mods tabmods';
-    modesCont.style = `
-    display: flex;
-    margin: auto;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-content: center;
-    justify-content: space-evenly;
-    align-items: center;
-    width: 100%;
-    `;
-    modesCont.innerHTML = `
-      <div class="DM">
-      <label class="custom-checkbox checkbox-size">
-      <input type="checkbox" class="DM-checkbox">
-      <span> DM </span>
-      </label>
-      </div>
-      
-      <div class="BW">
-      <label class="custom-checkbox checkbox-size">
-      <input type="checkbox" class="BW-checkbox">
-      <span> BW </span>
-      </label>
-      </div>
-
-      <div class="TDM">
-      <label class="custom-checkbox checkbox-size">
-      <input type="checkbox" class="TDM-checkbox">
-      <span> TDM </span>
-      </label>
-      </div>
-      
-      <div class="POINT">
-      <label class="custom-checkbox checkbox-size">
-      <input type="checkbox" class="POINT-checkbox">
-      <span> Point </span>
-      </label>
-      </div>
-      
-      <!--
-      <div class="P">
-      <label class="custom-checkbox checkbox-size">
-      <input type="checkbox" class="P-checkbox">
-      <span> P </span>
-      </label>
-      </div>
-      -->
-
-      <div class="PHY">
-      <label class="custom-checkbox checkbox-size">
-      <input type="checkbox" class="PHY-checkbox">
-      <span> PHY </span>
-      </label>
-      </div>
-      `;
-    modesCont = bkcMinSelect.appendChild(modesCont);
-    modesCont.getElementsByClassName('DM-checkbox')[0].checked = GameModesShowDM;
-    modesCont.getElementsByClassName('BW-checkbox')[0].checked = GameModesShowBW;
-    modesCont.getElementsByClassName('TDM-checkbox')[0].checked = GameModesShowTDM;
-    //modesCont.getElementsByClassName('P-checkbox')[0].checked = GameModesShowP;
-    modesCont.getElementsByClassName('POINT-checkbox')[0].checked = GameModesShowPOINT;
-    modesCont.getElementsByClassName('PHY-checkbox')[0].checked = GameModesShowPHY;
-    bkcMinSelect.addEventListener('input', GameModesCheckBoxChangeHandler);
-    gamemodesobserver.observe(list, {
-      childList: true,
-      attributes: true,
-      subtree: true,
-      attributeOldValue: true,
-      characterData: true,
-      characterDataOldValue: true,
-    });
-    bkcMinSelect = list.parentElement.insertBefore(bkcMinSelect, list);
-    bkcMinSelect.querySelector(`#bkc-min-players option[value="${minPlayers}"]`).selected = true;
-    bkcMinSelect.querySelector(`#bkc-min-time option[value="${minTime}"]`).selected = true;
-  }
-}
 
 if (typeof settings.get('pendingImport') !== 'undefined') {
   let savedStorage = settings.get('pendingImport');
@@ -539,6 +152,7 @@ let meow = function () {
   return originalHowl.apply(this, arguments);
 };
 
+let Sessionids = [];
 let originalHowl;
 let DevToolTips = true;
 let DevTooltipsTimeout = 10000;
@@ -591,6 +205,7 @@ let permcrossstyle;
 let cssSelect;
 let clockInterval;
 let timeContainer;
+let Bark;
 let statsUpdated = false;
 let claimedQuest = false;
 let inGame = false;
@@ -638,602 +253,7 @@ WeakMap.prototype.set = new Proxy(WeakMap.prototype.set, {
   },
 });
 
-function MoveTwitchMenu(TwitchHead) {
-  let lsmpos1 = 0;
-  let lsmpos2 = 0;
-  let lsmpos3 = 0;
-  let lsmpos4 = 0;
-  let p = TwitchHead.getElementsByClassName('head')[0];
-  if (p) p.onmousedown = TwitchDrag;
-
-  function TwitchDrag(peepoHappy) {
-    peepoHappy = peepoHappy || window.event;
-    peepoHappy.preventDefault();
-    lsmpos3 = peepoHappy.clientX;
-    lsmpos4 = peepoHappy.clientY;
-    document.onmouseup = TwitchStopDragPlz;
-    document.onmousemove = TwitchDragging;
-  }
-
-  function TwitchDragging(xip) {
-    xip = xip || window.event;
-    xip.preventDefault();
-    lsmpos1 = lsmpos3 - xip.clientX;
-    lsmpos2 = lsmpos4 - xip.clientY;
-    lsmpos3 = xip.clientX;
-    lsmpos4 = xip.clientY;
-    TwitchHead.style.top = `${TwitchHead.offsetTop - lsmpos2}px`;
-    TwitchHead.style.left = `${TwitchHead.offsetLeft - lsmpos1}px`;
-  }
-
-  function TwitchStopDragPlz() {
-    document.onmouseup = null;
-    document.onmousemove = null;
-    TwitchTop = settingsSetGit('TwitchTop', TwitchHead.style.top);
-    TwitchLeft = settingsSetGit('TwitchLeft', TwitchHead.style.left);
-  }
-}
-
-function SaveTwitchSize() {
-  if (TwitchWidth !== streamsmenu.style.width) {
-    TwitchWidth = settingsSetGit('TwitchWidth', streamsmenu.style.width);
-    streamsmenu.style.setProperty('--bkc-stremz-menu-width', streamsmenu.style.width);
-  }
-  if (TwitchHeight !== streamsmenu.style.height) {
-    TwitchHeight = settingsSetGit('TwitchHeight', streamsmenu.style.height);
-  }
-}
-
 TwitchResizeObserver = new ResizeObserver(SaveTwitchSize);
-
-function newStremz(data) {
-  let twitchinfo = getTwitchInfo(data['data'][0].id);
-  if (twitchinfo && !streamsmenu.querySelector(`img[src="${data['data'][0].profile_image_url}"]`)) {
-    let item = document.createElement('div');
-    let viewers = `${twitchinfo.viewer_count} ${twitchinfo.viewer_count === 1 ? 'viewer' : 'viewers'}`;
-    item.className = 'item';
-    item.title = `
-Click to watch ${data['data'][0].display_name} stream kirka.io on twitch
-Title:  ${twitchinfo.title}
-Started at:  ${new Date(twitchinfo.started_at).toLocaleString()}
-Streaming to:  ${viewers}
-Tags:  ${twitchinfo?.tags ? twitchinfo.tags.toString() : ''}
-Language:  ${twitchinfo?.language ? twitchinfo.language : ''}
-      𝙍𝙞𝙜𝙝𝙩 𝙘𝙡𝙞𝙘𝙠 𝙩𝙤 𝙘𝙤𝙥𝙮 𝙡𝙞𝙣𝙠 𝙩𝙤 𝙘𝙡𝙞𝙥𝙗𝙤𝙖𝙧𝙙 ⠀⠀
-    `;
-    item.innerHTML = `
-<img src="${data['data'][0].profile_image_url}" alt="avatar" class="avatar" style="height: 2.188rem;width: 2.188rem;margin-top: .3rem;border-radius: 20px;border: 2px solid #7235cb;"/>
-<div class="content" style="display: flex;flex-direction: column;align-items: flex-start;margin-left: .7rem;text-shadow: 0 2px 0 rgba(0,0,0,.5);">
-<div id="bkc-twitch-name" style="display: flex;flex-direction: row;flex-wrap: nowrap;align-content: center;justify-content: center;align-items: center;">  
-<div style="font-weight: 700;" class="name">${data['data'][0].display_name}</div>${data['data'][0].broadcaster_type === 'partner' ? '<svg width="16px" height="16px" version="1.1" viewBox="0 0 16 16" x="0px" y="0px" style="fill: rgb(191,148,255);"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.5 3.5L8 2L3.5 3.5L2 8L3.5 12.5L8 14L12.5 12.5L14 8L12.5 3.5ZM7.00008 11L11.5 6.5L10 5L7.00008 8L5.5 6.5L4 8L7.00008 11Z"></path></svg>' : ''}
-</div>
-<div class="count">${twitchinfo.title}</div>
-<div class="count">${viewers} • ${twitchinfo.time}</div>
-</div>
-`;
-    item.onmouseup = (e) => {
-      if (e.button === 0) shell.openExternal(`https://www.twitch.tv/${data['data'][0].display_name}`);
-      else if (e.button === 2) {
-        clipboard.writeText(`https://www.twitch.tv/${data['data'][0].display_name}`);
-        BKC.tip('Link Copied');
-      }
-    };
-    streamsmenu.querySelector('div.list').appendChild(item);
-  }
-}
-
-function getTwitchInfo(userid) {
-  for (let i = 0; i < stremzInfo?.data?.length; i++) {
-    if (stremzInfo.data[i].user_id === userid) {
-      if (!stremzInfo.data[i].time) {
-        let time = Date.now() - Date.parse(stremzInfo.data[i]['started_at']);
-        let s = Math.round((time + Number.EPSILON) / 1e3);
-        let m = Math.round((time + Number.EPSILON) / 6e4);
-        let h = Number((time / 36e5).toFixed(1));
-        let d = Number((time / 864e5).toFixed(1));
-        if (s < 60) {
-          stremzInfo.data[i].time = `live for ${s} ${s === 1 ? 'sec' : 'secs'}`;
-        } else if (m < 60) {
-          stremzInfo.data[i].time = `live for ${m} ${m === 1 ? 'min' : 'mins'}`;
-        } else if (h < 24) {
-          stremzInfo.data[i].time = `live for ${h} ${h === 1 ? 'hr' : 'hrs'}`;
-        } else {
-          stremzInfo.data[i].time = `live for ${d} ${d === 1 ? 'day' : 'days'}`;
-        }
-      }
-      return stremzInfo.data[i];
-    }
-  }
-}
-
-function initTwitchMenu() {
-  let interface = document.querySelector('.interface.text-2');
-  if (interface) {
-    if (!document.querySelector('#live-streams-menu')) {
-      streamsmenu = document.createElement('div');
-      streamsmenu.style = `z-index:998!important;min-width: 15.5rem;min-height: 4rem;position:absolute;resize:both;overflow: auto hidden!important;opacity:1!important;pointer-events:all!important;
-      top:${TwitchTop};left:${TwitchLeft};--bkc-stremz-menu-width:${TwitchWidth};width:${TwitchWidth};height:${TwitchHeight};${ShowTwitch ? 'display:block!important;' : 'display:none!important;'}`;
-      streamsmenu.id = 'live-streams-menu';
-      streamsmenu.innerHTML = `
-      <div class="head" style="display: flex; align-items: center; font-size: 1.5rem; font-weight: 700; text-shadow: 0 3px 1px rgba(0, 0, 0, 0.5); border-bottom: 2px solid #191919; padding: 10px 10px 10px 1rem; background: var(--secondary-2)">
-      LIVE STREAMS<svg style="fill: currentColor; height: 2.375rem; width: 2.063rem; margin-left: 1.125rem" xmlns="http://www.w3.org/2000/svg" class="icon-twitch svg-icon svg-icon--twitch">
-        <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/img/icons.6e41b8dd.svg#twitch"></use>
-      </svg>
-      </div>
-      <div class="list"></div>
-      <div class="item">Stream kirka on twitch to show up here</div>
-      `;
-      streamsmenu = interface.appendChild(streamsmenu);
-      let kirkaItem = streamsmenu.querySelector('.item');
-      kirkaItem.onmouseup = (e) => {
-        if (e.button === 0) shell.openExternal('https://www.twitch.tv/directory/game/Kirka.io');
-        else if (e.button === 2) {
-          clipboard.writeText(`https://www.twitch.tv/directory/game/Kirka.io`);
-          BKC.tip('Link Copied');
-        }
-      };
-      kirkaItem.title = `Click to visit kirka.io on twitch
-      𝙍𝙞𝙜𝙝𝙩 𝙘𝙡𝙞𝙘𝙠 𝙩𝙤 𝙘𝙤𝙥𝙮 𝙡𝙞𝙣𝙠 𝙩𝙤 𝙘𝙡𝙞𝙥𝙗𝙤𝙖𝙧𝙙 ⠀⠀
-`;
-      TwitchResizeObserver.observe(streamsmenu);
-      MoveTwitchMenu(streamsmenu);
-    }
-    return streamsmenu;
-  }
-}
-
-function toTitleCase(str) {
-  let rts = '';
-  let p = str.replace(/_/g, ' ').split(' ');
-  for (let i = 0; i < p.length; i++) {
-    rts += `${p[i].charAt(0).toUpperCase()}${p[i].substr(1).toLowerCase()} `;
-  }
-  return rts.trim();
-}
-
-async function CheckQuest(_index) {
-  if (localStorage.token === '') return;
-  let requests = [];
-  let failed = [];
-  let types = _index || ['hourly', 'daily', 'event'];
-  types.forEach((type) => {
-    requests.push(
-      fetch('https://api.kirka.io/api/quests', {
-        headers: {
-          accept: 'application/json, text/plain, */*',
-          authorization: 'Bearer ' + localStorage.token,
-          'content-type': 'application/json;charset=UTF-8',
-          csrf: 'token',
-          'sec-fetch-mode': 'cors',
-          'sec-fetch-site': 'same-site',
-        },
-        referrer: 'https://kirka.io/',
-        referrerPolicy: 'strict-origin-when-cross-origin',
-        body: `{"type": "${type}"}`,
-        method: 'POST',
-        mode: 'cors',
-        credentials: 'include',
-      })
-    );
-  });
-  let allQuests = await Promise.allSettled(requests);
-  allQuests.forEach(async (result, index) => {
-    if (result.status === 'rejected' || result.value.status >= 400) failed.push(types[index]);
-    else {
-      let quests = await result.value.json();
-      for (let quest of quests) {
-        if (quest.progress.completed && !quest.progress.rewardTaken) {
-          let request = await fetch('https://api.kirka.io/api/rewards/take', {
-            headers: {
-              accept: 'application/json, text/plain, */*',
-              authorization: 'Bearer ' + localStorage.token,
-              'content-type': 'application/json;charset=UTF-8',
-              csrf: 'token',
-              'sec-fetch-mode': 'cors',
-              'sec-fetch-site': 'same-site',
-            },
-            referrer: 'https://kirka.io/',
-            referrerPolicy: 'strict-origin-when-cross-origin',
-            body: JSON.stringify({ source: 'quest:' + quest.id }),
-            method: 'POST',
-            mode: 'cors',
-            credentials: 'include',
-          });
-          if (request.ok) {
-            BKC.tip(`${toTitleCase(quest.type)} Quest Completed:
-${quest.amount} ${toTitleCase(quest.name)} ${quest.weapon !== 'undefined' ? quest.weapon : ''}
-XP:  ${quest['rewards'][0].amount}   COINS:  ${quest['rewards'][1].amount}`);
-          } else {
-            if (!failed.includes(types[index])) failed.push(types[index]);
-            BKC.tip(`Failed Claiming ${toTitleCase(quest.type)}
-Quest: ${toTitleCase(quest.name)}
-Trying Again In 15 Seconds`);
-          }
-        }
-      }
-    }
-  });
-  if (failed.length) return [...failed];
-}
-
-function checkclaimQuest(type) {
-  if (!inGame) {
-    CheckQuest(type)
-      .then((result) => {
-        if (Array.isArray(result)) {
-          setTimeout(() => {
-            checkclaimQuest(result);
-          }, 15000);
-        }
-      })
-      .catch((error) => BKC.tip(error));
-  }
-}
-
-function clock() {
-  if (!clockInterval) {
-    clockInterval = setInterval(() => {
-      let titTok = document.querySelector('#free-clock');
-      if (titTok) titTok.innerHTML = new Date().toLocaleTimeString();
-    }, 1000);
-  }
-}
-
-async function getStats() {
-  if (!id) {
-    id = document.querySelector('.username')?.innerHTML.slice(1);
-  }
-  let statsContainer = document.querySelector('#bkc-daily-stats-container');
-  if (!id || !statsContainer) return 'NAAHHHH AINTNOWAY';
-
-  let stats = await fetch('https://api.kirka.io/api/user/getProfile', {
-    headers: {
-      accept: 'application/json, text/plain, */*',
-      authorization: 'Bearer ' + localStorage.token,
-      'cache-control': 'no-cache',
-      'content-type': 'application/json;charset=UTF-8',
-      csrf: 'token',
-      'sec-fetch-mode': 'cors',
-      'sec-fetch-site': 'same-site',
-    },
-    referrer: 'https://kirka.io/',
-    referrerPolicy: 'strict-origin-when-cross-origin',
-    body: `{"id":"${id}","isShortId":true}`,
-    method: 'POST',
-    mode: 'cors',
-    credentials: 'include',
-  });
-
-  if (!stats.ok) return false;
-  stats = await stats.json();
-  let dailyStats = typeof settings.get('dailyStats') === 'undefined' ? {} : settings.get('dailyStats');
-  let date = new Date().toLocaleString('en-US', { timeZone: 'America/Denver', day: 'numeric', month: 'numeric', year: 'numeric' });
-
-  if (!dailyStats[id] || date !== dailyStats[id].date) {
-    dailyStats[id] = {
-      games: stats.stats.games,
-      wins: stats.stats.wins,
-      kills: stats.stats.kills,
-      deaths: stats.stats.deaths,
-      headshots: stats.stats.headshots,
-      scores: stats.stats.scores,
-      totalXp: stats.totalXp,
-      coins: stats.coins,
-      diamonds: stats.diamonds,
-      kd: 0,
-      date,
-    };
-    settings.set('dailyStats', dailyStats);
-  }
-  stats.stats.kd = Math.round(((stats['stats']['kills'] - dailyStats[id]['kills']) / (stats['stats']['deaths'] - dailyStats[id]['deaths']) + Number.EPSILON) * 100) / 100;
-  if (Number.isNaN(stats.stats.kd)) stats.stats.kd = 0;
-  for (const key in dailyStats[id]) {
-    if (key !== 'date') {
-      let statElem = gui?.querySelector(`#bkc-${key}`);
-      if (!statElem) {
-        let newStat = document.createElement('div');
-        newStat.className = 'module';
-        newStat.innerHTML = `<label id="bkc-${key}-stat">${toTitleCase(key)}: </label><span id="bkc-${key}">${(stats[key] || stats['stats'][key]) - dailyStats[id][key]}</span>`;
-        statsContainer.appendChild(newStat);
-      } else {
-        statElem.innerHTML = (stats[key] || stats['stats'][key]) - dailyStats[id][key];
-      }
-    }
-  }
-
-  if (!allFavoriteSkins[id]) {
-    allFavoriteSkins[id] = {
-      SCAR: [],
-      Shark: [],
-      Revolver: [],
-      M60: [],
-      MAC10: [],
-      LAR: [],
-      Bayonet: [],
-      VITA: [],
-      Weatie: [],
-      AR9: [],
-      Tomahawk: [],
-      BODY_SKIN: [],
-      Selected: [],
-    };
-  }
-  favoriteSkins = allFavoriteSkins[id];
-
-  if (!skinzInfo && randomFavoriteSkins) {
-    let inventory = await fetch('https://api.kirka.io/api/inventory', {
-      headers: {
-        accept: 'application/json, text/plain, */*',
-        'accept-language': 'en-US,en;q=0.9,fr;q=0.8',
-        authorization: 'Bearer ' + localStorage.token,
-        'cache-control': 'no-cache',
-        pragma: 'no-cache',
-        'sec-fetch-dest': 'empty',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-site',
-      },
-      referrer: 'https://kirka.io/',
-      referrerPolicy: 'strict-origin-when-cross-origin',
-      body: null,
-      method: 'GET',
-      mode: 'cors',
-      credentials: 'include',
-    });
-    if (inventory.ok) skinzInfo = await inventory.json();
-  }
-  let currentSkin = stats.activeWeapon1Skin.parent.name.replace(/-/, '');
-  if (!seenSkins) seenSkins = Object.keys(favoriteSkins);
-  if (!seenSkins.includes(currentSkin)) seenSkins.push(currentSkin);
-  applyRandomSkins();
-  return 'W';
-}
-
-function fetchStats(fCount) {
-  if (!inGame) {
-    getStats()
-      .then((result) => {
-        if (result !== 'W') {
-          let retryDelay = result === 'NAAHHHH AINTNOWAY' ? 1000 : ++fCount > 2 ? 15000 : 5000;
-          setTimeout(() => fetchStats(fCount), retryDelay);
-          BKC.tip(`Failed Fetching Stats Trying Again In ${retryDelay} Seconds`);
-        }
-      })
-      .catch((error) => BKC.tip(error));
-  }
-}
-
-function seenSkinsListener() {
-  let changeWeaponsContainer = document.querySelector('#change-container');
-  if (changeWeaponsContainer) {
-    changeWeaponsContainer.addEventListener('mouseup', (e) => {
-      let skin = e.target?.innerText || e.target.parentElement.childNodes[0]?.innerText;
-      if (skin) skin = skin.replace(/-/, '').trim();
-      if (!seenSkins.includes(skin)) seenSkins.push(skin);
-    });
-    return changeWeaponsContainer;
-  }
-}
-
-function appendFavedButtons() {
-  document.querySelectorAll('#view > div.background > div.container > div.content > div.inventory > div.content > div.subjects > div.subject > div.hover-btns-group').forEach((hoverelement) => {
-    if (!hoverelement?.querySelector('.bkc-fav-button')) {
-      let bkcfavbut = document.createElement('a');
-      bkcfavbut.className = 'bkc-fav-button';
-      bkcfavbut.innerHTML = '⭐';
-      bkcfavbut.title = 'Add to favorites';
-      hoverelement.appendChild(bkcfavbut);
-    }
-  });
-}
-
-function appendFavedMarker(solo) {
-  if (favoriteSkins['Selected'].length) {
-    let favSpan = document.createElement('span');
-    favSpan.innerHTML = '★';
-    favSpan.id = 'bkc-fav-selected-span';
-    if (solo) return solo.appendChild(favSpan);
-    document.querySelectorAll('.item-name').forEach((element) => {
-      let parent = element.parentElement.parentElement;
-      if (favoriteSkins['Selected'].includes(element?.innerHTML) && !parent?.querySelector('#bkc-fav-selected-span')) {
-        parent.appendChild(favSpan.cloneNode(true));
-      }
-    });
-  }
-}
-
-function FavedButtonsHandler(e) {
-  function isSkinFaved(skin) {
-    let defaultskinName = skin.item.name.replace(/_/, '');
-    for (let key of Object.keys(favoriteSkins)) {
-      let result = favoriteSkins[key].findIndex((item) => item.name === skin.item.name);
-      if (result > -1) {
-        favoriteSkins[key].splice(result, 1);
-        let index = favoriteSkins['Selected'].indexOf(defaultskinName);
-        if (index > -1) favoriteSkins['Selected'].splice(index, 1);
-        return skin;
-      }
-    }
-    let parent = skin.item.type !== 'BODY_SKIN' ? skin.item.parent.name.replace(/-/g, '') : 'BODY_SKIN';
-    favoriteSkins[parent].push({
-      id: skin.item.id,
-      name: skin.item.name,
-      parentName: parent,
-      nameInInventory: defaultskinName,
-    });
-    favoriteSkins['Selected'].push(defaultskinName);
-  }
-
-  if (e.target?.className === 'bkc-fav-button') {
-    let skintext = e.target.previousSibling?.innerText;
-    let favedbutParent = e.target.parentElement.parentElement;
-    let favedbut = favedbutParent?.querySelector('#bkc-fav-selected-span');
-    if (skintext) {
-      let skin = getSkin(skintext);
-      if (skin) {
-        if (!isSkinFaved(skin)) {
-          if (!favedbut) appendFavedMarker(favedbutParent);
-        } else if (favedbut) favedbutParent.removeChild(favedbut);
-        settings.set('allFavoriteSkins', allFavoriteSkins);
-      }
-    }
-  }
-}
-
-function getSkin(skin) {
-  if (favoriteSkins[skin]) skin = `_${skin}`;
-  for (let i = 0; i < skinzInfo?.length; i++) {
-    if (skinzInfo[i].item.name === skin) {
-      return skinzInfo[i];
-    }
-  }
-}
-
-async function applyRandomSkins() {
-  let Dont = [];
-
-  function getRandomSkin(array) {
-    let Skin = array[Math.floor((window.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296) * array.length)];
-    if (Dont.includes(Skin.id) && array.length > 1) return getRandomSkin(array);
-    return Skin;
-  }
-
-  function stillHasSkin(skin) {
-    let isSkinAlive = skinzInfo.filter((item) => item.item.id === skin.id);
-    if (!isSkinAlive.length) {
-      let result = favoriteSkins[skin.parentName].findIndex((item) => item?.id === skin.id);
-      if (result > -1) {
-        favoriteSkins[skin.parentName].splice(result, 1);
-        let index = favoriteSkins['Selected'].indexOf(skin.nameInInventory);
-        if (index > -1) favoriteSkins['Selected'].splice(index, 1);
-      }
-    }
-  }
-
-  if (randomFavoriteSkins) {
-    skinzInfo
-      .filter((item) => item.isSelected === true && (item.item.type === 'WEAPON_SKIN' || item.item.type === 'BODY_SKIN' || item.item.type === 'WEAPON_3'))
-      .forEach((me) => {
-        if (me.item.type !== 'WEAPON_3') Dont.push(me.item.id);
-        else if (!seenSkins.includes(me.item.name)) seenSkins.push(me.item.name);
-      });
-
-    for (let skin of Object.keys(favoriteSkins)) {
-      if (seenSkins.includes(skin) && favoriteSkins[skin].length && skin !== 'Selected') {
-        let randomSkin = getRandomSkin(favoriteSkins[skin]);
-        if (!Dont.includes(randomSkin.id)) {
-          let result = await fetch('https://api.kirka.io/api/inventory/take', {
-            headers: {
-              accept: 'application/json, text/plain, */*',
-              authorization: 'Bearer ' + localStorage.token,
-              'content-type': 'application/json;charset=UTF-8',
-              csrf: 'token',
-              'sec-fetch-mode': 'cors',
-              'sec-fetch-site': 'same-site',
-            },
-            referrer: 'https://kirka.io/',
-            referrerPolicy: 'no-referrer-when-downgrade',
-            body: `{"id":"${randomSkin.id}"}`,
-            method: 'POST',
-            mode: 'cors',
-            credentials: 'include',
-          });
-          if (!result.ok) stillHasSkin(randomSkin);
-        }
-      }
-    }
-  }
-  seenSkins = ['BODY_SKIN', 'Shark'];
-}
-
-const Questobserver = new MutationObserver(() => {
-  let remElement;
-  let notis = document.querySelectorAll('html body div#app div#notifications span div.vue-notification-wrapper div span.text');
-  for (let i = 0; i < notis.length; i++) {
-    remElement = notis[i].parentElement.parentElement;
-    if (notis[i]?.innerHTML === 'You completed a quest' && remElement.style.display !== 'none') {
-      remElement.setAttribute('style', 'display: none!important');
-    } else if (/Failed to connect to the room/i.test(notis[i]?.innerHTML) && !window.location.href.startsWith('https://kirka.io/servers/') && remElement.style.display !== 'none') {
-      remElement.setAttribute('style', 'display: none!important');
-      document.querySelector('.icon-btn.text-1.SERVERS').click();
-    }
-  }
-});
-
-function NotificationsOpenMenus() {
-  let n;
-  let p = document.querySelector('#notifications');
-  if (p) {
-    n = p.onclick = (e) => {
-      let text = (e.target?.innerHTML || e.target.parentElement.nextSibling.innerHTML).toLowerCase();
-      if (text) {
-        if (/friend.*request/g.test(text) && window.location.href !== 'https://kirka.io/friends') {
-          document.querySelector('.icon-btn.text-1.FRIENDS').click();
-        } else if (/item.*sold/g.test(text) && window.location.href !== 'https://kirka.io/inventory') {
-          document.querySelector('.icon-btn.text-1.INVENTORY').click();
-        } else if (/hourly Quest Claimed/gi.test(text) && window.location.href !== 'https://kirka.io/quests/hourly') {
-          document.querySelector('.icon-btn.text-1.QUESTS').click();
-        }
-      }
-    };
-    Questobserver.observe(p, {
-      childList: true,
-      attributes: true,
-      subtree: true,
-    });
-  }
-  return !!n;
-}
-
-function moveTime() {
-  // moves ingame time to tab button menu thing
-  if (!timeContainer) {
-    timeContainer = document.querySelector('#app > div.game-interface > div.desktop-game-interface > div.state-cont > div.left');
-    let tabInfo = document.querySelectorAll('#app > div.game-interface > div.desktop-game-interface > div.tab-info > div.head.text-2,#app > div.game-interface > div.desktop-game-interface > div.tab-parkour-info > div.head.text-2')[0];
-    let serverThing = tabInfo?.querySelectorAll('div.server-id,div.label.blue')[0];
-    if (serverThing && timeContainer) {
-      timeContainer = tabInfo.insertBefore(timeContainer, serverThing);
-    }
-  }
-  return timeContainer;
-}
-
-function checkInputImage(e, datalist, index) {
-  let valve = e.value.trim();
-  if (valve) {
-    let AllInputImages = typeof settings.get('inputImageCache') === 'undefined' ? [[], [], [], [], [], [], [], [], []] : settings.get('inputImageCache');
-    let inputImageCache = AllInputImages[index];
-    let inputOption = `<option value="${valve}"></option>`;
-    if (!inputImageCache.includes(inputOption)) {
-      let img = document.createElement('img');
-      img.onerror = () => {
-        img = null;
-      };
-      img.onload = () => {
-        AllInputImages[index].push(inputOption);
-        datalist.innerHTML += inputOption;
-        settings.set('inputImageCache', AllInputImages);
-        img = null;
-      };
-      img.src = valve;
-    }
-  }
-}
-
-function clearInputImage(e) {
-  if (e.target.offsetWidth - e.offsetX < 39 && e.target.value !== '') e.target.value = '';
-}
-
-function fillInputImage(e) {
-  if (e.target.value !== e.target._value) e.target.value = e.target._value;
-}
-
-let Bark;
-function backForwardAudio() {
-  let uiVol = window.localStorage['mwNMWn/SOUND/VOLUME_UI'];
-  if (uiVol) uiVol = boringJSONParse(uiVol);
-  Bark.volume(uiVol || 1);
-  Bark.play();
-}
 
 const SomeObserver = new MutationObserver(() => {
   if (inGame) {
@@ -2310,3 +1330,985 @@ Function.prototype.constructor = function (...args) {
   if (args[0] === 'while (true) {}' || args[0] === 'debugger') return proxy.apply(this);
   return proxy.apply(this, arguments);
 };
+
+function hexToH(H) {
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  if (H.length === 4) {
+    r = `0x${H[1]}${H[1]}`;
+    g = `0x${H[2]}${H[2]}`;
+    b = `0x${H[3]}${H[3]}`;
+  } else if (H.length === 7) {
+    r = `0x${H[1]}${H[2]}`;
+    g = `0x${H[3]}${H[4]}`;
+    b = `0x${H[5]}${H[6]}`;
+  }
+  r /= 255;
+  g /= 255;
+  b /= 255;
+  let cmin = Math.min(r, g, b);
+  let cmax = Math.max(r, g, b);
+  let delta = cmax - cmin;
+  let h = 0;
+  if (delta === 0) h = 0;
+  else if (cmax === r) h = ((g - b) / delta) % 6;
+  else if (cmax === g) h = (b - r) / delta + 2;
+  else h = (r - g) / delta + 4;
+  h *= 60;
+  if (h < 0) h += 360;
+  return h;
+}
+
+function hslToHex(h, s, l) {
+  l /= 100;
+  // eslint-disable-next-line no-mixed-operators
+  const a = (s * Math.min(l, 1 - l)) / 100;
+  const f = (n) => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color)
+      .toString(16)
+      .padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+function componentToHex(c) {
+  let hex = c.toString(16);
+  return hex.length === 1 ? '0' + hex : hex;
+}
+
+function rgbToHex(rr, gg, bb) {
+  return '#' + componentToHex(rr) + componentToHex(gg) + componentToHex(bb);
+}
+
+function scrollIntoView(t) {
+  if (typeof t !== 'object') return;
+  if (t.getRangeAt) {
+    if (t.rangeCount === 0) return;
+    t = t.getRangeAt(0);
+  }
+  if (t.cloneRange) {
+    var r = t.cloneRange();
+    r.collapse(true);
+    // eslint-disable-next-line no-redeclare
+    var t = r.startContainer;
+    if (t.nodeType === 1) t = t.childNodes[r.startOffset];
+  }
+  let o = t;
+  while (o && o.nodeType !== 1) o = o.previousSibling;
+  t = o || t.parentNode;
+  if (t) t.scrollIntoView();
+}
+
+function frameFuncsRemove(pos) {
+  let index = frameFuncs.indexOf(pos);
+  if (index > -1) {
+    frameFuncs.splice(index, 1);
+  }
+}
+
+function permCrosshairToggleFunc() {
+  if (permCrosshair) {
+    permcrossstyle.innerHTML = 'img#crosshair-static{opacity:1!important;visibility:visible!important;display:block!important;}';
+  } else {
+    permcrossstyle.innerHTML = '';
+  }
+}
+
+function playerHighLightFunc() {
+  if (ShouldHiglight) {
+    let localPlayerClass = scene['children']['0']['parent']['entity']['_entityManager']['mWnwM']['systemManager']['_systems']['0']['_queries']['player']['entities']['0']['_components']['38'].wnWmN;
+    let qNum = 2;
+
+    if (!scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players && !scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][++qNum]['_queries'].players) return;
+    for (let i = 0; i < scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players?.entities?.length; i++) {
+      let mat = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players.entities[i]['_components'][0].value.children[0].children[0].children[1].material;
+
+      if (mat.color.r === 1 && mat.color.g < 1 && mat.color.b < 1) continue;
+      let player = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players.entities[i]['_components'];
+      if (!localPlayerClass.team || localPlayerClass.team !== player['50'].team) {
+        if (mat.color !== colorEnemy) {
+          mat.map = null;
+          mat.color = colorEnemy;
+          mat.needsUpdate = true;
+        }
+      } else if (mat.color !== colorTeam) {
+        mat.map = null;
+        mat.color = colorTeam;
+        mat.needsUpdate = true;
+      }
+    }
+  }
+}
+
+function hideFlagAdsFunc() {
+  if (flagMaterial) {
+    if (hideFlagAds) {
+      flagMaterial.visible = !scoped;
+    } else {
+      flagMaterial.visible = true;
+    }
+  }
+}
+
+function IsScoped(e) {
+  if (e.button === 2) scoped = true;
+}
+
+function IsNotScoped(e) {
+  if (e.button === 2) scoped = false;
+}
+
+function settingsSetGit(setting, value) {
+  settings.set(setting, value);
+  return value;
+}
+
+function JoinLobbyWhenUnlocked() {
+  let children = document.querySelector('html body div#app div#view div.background div.container div.content div.servers div.container-games div.list-cont div.list')?.children;
+  if (children) {
+    for (var i = 0; i < children.length; i++) {
+      if (!children[i].classList.contains('available-rooms') && !children[i].classList.contains('no-free')) {
+        if (!children[i]?.querySelector('#bkc-JWF-cb') && children[i].getElementsByClassName('right')?.[0]) {
+          var x = document.createElement('INPUT');
+          x.type = 'checkbox';
+          x.className = 'input-checkbox  button';
+          x.id = 'bkc-JWF-cb';
+          x.title = 'Join Lobby When Available';
+          x.style = 'margin-right:0.5rem;margin-left:1rem;--hover-color:var(--primary-2);display:flex;justify-content:center;align-items:center;border:none;position:relative;color:var(--white);font-size:1rem;transition:all .3s ease;font-family:Rowdies;padding:.9em 1.4em;transform:skew(-10deg);font-weight:900;overflow:hidden;text-transform:uppercase;border-radius:.2em;outline:none;text-shadow:0 .1em 0 #000;-webkit-text-stroke:1px var(--black);box-shadow:0 .15rem 0 rgba(0,0,0,.315);cursor:pointer;';
+          children[i].getElementsByClassName('right')[0].appendChild(x);
+          x.addEventListener('change', function () {
+            let thisId = this.parentElement.parentElement.getElementsByClassName('session-id')[0].innerHTML;
+            if (this.checked) {
+              if (thisId && !Sessionids.includes(thisId)) {
+                Sessionids.unshift(thisId);
+              }
+            } else {
+              let index = Sessionids.indexOf(thisId);
+              if (index > -1) {
+                Sessionids.splice(index, 1);
+              }
+            }
+          });
+          continue;
+        }
+        if (Sessionids.length) {
+          let ThisIdd = children[i].getElementsByClassName('session-id')[0]?.innerHTML;
+          if (Sessionids.includes(ThisIdd)) {
+            children[i].querySelector('#bkc-JWF-cb').checked = true;
+            if (!children[i].classList.contains('locked')) {
+              children[i].getElementsByClassName('button join')[0].click();
+            }
+          } else {
+            children[i].querySelector('#bkc-JWF-cb').checked = false;
+          }
+        }
+      }
+    }
+  }
+}
+
+async function ShowHideGameModes() {
+  let modecards = document.getElementsByClassName('list-cont')[0].getElementsByClassName('map');
+  let mci;
+  for (var i = 0; i < modecards.length; i++) {
+    mci = modecards[i].innerText;
+    if (/^PHY_/.test(mci)) {
+      if (!GameModesShowPHY) {
+        modecards[i].parentElement.parentElement.style.display = 'none';
+      } else {
+        modecards[i].parentElement.parentElement.style.display = 'flex';
+      }
+    } /*else if (/^P_/.test(mci)) {
+      if (!GameModesShowP) {
+        modecards[i].parentElement.parentElement.style.display = 'none';
+      } else {
+        modecards[i].parentElement.parentElement.style.display = 'flex';
+      }
+    }*/ else if (/^TDM_/.test(mci)) {
+      if (!GameModesShowTDM) {
+        modecards[i].parentElement.parentElement.style.display = 'none';
+      } else {
+        modecards[i].parentElement.parentElement.style.display = 'flex';
+      }
+    } else if (/^POINT_/.test(mci)) {
+      if (!GameModesShowPOINT) {
+        modecards[i].parentElement.parentElement.style.display = 'none';
+      } else {
+        modecards[i].parentElement.parentElement.style.display = 'flex';
+      }
+    } else if (/^DM_/.test(mci)) {
+      if (!GameModesShowDM) {
+        modecards[i].parentElement.parentElement.style.display = 'none';
+      } else {
+        modecards[i].parentElement.parentElement.style.display = 'flex';
+      }
+    } else if (/^BW_/.test(mci)) {
+      if (!GameModesShowBW) {
+        modecards[i].parentElement.parentElement.style.display = 'none';
+      } else {
+        modecards[i].parentElement.parentElement.style.display = 'flex';
+      }
+    }
+  }
+
+  document.querySelectorAll('div.list-cont div.list div[style*="display: flex;"] div.right div.online').forEach((playerCnt) => {
+    let player = Number(playerCnt.innerHTML.split('/')[0]);
+    if (!Number.isNaN(player)) {
+      if (player >= minPlayers && player < 8 && !playerCnt.parentElement.parentElement.classList.contains('locked')) {
+        if (playerCnt.style.color !== 'var(--green-1)') playerCnt.style.color = 'var(--green-1)';
+        if (playerCnt?.title !== 'available') playerCnt.title = 'available';
+      } else if (player < minPlayers) {
+        if (playerCnt.style.color !== 'var(--red-3)') playerCnt.style.color = 'var(--red-3)';
+        if (playerCnt?.title !== 'below min players') playerCnt.title = 'below min players';
+      } else {
+        if (playerCnt.style.color !== 'var(--primary-1)') playerCnt.style.color = 'var(--primary-1)';
+        if (playerCnt?.title !== 'below min time, lobby full or game has ended') playerCnt.title = 'below min time, lobby full or game has ended';
+      }
+    }
+  });
+}
+
+function GameModesCheckBoxChangeHandler(event) {
+  /*if (event.target.className === 'P-checkbox') {
+    GameModesShowP = event.target.checked;
+    settings.set('GameModesShowP', GameModesShowP);
+  } else*/ if (event.target.className === 'TDM-checkbox') {
+    GameModesShowTDM = event.target.checked;
+    settings.set('GameModesShowTDM', GameModesShowTDM);
+  } else if (event.target.className === 'DM-checkbox') {
+    GameModesShowDM = event.target.checked;
+    settings.set('GameModesShowDM', GameModesShowDM);
+  } else if (event.target.className === 'BW-checkbox') {
+    GameModesShowBW = event.target.checked;
+    settings.set('GameModesShowBW', GameModesShowBW);
+  } else if (event.target.className === 'POINT-checkbox') {
+    GameModesShowPOINT = event.target.checked;
+    settings.set('GameModesShowPOINT', GameModesShowPOINT);
+  } else if (event.target.className === 'PHY-checkbox') {
+    GameModesShowPHY = event.target.checked;
+    settings.set('GameModesShowPHY', GameModesShowPHY);
+  } else if (event.target.id === 'bkc-min-time') {
+    minTime = Number(event.target.options[event.target.selectedIndex].value);
+    settings.set('minTime', minTime);
+  } else if (event.target.id === 'bkc-min-players') {
+    minPlayers = Number(event.target.options[event.target.selectedIndex].value);
+    settings.set('minPlayers', minPlayers);
+  }
+  ShowHideGameModes();
+}
+
+const gamemodesobserver = new MutationObserver(() => {
+  ShowHideGameModes();
+  JoinLobbyWhenUnlocked();
+});
+
+function SetGameModesCheckBoxes() {
+  let list = document.querySelector('#view div.background div.container div.content div.servers div.container-games div.list-cont div.list');
+  if (list && !document.querySelector('#bkc-minmax-selects')) {
+    let bkcMinSelect = document.createElement('div');
+    bkcMinSelect.id = 'bkc-minmax-selects';
+    bkcMinSelect.innerHTML = `
+    <label title="Minimum Players" id="bkc-min-players-label">Players:</label>
+    <select id="bkc-min-players" title="Minimum Players">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option selected="selected" value="7">7</option>
+  </select>
+  <label title="Minimum Time Remaining" id="bkc-min-time-label">Time:</label>
+  <select id="bkc-min-time" title="Minimum Time Remaining">
+    <option value="1" selected="selected">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+  </select>
+    `;
+
+    let modesCont = document.createElement('div');
+    modesCont.className = 'mods tabmods';
+    modesCont.style = `
+    display: flex;
+    margin: auto;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-content: center;
+    justify-content: space-evenly;
+    align-items: center;
+    width: 100%;
+    `;
+    modesCont.innerHTML = `
+      <div class="DM">
+      <label class="custom-checkbox checkbox-size">
+      <input type="checkbox" class="DM-checkbox">
+      <span> DM </span>
+      </label>
+      </div>
+      
+      <div class="BW">
+      <label class="custom-checkbox checkbox-size">
+      <input type="checkbox" class="BW-checkbox">
+      <span> BW </span>
+      </label>
+      </div>
+
+      <div class="TDM">
+      <label class="custom-checkbox checkbox-size">
+      <input type="checkbox" class="TDM-checkbox">
+      <span> TDM </span>
+      </label>
+      </div>
+      
+      <div class="POINT">
+      <label class="custom-checkbox checkbox-size">
+      <input type="checkbox" class="POINT-checkbox">
+      <span> Point </span>
+      </label>
+      </div>
+      
+      <!--
+      <div class="P">
+      <label class="custom-checkbox checkbox-size">
+      <input type="checkbox" class="P-checkbox">
+      <span> P </span>
+      </label>
+      </div>
+      -->
+
+      <div class="PHY">
+      <label class="custom-checkbox checkbox-size">
+      <input type="checkbox" class="PHY-checkbox">
+      <span> PHY </span>
+      </label>
+      </div>
+      `;
+    modesCont = bkcMinSelect.appendChild(modesCont);
+    modesCont.getElementsByClassName('DM-checkbox')[0].checked = GameModesShowDM;
+    modesCont.getElementsByClassName('BW-checkbox')[0].checked = GameModesShowBW;
+    modesCont.getElementsByClassName('TDM-checkbox')[0].checked = GameModesShowTDM;
+    //modesCont.getElementsByClassName('P-checkbox')[0].checked = GameModesShowP;
+    modesCont.getElementsByClassName('POINT-checkbox')[0].checked = GameModesShowPOINT;
+    modesCont.getElementsByClassName('PHY-checkbox')[0].checked = GameModesShowPHY;
+    bkcMinSelect.addEventListener('input', GameModesCheckBoxChangeHandler);
+    gamemodesobserver.observe(list, {
+      childList: true,
+      attributes: true,
+      subtree: true,
+      attributeOldValue: true,
+      characterData: true,
+      characterDataOldValue: true,
+    });
+    bkcMinSelect = list.parentElement.insertBefore(bkcMinSelect, list);
+    bkcMinSelect.querySelector(`#bkc-min-players option[value="${minPlayers}"]`).selected = true;
+    bkcMinSelect.querySelector(`#bkc-min-time option[value="${minTime}"]`).selected = true;
+  }
+}
+
+function getTipInnerHtml(mMsg) {
+  return `<div class="alert-default error" style="white-space:break-spaces;display:flex;align-items:center;padding:.9rem 1.1rem;margin-bottom:.5rem;color:var(--white);cursor:pointer;box-shadow:0 0 .7rem rgba(0,0,0,.25);border-radius:.2rem;background:linear-gradient(262.54deg,#202639 9.46%,#223163 100.16%);margin-left:1rem;border:solid .15rem var(--primary-1);font-family:Exo\\ 2;">
+  <img alt="" style="width:2rem;min-width:2rem;height:2rem;margin-right:.9rem;color:var(--white);fill:currentColor;box-sizing:border-box;" src="data:image/png;base64,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" />
+  <span id="BKC-dev-tip-text" class="text" style="font-size:1rem;font-weight:600;text-align:center;overflow-wrap:anywhere;">${mMsg}</span></div>`;
+}
+
+function MoveTwitchMenu(TwitchHead) {
+  let lsmpos1 = 0;
+  let lsmpos2 = 0;
+  let lsmpos3 = 0;
+  let lsmpos4 = 0;
+  let p = TwitchHead.getElementsByClassName('head')[0];
+  if (p) p.onmousedown = TwitchDrag;
+
+  function TwitchDrag(peepoHappy) {
+    peepoHappy = peepoHappy || window.event;
+    peepoHappy.preventDefault();
+    lsmpos3 = peepoHappy.clientX;
+    lsmpos4 = peepoHappy.clientY;
+    document.onmouseup = TwitchStopDragPlz;
+    document.onmousemove = TwitchDragging;
+  }
+
+  function TwitchDragging(xip) {
+    xip = xip || window.event;
+    xip.preventDefault();
+    lsmpos1 = lsmpos3 - xip.clientX;
+    lsmpos2 = lsmpos4 - xip.clientY;
+    lsmpos3 = xip.clientX;
+    lsmpos4 = xip.clientY;
+    TwitchHead.style.top = `${TwitchHead.offsetTop - lsmpos2}px`;
+    TwitchHead.style.left = `${TwitchHead.offsetLeft - lsmpos1}px`;
+  }
+
+  function TwitchStopDragPlz() {
+    document.onmouseup = null;
+    document.onmousemove = null;
+    TwitchTop = settingsSetGit('TwitchTop', TwitchHead.style.top);
+    TwitchLeft = settingsSetGit('TwitchLeft', TwitchHead.style.left);
+  }
+}
+
+function SaveTwitchSize() {
+  if (TwitchWidth !== streamsmenu.style.width) {
+    TwitchWidth = settingsSetGit('TwitchWidth', streamsmenu.style.width);
+    streamsmenu.style.setProperty('--bkc-stremz-menu-width', streamsmenu.style.width);
+  }
+  if (TwitchHeight !== streamsmenu.style.height) {
+    TwitchHeight = settingsSetGit('TwitchHeight', streamsmenu.style.height);
+  }
+}
+
+function newStremz(data) {
+  let twitchinfo = getTwitchInfo(data['data'][0].id);
+  if (twitchinfo && !streamsmenu.querySelector(`img[src="${data['data'][0].profile_image_url}"]`)) {
+    let item = document.createElement('div');
+    let viewers = `${twitchinfo.viewer_count} ${twitchinfo.viewer_count === 1 ? 'viewer' : 'viewers'}`;
+    item.className = 'item';
+    item.title = `
+Click to watch ${data['data'][0].display_name} stream kirka.io on twitch
+Title:  ${twitchinfo.title}
+Started at:  ${new Date(twitchinfo.started_at).toLocaleString()}
+Streaming to:  ${viewers}
+Tags:  ${twitchinfo?.tags ? twitchinfo.tags.toString() : ''}
+Language:  ${twitchinfo?.language ? twitchinfo.language : ''}
+      𝙍𝙞𝙜𝙝𝙩 𝙘𝙡𝙞𝙘𝙠 𝙩𝙤 𝙘𝙤𝙥𝙮 𝙡𝙞𝙣𝙠 𝙩𝙤 𝙘𝙡𝙞𝙥𝙗𝙤𝙖𝙧𝙙 ⠀⠀
+    `;
+    item.innerHTML = `
+<img src="${data['data'][0].profile_image_url}" alt="avatar" class="avatar" style="height: 2.188rem;width: 2.188rem;margin-top: .3rem;border-radius: 20px;border: 2px solid #7235cb;"/>
+<div class="content" style="display: flex;flex-direction: column;align-items: flex-start;margin-left: .7rem;text-shadow: 0 2px 0 rgba(0,0,0,.5);">
+<div id="bkc-twitch-name" style="display: flex;flex-direction: row;flex-wrap: nowrap;align-content: center;justify-content: center;align-items: center;">  
+<div style="font-weight: 700;" class="name">${data['data'][0].display_name}</div>${data['data'][0].broadcaster_type === 'partner' ? '<svg width="16px" height="16px" version="1.1" viewBox="0 0 16 16" x="0px" y="0px" style="fill: rgb(191,148,255);"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.5 3.5L8 2L3.5 3.5L2 8L3.5 12.5L8 14L12.5 12.5L14 8L12.5 3.5ZM7.00008 11L11.5 6.5L10 5L7.00008 8L5.5 6.5L4 8L7.00008 11Z"></path></svg>' : ''}
+</div>
+<div class="count">${twitchinfo.title}</div>
+<div class="count">${viewers} • ${twitchinfo.time}</div>
+</div>
+`;
+    item.onmouseup = (e) => {
+      if (e.button === 0) shell.openExternal(`https://www.twitch.tv/${data['data'][0].display_name}`);
+      else if (e.button === 2) {
+        clipboard.writeText(`https://www.twitch.tv/${data['data'][0].display_name}`);
+        BKC.tip('Link Copied');
+      }
+    };
+    streamsmenu.querySelector('div.list').appendChild(item);
+  }
+}
+
+function getTwitchInfo(userid) {
+  for (let i = 0; i < stremzInfo?.data?.length; i++) {
+    if (stremzInfo.data[i].user_id === userid) {
+      if (!stremzInfo.data[i].time) {
+        let time = Date.now() - Date.parse(stremzInfo.data[i]['started_at']);
+        let s = Math.round((time + Number.EPSILON) / 1e3);
+        let m = Math.round((time + Number.EPSILON) / 6e4);
+        let h = Number((time / 36e5).toFixed(1));
+        let d = Number((time / 864e5).toFixed(1));
+        if (s < 60) {
+          stremzInfo.data[i].time = `live for ${s} ${s === 1 ? 'sec' : 'secs'}`;
+        } else if (m < 60) {
+          stremzInfo.data[i].time = `live for ${m} ${m === 1 ? 'min' : 'mins'}`;
+        } else if (h < 24) {
+          stremzInfo.data[i].time = `live for ${h} ${h === 1 ? 'hr' : 'hrs'}`;
+        } else {
+          stremzInfo.data[i].time = `live for ${d} ${d === 1 ? 'day' : 'days'}`;
+        }
+      }
+      return stremzInfo.data[i];
+    }
+  }
+}
+
+function initTwitchMenu() {
+  let interface = document.querySelector('.interface.text-2');
+  if (interface) {
+    if (!document.querySelector('#live-streams-menu')) {
+      streamsmenu = document.createElement('div');
+      streamsmenu.style = `z-index:998!important;min-width: 15.5rem;min-height: 4rem;position:absolute;resize:both;overflow: auto hidden!important;opacity:1!important;pointer-events:all!important;
+      top:${TwitchTop};left:${TwitchLeft};--bkc-stremz-menu-width:${TwitchWidth};width:${TwitchWidth};height:${TwitchHeight};${ShowTwitch ? 'display:block!important;' : 'display:none!important;'}`;
+      streamsmenu.id = 'live-streams-menu';
+      streamsmenu.innerHTML = `
+      <div class="head" style="display: flex; align-items: center; font-size: 1.5rem; font-weight: 700; text-shadow: 0 3px 1px rgba(0, 0, 0, 0.5); border-bottom: 2px solid #191919; padding: 10px 10px 10px 1rem; background: var(--secondary-2)">
+      LIVE STREAMS<svg style="fill: currentColor; height: 2.375rem; width: 2.063rem; margin-left: 1.125rem" xmlns="http://www.w3.org/2000/svg" class="icon-twitch svg-icon svg-icon--twitch">
+        <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/img/icons.6e41b8dd.svg#twitch"></use>
+      </svg>
+      </div>
+      <div class="list"></div>
+      <div class="item">Stream kirka on twitch to show up here</div>
+      `;
+      streamsmenu = interface.appendChild(streamsmenu);
+      let kirkaItem = streamsmenu.querySelector('.item');
+      kirkaItem.onmouseup = (e) => {
+        if (e.button === 0) shell.openExternal('https://www.twitch.tv/directory/game/Kirka.io');
+        else if (e.button === 2) {
+          clipboard.writeText(`https://www.twitch.tv/directory/game/Kirka.io`);
+          BKC.tip('Link Copied');
+        }
+      };
+      kirkaItem.title = `Click to visit kirka.io on twitch
+      𝙍𝙞𝙜𝙝𝙩 𝙘𝙡𝙞𝙘𝙠 𝙩𝙤 𝙘𝙤𝙥𝙮 𝙡𝙞𝙣𝙠 𝙩𝙤 𝙘𝙡𝙞𝙥𝙗𝙤𝙖𝙧𝙙 ⠀⠀
+`;
+      TwitchResizeObserver.observe(streamsmenu);
+      MoveTwitchMenu(streamsmenu);
+    }
+    return streamsmenu;
+  }
+}
+
+function toTitleCase(str) {
+  let rts = '';
+  let p = str.replace(/_/g, ' ').split(' ');
+  for (let i = 0; i < p.length; i++) {
+    rts += `${p[i].charAt(0).toUpperCase()}${p[i].substr(1).toLowerCase()} `;
+  }
+  return rts.trim();
+}
+
+async function CheckQuest(_index) {
+  if (localStorage.token === '') return;
+  let requests = [];
+  let failed = [];
+  let types = _index || ['hourly', 'daily', 'event'];
+  types.forEach((type) => {
+    requests.push(
+      fetch('https://api.kirka.io/api/quests', {
+        headers: {
+          accept: 'application/json, text/plain, */*',
+          authorization: 'Bearer ' + localStorage.token,
+          'content-type': 'application/json;charset=UTF-8',
+          csrf: 'token',
+          'sec-fetch-mode': 'cors',
+          'sec-fetch-site': 'same-site',
+        },
+        referrer: 'https://kirka.io/',
+        referrerPolicy: 'strict-origin-when-cross-origin',
+        body: `{"type": "${type}"}`,
+        method: 'POST',
+        mode: 'cors',
+        credentials: 'include',
+      })
+    );
+  });
+  let allQuests = await Promise.allSettled(requests);
+  allQuests.forEach(async (result, index) => {
+    if (result.status === 'rejected' || result.value.status >= 400) failed.push(types[index]);
+    else {
+      let quests = await result.value.json();
+      for (let quest of quests) {
+        if (quest.progress.completed && !quest.progress.rewardTaken) {
+          let request = await fetch('https://api.kirka.io/api/rewards/take', {
+            headers: {
+              accept: 'application/json, text/plain, */*',
+              authorization: 'Bearer ' + localStorage.token,
+              'content-type': 'application/json;charset=UTF-8',
+              csrf: 'token',
+              'sec-fetch-mode': 'cors',
+              'sec-fetch-site': 'same-site',
+            },
+            referrer: 'https://kirka.io/',
+            referrerPolicy: 'strict-origin-when-cross-origin',
+            body: JSON.stringify({ source: 'quest:' + quest.id }),
+            method: 'POST',
+            mode: 'cors',
+            credentials: 'include',
+          });
+          if (request.ok) {
+            BKC.tip(`${toTitleCase(quest.type)} Quest Completed:
+${quest.amount} ${toTitleCase(quest.name)} ${quest.weapon !== 'undefined' ? quest.weapon : ''}
+XP:  ${quest['rewards'][0].amount}   COINS:  ${quest['rewards'][1].amount}`);
+          } else {
+            if (!failed.includes(types[index])) failed.push(types[index]);
+            BKC.tip(`Failed Claiming ${toTitleCase(quest.type)}
+Quest: ${toTitleCase(quest.name)}
+Trying Again In 15 Seconds`);
+          }
+        }
+      }
+    }
+  });
+  if (failed.length) return [...failed];
+}
+
+function checkclaimQuest(type) {
+  if (!inGame) {
+    CheckQuest(type)
+      .then((result) => {
+        if (Array.isArray(result)) {
+          setTimeout(() => {
+            checkclaimQuest(result);
+          }, 15000);
+        }
+      })
+      .catch((error) => BKC.tip(error));
+  }
+}
+
+function clock() {
+  if (!clockInterval) {
+    clockInterval = setInterval(() => {
+      let titTok = document.querySelector('#free-clock');
+      if (titTok) titTok.innerHTML = new Date().toLocaleTimeString();
+    }, 1000);
+  }
+}
+
+async function getStats() {
+  if (!id) {
+    id = document.querySelector('.username')?.innerHTML.slice(1);
+  }
+  let statsContainer = document.querySelector('#bkc-daily-stats-container');
+  if (!id || !statsContainer) return 'NAAHHHH AINTNOWAY';
+
+  let stats = await fetch('https://api.kirka.io/api/user/getProfile', {
+    headers: {
+      accept: 'application/json, text/plain, */*',
+      authorization: 'Bearer ' + localStorage.token,
+      'cache-control': 'no-cache',
+      'content-type': 'application/json;charset=UTF-8',
+      csrf: 'token',
+      'sec-fetch-mode': 'cors',
+      'sec-fetch-site': 'same-site',
+    },
+    referrer: 'https://kirka.io/',
+    referrerPolicy: 'strict-origin-when-cross-origin',
+    body: `{"id":"${id}","isShortId":true}`,
+    method: 'POST',
+    mode: 'cors',
+    credentials: 'include',
+  });
+
+  if (!stats.ok) return false;
+  stats = await stats.json();
+  let dailyStats = typeof settings.get('dailyStats') === 'undefined' ? {} : settings.get('dailyStats');
+  let date = new Date().toLocaleString('en-US', { timeZone: 'America/Denver', day: 'numeric', month: 'numeric', year: 'numeric' });
+
+  if (!dailyStats[id] || date !== dailyStats[id].date) {
+    dailyStats[id] = {
+      games: stats.stats.games,
+      wins: stats.stats.wins,
+      kills: stats.stats.kills,
+      deaths: stats.stats.deaths,
+      headshots: stats.stats.headshots,
+      scores: stats.stats.scores,
+      totalXp: stats.totalXp,
+      coins: stats.coins,
+      diamonds: stats.diamonds,
+      kd: 0,
+      date,
+    };
+    settings.set('dailyStats', dailyStats);
+  }
+  stats.stats.kd = Math.round(((stats['stats']['kills'] - dailyStats[id]['kills']) / (stats['stats']['deaths'] - dailyStats[id]['deaths']) + Number.EPSILON) * 100) / 100;
+  if (Number.isNaN(stats.stats.kd)) stats.stats.kd = 0;
+  for (const key in dailyStats[id]) {
+    if (key !== 'date') {
+      let statElem = gui?.querySelector(`#bkc-${key}`);
+      if (!statElem) {
+        let newStat = document.createElement('div');
+        newStat.className = 'module';
+        newStat.innerHTML = `<label id="bkc-${key}-stat">${toTitleCase(key)}: </label><span id="bkc-${key}">${(stats[key] || stats['stats'][key]) - dailyStats[id][key]}</span>`;
+        statsContainer.appendChild(newStat);
+      } else {
+        statElem.innerHTML = (stats[key] || stats['stats'][key]) - dailyStats[id][key];
+      }
+    }
+  }
+
+  if (!allFavoriteSkins[id]) {
+    allFavoriteSkins[id] = {
+      SCAR: [],
+      Shark: [],
+      Revolver: [],
+      M60: [],
+      MAC10: [],
+      LAR: [],
+      Bayonet: [],
+      VITA: [],
+      Weatie: [],
+      AR9: [],
+      Tomahawk: [],
+      BODY_SKIN: [],
+      Selected: [],
+    };
+  }
+  favoriteSkins = allFavoriteSkins[id];
+
+  if (!skinzInfo && randomFavoriteSkins) {
+    let inventory = await fetch('https://api.kirka.io/api/inventory', {
+      headers: {
+        accept: 'application/json, text/plain, */*',
+        'accept-language': 'en-US,en;q=0.9,fr;q=0.8',
+        authorization: 'Bearer ' + localStorage.token,
+        'cache-control': 'no-cache',
+        pragma: 'no-cache',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-site',
+      },
+      referrer: 'https://kirka.io/',
+      referrerPolicy: 'strict-origin-when-cross-origin',
+      body: null,
+      method: 'GET',
+      mode: 'cors',
+      credentials: 'include',
+    });
+    if (inventory.ok) skinzInfo = await inventory.json();
+  }
+  let currentSkin = stats.activeWeapon1Skin.parent.name.replace(/-/, '');
+  if (!seenSkins) seenSkins = Object.keys(favoriteSkins);
+  if (!seenSkins.includes(currentSkin)) seenSkins.push(currentSkin);
+  applyRandomSkins();
+  return 'W';
+}
+
+function fetchStats(fCount) {
+  if (!inGame) {
+    getStats()
+      .then((result) => {
+        if (result !== 'W') {
+          let retryDelay = result === 'NAAHHHH AINTNOWAY' ? 1000 : ++fCount > 2 ? 15000 : 5000;
+          setTimeout(() => fetchStats(fCount), retryDelay);
+          BKC.tip(`Failed Fetching Stats Trying Again In ${retryDelay} Seconds`);
+        }
+      })
+      .catch((error) => BKC.tip(error));
+  }
+}
+
+function seenSkinsListener() {
+  let changeWeaponsContainer = document.querySelector('#change-container');
+  if (changeWeaponsContainer) {
+    changeWeaponsContainer.addEventListener('mouseup', (e) => {
+      let skin = e.target?.innerText || e.target.parentElement.childNodes[0]?.innerText;
+      if (skin) skin = skin.replace(/-/, '').trim();
+      if (!seenSkins.includes(skin)) seenSkins.push(skin);
+    });
+    return changeWeaponsContainer;
+  }
+}
+
+function appendFavedButtons() {
+  document.querySelectorAll('#view > div.background > div.container > div.content > div.inventory > div.content > div.subjects > div.subject > div.hover-btns-group').forEach((hoverelement) => {
+    if (!hoverelement?.querySelector('.bkc-fav-button')) {
+      let bkcfavbut = document.createElement('a');
+      bkcfavbut.className = 'bkc-fav-button';
+      bkcfavbut.innerHTML = '⭐';
+      bkcfavbut.title = 'Add to favorites';
+      hoverelement.appendChild(bkcfavbut);
+    }
+  });
+}
+
+function appendFavedMarker(solo) {
+  if (favoriteSkins['Selected'].length) {
+    let favSpan = document.createElement('span');
+    favSpan.innerHTML = '★';
+    favSpan.id = 'bkc-fav-selected-span';
+    if (solo) return solo.appendChild(favSpan);
+    document.querySelectorAll('.item-name').forEach((element) => {
+      let parent = element.parentElement.parentElement;
+      if (favoriteSkins['Selected'].includes(element?.innerHTML) && !parent?.querySelector('#bkc-fav-selected-span')) {
+        parent.appendChild(favSpan.cloneNode(true));
+      }
+    });
+  }
+}
+
+function FavedButtonsHandler(e) {
+  function isSkinFaved(skin) {
+    let defaultskinName = skin.item.name.replace(/_/, '');
+    for (let key of Object.keys(favoriteSkins)) {
+      let result = favoriteSkins[key].findIndex((item) => item.name === skin.item.name);
+      if (result > -1) {
+        favoriteSkins[key].splice(result, 1);
+        let index = favoriteSkins['Selected'].indexOf(defaultskinName);
+        if (index > -1) favoriteSkins['Selected'].splice(index, 1);
+        return skin;
+      }
+    }
+    let parent = skin.item.type !== 'BODY_SKIN' ? skin.item.parent.name.replace(/-/g, '') : 'BODY_SKIN';
+    favoriteSkins[parent].push({
+      id: skin.item.id,
+      name: skin.item.name,
+      parentName: parent,
+      nameInInventory: defaultskinName,
+    });
+    favoriteSkins['Selected'].push(defaultskinName);
+  }
+
+  if (e.target?.className === 'bkc-fav-button') {
+    let skintext = e.target.previousSibling?.innerText;
+    let favedbutParent = e.target.parentElement.parentElement;
+    let favedbut = favedbutParent?.querySelector('#bkc-fav-selected-span');
+    if (skintext) {
+      let skin = getSkin(skintext);
+      if (skin) {
+        if (!isSkinFaved(skin)) {
+          if (!favedbut) appendFavedMarker(favedbutParent);
+        } else if (favedbut) favedbutParent.removeChild(favedbut);
+        settings.set('allFavoriteSkins', allFavoriteSkins);
+      }
+    }
+  }
+}
+
+function getSkin(skin) {
+  if (favoriteSkins[skin]) skin = `_${skin}`;
+  for (let i = 0; i < skinzInfo?.length; i++) {
+    if (skinzInfo[i].item.name === skin) {
+      return skinzInfo[i];
+    }
+  }
+}
+
+async function applyRandomSkins() {
+  let Dont = [];
+
+  function getRandomSkin(array) {
+    let Skin = array[Math.floor((window.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967296) * array.length)];
+    if (Dont.includes(Skin.id) && array.length > 1) return getRandomSkin(array);
+    return Skin;
+  }
+
+  function stillHasSkin(skin) {
+    let isSkinAlive = skinzInfo.filter((item) => item.item.id === skin.id);
+    if (!isSkinAlive.length) {
+      let result = favoriteSkins[skin.parentName].findIndex((item) => item?.id === skin.id);
+      if (result > -1) {
+        favoriteSkins[skin.parentName].splice(result, 1);
+        let index = favoriteSkins['Selected'].indexOf(skin.nameInInventory);
+        if (index > -1) favoriteSkins['Selected'].splice(index, 1);
+      }
+    }
+  }
+
+  if (randomFavoriteSkins) {
+    skinzInfo
+      .filter((item) => item.isSelected === true && (item.item.type === 'WEAPON_SKIN' || item.item.type === 'BODY_SKIN' || item.item.type === 'WEAPON_3'))
+      .forEach((me) => {
+        if (me.item.type !== 'WEAPON_3') Dont.push(me.item.id);
+        else if (!seenSkins.includes(me.item.name)) seenSkins.push(me.item.name);
+      });
+
+    for (let skin of Object.keys(favoriteSkins)) {
+      if (seenSkins.includes(skin) && favoriteSkins[skin].length && skin !== 'Selected') {
+        let randomSkin = getRandomSkin(favoriteSkins[skin]);
+        if (!Dont.includes(randomSkin.id)) {
+          let result = await fetch('https://api.kirka.io/api/inventory/take', {
+            headers: {
+              accept: 'application/json, text/plain, */*',
+              authorization: 'Bearer ' + localStorage.token,
+              'content-type': 'application/json;charset=UTF-8',
+              csrf: 'token',
+              'sec-fetch-mode': 'cors',
+              'sec-fetch-site': 'same-site',
+            },
+            referrer: 'https://kirka.io/',
+            referrerPolicy: 'no-referrer-when-downgrade',
+            body: `{"id":"${randomSkin.id}"}`,
+            method: 'POST',
+            mode: 'cors',
+            credentials: 'include',
+          });
+          if (!result.ok) stillHasSkin(randomSkin);
+        }
+      }
+    }
+  }
+  seenSkins = ['BODY_SKIN', 'Shark'];
+}
+
+const Questobserver = new MutationObserver(() => {
+  let remElement;
+  let notis = document.querySelectorAll('html body div#app div#notifications span div.vue-notification-wrapper div span.text');
+  for (let i = 0; i < notis.length; i++) {
+    remElement = notis[i].parentElement.parentElement;
+    if (notis[i]?.innerHTML === 'You completed a quest' && remElement.style.display !== 'none') {
+      remElement.setAttribute('style', 'display: none!important');
+    } else if (/Failed to connect to the room/i.test(notis[i]?.innerHTML) && !window.location.href.startsWith('https://kirka.io/servers/') && remElement.style.display !== 'none') {
+      remElement.setAttribute('style', 'display: none!important');
+      document.querySelector('.icon-btn.text-1.SERVERS').click();
+    }
+  }
+});
+
+function NotificationsOpenMenus() {
+  let n;
+  let p = document.querySelector('#notifications');
+  if (p) {
+    n = p.onclick = (e) => {
+      let text = (e.target?.innerHTML || e.target.parentElement.nextSibling.innerHTML).toLowerCase();
+      if (text) {
+        if (/friend.*request/g.test(text) && window.location.href !== 'https://kirka.io/friends') {
+          document.querySelector('.icon-btn.text-1.FRIENDS').click();
+        } else if (/item.*sold/g.test(text) && window.location.href !== 'https://kirka.io/inventory') {
+          document.querySelector('.icon-btn.text-1.INVENTORY').click();
+        } else if (/hourly Quest Claimed/gi.test(text) && window.location.href !== 'https://kirka.io/quests/hourly') {
+          document.querySelector('.icon-btn.text-1.QUESTS').click();
+        }
+      }
+    };
+    Questobserver.observe(p, {
+      childList: true,
+      attributes: true,
+      subtree: true,
+    });
+  }
+  return !!n;
+}
+
+function moveTime() {
+  // moves ingame time to tab button menu thing
+  if (!timeContainer) {
+    timeContainer = document.querySelector('#app > div.game-interface > div.desktop-game-interface > div.state-cont > div.left');
+    let tabInfo = document.querySelectorAll('#app > div.game-interface > div.desktop-game-interface > div.tab-info > div.head.text-2,#app > div.game-interface > div.desktop-game-interface > div.tab-parkour-info > div.head.text-2')[0];
+    let serverThing = tabInfo?.querySelectorAll('div.server-id,div.label.blue')[0];
+    if (serverThing && timeContainer) {
+      timeContainer = tabInfo.insertBefore(timeContainer, serverThing);
+    }
+  }
+  return timeContainer;
+}
+
+function checkInputImage(e, datalist, index) {
+  let valve = e.value.trim();
+  if (valve) {
+    let AllInputImages = typeof settings.get('inputImageCache') === 'undefined' ? [[], [], [], [], [], [], [], [], []] : settings.get('inputImageCache');
+    let inputImageCache = AllInputImages[index];
+    let inputOption = `<option value="${valve}"></option>`;
+    if (!inputImageCache.includes(inputOption)) {
+      let img = document.createElement('img');
+      img.onerror = () => {
+        img = null;
+      };
+      img.onload = () => {
+        AllInputImages[index].push(inputOption);
+        datalist.innerHTML += inputOption;
+        settings.set('inputImageCache', AllInputImages);
+        img = null;
+      };
+      img.src = valve;
+    }
+  }
+}
+
+function clearInputImage(e) {
+  if (e.target.offsetWidth - e.offsetX < 39 && e.target.value !== '') e.target.value = '';
+}
+
+function fillInputImage(e) {
+  if (e.target.value !== e.target._value) e.target.value = e.target._value;
+}
+
+function backForwardAudio() {
+  let uiVol = window.localStorage['mwNMWn/SOUND/VOLUME_UI'];
+  if (uiVol) uiVol = boringJSONParse(uiVol);
+  Bark.volume(uiVol || 1);
+  Bark.play();
+}
