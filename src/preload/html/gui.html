@@ -1,0 +1,279 @@
+<style id="BKC-permcrosshair"></style>
+
+<div id="infi" class="heading">Client Settings</div>
+
+<div id="bkc-settings-wrapper">
+  <div class="bkc-gui-tab">
+    <button class="bkc-gui-tabbar-button bkc-menu-tab-active" id="bkc-tab-game" style="display: block">Game</button>
+    <button class="bkc-gui-tabbar-button" id="bkc-tab-lobby" style="display: block">Lobby</button>
+    <button class="bkc-gui-tabbar-button" id="bkc-tab-css" style="display: block">Css</button>
+    <button class="bkc-gui-tabbar-button" id="bkc-tab-daily-stats" style="display: block">Daily Stats</button>
+    <button class="bkc-gui-tabbar-button" id="bkc-tab-general" style="display: block">General</button>
+    <button class="bkc-gui-tabbar-button" id="bkc-tab-backup" style="display: block">Backup</button>
+  </div>
+
+  <div class="module-wrapper">
+    <div id="bkc-css-container" class="bkc-tab-css">
+      <div id="custom-css-wrapper">
+        <label id="custom-css-header" for="customCSS">
+          <input type="checkbox" id="customCSS" name="customCSS" />
+          Custom Css
+          <div id="bkc-custom-css-header-button-wrapper">
+            <button id="bkc-new" title="Add New">＋</button>
+            <button id="bkc-show-delete" title="Delete">&#128465;</button>
+          </div>
+        </label>
+      </div>
+
+      <button id="bkc-delete" title="Delete" style="display: none">
+        <span>Delete Selected Css &#013; &#128465;</span>
+      </button>
+
+      <div id="add-new-css-menu" style="display: none">
+        <div class="required-warning">
+          <span id="required-warning-span">Name & Url required</span>
+        </div>
+
+        <div class="thing" style="width: 100%; display: flex; flex-wrap: nowrap">
+          <label style="margin-right: 0.5rem">Name:</label>
+          <input type="text" id="css-new-title-input" />
+        </div>
+
+        <div class="thing" style="width: 100%; display: flex; flex-wrap: nowrap; margin-top: 0.5rem">
+          <label style="margin: 0 0.5rem 0 0">Url:</label>
+          <input type="text" id="css-new-url-input" />
+        </div>
+
+        <div class="thing">
+          <button id="bkc-browse" title="Choose File Or Drag And Drop Css File Onto Menu">
+            browse 📁⼁ drag & drop
+          </button>
+          <button id="bkc-save">save</button>
+          <input type="file" accept="text/css" id="bkc-file-picker" style="display: none" />
+        </div>
+      </div>
+    </div>
+
+    <div class="module high bkc-tab-game">
+      <label for="enemyHighlightColor">Enemy Highlight Color:</label>
+      <input type="color" id="enemyHighlightColor" class="gui-color-input" />
+    </div>
+
+    <div class="module high bkc-tab-game">
+      <label for="teamHighlightColor">Team Highlight Color:</label>
+      <input type="color" id="teamHighlightColor" class="gui-color-input" />
+    </div>
+
+    <div class="module high bkc-tab-game">
+      <label for="gameMuzzleColor">Muzzle Flash Color:</label>
+      <input type="color" id="gameMuzzleColor" class="gui-color-input" />
+    </div>
+
+    <div class="module high bkc-tab-game">
+      <label for="gameArmsWireColor">Wireframe Arms Color:</label>
+      <input type="color" id="gameArmsWireColor" class="gui-color-input" />
+    </div>
+
+    <div class="module high bkc-tab-game">
+      <label for="gameWeapWireColor">Wireframe Weapon Color:</label>
+      <input type="color" id="gameWeapWireColor" class="gui-color-input" />
+    </div>
+
+    <div class="module high bkc-tab-game">
+      <label for="gameFlagHighlightColor">Flag Color:</label>
+      <input type="color" id="gameFlagHighlightColor" class="gui-color-input" />
+    </div>
+
+    <div class="module high bkc-tab-lobby">
+      <label for="lobbyPlayerWireColor">Player Wireframe Color:</label>
+      <input type="color" id="lobbyPlayerWireColor" class="gui-color-input" />
+    </div>
+
+    <div class="module high bkc-tab-lobby">
+      <label for="lobbyWeapWireColor">Weapon Wireframe Color:</label>
+      <input type="color" id="lobbyWeapWireColor" class="gui-color-input" />
+    </div>
+
+    <div class="module bkc-tab-game">
+      <input type="checkbox" id="highlight" name="highlight" />
+      <label for="highlight">Highlight Players</label>
+    </div>
+
+    <div class="module bkc-tab-game">
+      <input type="checkbox" id="gameWeapWire" name="gameWeapWire" />
+      <label title="menu Player Gun visible" for="gameWeapWire"> Weapon Wireframe </label>
+    </div>
+
+    <div class="module bkc-tab-game">
+      <input type="checkbox" id="gameWeapHighlight" name="gameWeapHighlight" />
+      <label title="menu Player Gun visible" for="gameWeapHighlight"> Weapon Highlight </label>
+    </div>
+
+    <div class="module bkc-tab-game">
+      <input type="checkbox" id="gameWeapHighlightTexture" name="gameWeapHighlightTexture" />
+      <label title="menu Player Gun visible" for="gameWeapHighlightTexture"> Weapon Hightlight Texture </label>
+    </div>
+
+    <div class="module bkc-tab-game">
+      <input type="checkbox" id="gameArmsHighlight" name="gameArmsHighlight" />
+      <label title="menu Player Gun visible" for="gameArmsHighlight"> Arms Highlight </label>
+    </div>
+
+    <div class="module bkc-tab-game">
+      <input type="checkbox" id="gameArmsWire" name="gameArmsWire" />
+      <label title="menu Player Gun visible" for="gameArmsWire"> Arms Wireframe </label>
+    </div>
+
+    <div class="module bkc-tab-game">
+      <input type="checkbox" id="gameArmsHighlightTexture" name="gameArmsHighlightTexture" />
+      <label title="menu Player Gun visible" for="gameArmsHighlightTexture"> Arms Highlight Texture </label>
+    </div>
+
+    <div class="module bkc-tab-game">
+      <input type="checkbox" id="gameMuzzleHighlight" name="gameMuzzleHighlight" />
+      <label title="menu Player Gun visible" for="gameMuzzleHighlight"> Custom Muzzle Flash Color </label>
+    </div>
+
+    <div class="module bkc-tab-game">
+      <input type="checkbox" id="gameFlagHighlight" name="gameFlagHighlight" />
+      <label title="menu Player Gun visible" for="gameFlagHighlight"> Custom Flag Color </label>
+    </div>
+
+    <div class="module bkc-tab-game">
+      <input type="checkbox" id="gameRainbow" name="gameRainbow" />
+      <label title="menu Player Gun visible" for="gameRainbow"> Rainbow Colors </label>
+    </div>
+
+    <div class="module bkc-tab-lobby">
+      <input type="checkbox" id="lobbyPlayerWire" name="lobbyPlayerWire" />
+      <label title="menu Player Gun visible" for="lobbyPlayerWire"> Player Wireframe </label>
+    </div>
+
+    <div class="module bkc-tab-lobby">
+      <input type="checkbox" id="lobbyPlayerHighlight" name="lobbyPlayerHighlight" />
+      <label title="menu Player Gun visible" for="lobbyPlayerHighlight"> Player Highlight </label>
+    </div>
+
+    <div class="module bkc-tab-lobby">
+      <input type="checkbox" id="lobbyPlayerHighlightTexture" name="lobbyPlayerHighlightTexture" />
+      <label title="menu Player Gun visible" for="lobbyPlayerHighlightTexture"> Player Highlight Texture </label>
+    </div>
+
+    <div class="module bkc-tab-lobby">
+      <input type="checkbox" id="lobbyPlayerVisible" name="lobbyPlayerVisible" />
+      <label title="menu Player Model visible" for="lobbyPlayerVisible"> Player Visible </label>
+    </div>
+
+    <div class="module bkc-tab-lobby">
+      <input type="checkbox" id="lobbyWeapWire" name="lobbyWeapWire" />
+      <label title="menu Player Gun visible" for="lobbyWeapWire"> Weapon Wireframe </label>
+    </div>
+
+    <div class="module bkc-tab-lobby">
+      <input type="checkbox" id="lobbyWeapHighlight" name="lobbyWeapHighlight" />
+      <label title="menu Player Gun visible" for="lobbyWeapHighlight"> Weapon Highlight </label>
+    </div>
+
+    <div class="module bkc-tab-lobby">
+      <input type="checkbox" id="lobbyWeapHighlightTexture" name="lobbyWeapHighlightTexture" />
+      <label title="menu Player Gun visible" for="lobbyWeapHighlightTexture"> Weapon Hightlight Texture </label>
+    </div>
+
+    <div class="module bkc-tab-lobby">
+      <input type="checkbox" id="lobbyWeapVisible" name="lobbyWeapVisible" />
+      <label title="menu Player Gun visible" for="lobbyWeapVisible"> Weapon Visible </label>
+    </div>
+
+    <div class="module bkc-tab-lobby">
+      <input type="checkbox" id="lobbyShadowVisible" name="lobbyShadowVisible" />
+      <label title="menu Player Gun visible" for="lobbyShadowVisible"> Shadow Visible </label>
+    </div>
+
+    <div class="module bkc-tab-lobby">
+      <input type="checkbox" id="lobbyRainbow" name="lobbyRainbow" />
+      <label title="menu Player Gun visible" for="lobbyRainbow"> Rainbow Colors </label>
+    </div>
+
+    <div class="module bkc-tab-general">
+      <input type="checkbox" id="fpsCap" name="fpsCap" />
+      <label for="fpsCap">Cap FPS</label>
+    </div>
+
+    <div class="module bkc-tab-game">
+      <input type="checkbox" id="hideflag" name="hideflag" />
+      <label for="hideflag">Hide Flag ADS</label>
+    </div>
+
+    <div class="module bkc-tab-game">
+      <input type="checkbox" id="crosshair" name="crosshair" />
+      <label for="crosshair">Perm. Crosshair</label>
+    </div>
+
+    <div class="module bkc-tab-general">
+      <input type="checkbox" id="capture" name="capture" />
+      <label for="capture">Window Capture</label>
+    </div>
+
+    <div class="module bkc-tab-general">
+      <input type="checkbox" id="randomskin" name="randomskin" />
+      <label for="randomskin">Random Favorite Skins</label>
+    </div>
+
+    <div class="module bkc-tab-general">
+      <input type="checkbox" id="ShowTwitch" name="ShowTwitch" />
+      <label
+        title="Show Live Kirka Twitch Streams &#013; Click And Drag The Titlebar To Move The Menu  &#013; Click And Drag The Bottom Right Corner To Resize The Menu"
+        for="ShowTwitch">
+        Show Live Kirka Twitch Streams Menu
+      </label>
+    </div>
+
+    <div class="module bkc-tab-general">
+      <input type="checkbox" id="showClanInvites" name="showClanInvites" />
+      <label title="Show Clan Invites" for="showClanInvites"> Show Clan Invites </label>
+    </div>
+
+    <div class="module bkc-tab-general">
+      <label
+        title="Reduce the amount of chat messages shown in global chat at once (Default is 50)"
+        for="nerfChatLenght">
+        Chat Message Limiter
+        <input type="range" id="nerfChatLenght" name="nerfChatLenght" min="1" max="50" step="0.00000001" />
+        <span id="nerfChatLenghtSpan"></span>
+      </label>
+    </div>
+
+    <div id="bkc-daily-stats-wrapper" class="module bkc-tab-daily-stats">
+      <div id="bkc-daily-stats-header">Daily Stats</div>
+      <div id="bkc-daily-stats-container" class="module"></div>
+    </div>
+
+    <div class="module bkc-tab-backup">
+      <label title="Import Settings" id="Bkc-import" style="cursor: pointer" for="Bkc-import">
+        Import Ingame Settings From Clipboard
+      </label>
+    </div>
+
+    <div class="module bkc-tab-backup">
+      <label title="Export Settings" id="Bkc-export" style="cursor: pointer" for="Bkc-export">
+        Export Ingame Settings To Clipboard
+      </label>
+    </div>
+
+    <div class="module bkc-tab-backup">
+      <label title="Import Settings" id="Bkc-import-file" style="cursor: pointer" for="Bkc-import-file">
+        Import Ingame Settings From File
+      </label>
+      <input type="file" id="Bkc-import-file-input" style="display: none" />
+    </div>
+
+    <div class="module bkc-tab-backup">
+      <label title="Export Settings" id="Bkc-export-file" style="cursor: pointer" for="Bkc-export-file">
+        Export Ingame Settings To File
+      </label>
+      <input type="file" id="Bkc-export-file-input" style="display: none" />
+    </div>
+  </div>
+</div>
+
+<div class="footer">Toggle With "PageUp" Key</div>
