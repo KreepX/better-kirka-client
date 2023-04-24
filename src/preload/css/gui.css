@@ -886,6 +886,7 @@ div#bkc-show-trade-element > span > button {
 }
 
 .required-warning {
+  display: none;
   flex-flow: row nowrap;
   place-content: center center;
   align-items: center;
@@ -1172,4 +1173,8 @@ div#bkc-custom-css-header-button-wrapper {
 button#bkc-quick-test {
   display: inline-flex;
   margin: 0.5rem auto;
+}
+
+.module-wrapper::-webkit-scrollbar-thumb {
+  background-color: #8c8c8c;
 }

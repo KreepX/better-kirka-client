@@ -165,10 +165,14 @@ let meow = function () {
   if (arguments[0].name === 'hover') {
     arguments[0].src = MenuhoverAudio || arguments[0].src;
     window._.cleanUpOldUnusedInits();
+  } else if (arguments[0].name === 'error' && ignoreError > 0) {
+    --ignoreError;
+    arguments[0].volume = 0;
   }
   return originalHowl.apply(this, arguments);
 };
 
+let ignoreError = 0;
 let stremzInfo;
 let skinzInfo;
 let inputtoggle = false;
@@ -189,40 +193,120 @@ let GameModes =
         PHY: true,
       }
     : settings.get('GameModes');
-let EnemyhighlightColor = typeof settings.get('EnemyhighlightColor') === 'undefined' ? settingsSetGit('EnemyhighlightColor', '#ff00ff') : settings.get('EnemyhighlightColor');
-let TeamhighlightColor = typeof settings.get('TeamhighlightColor') === 'undefined' ? settingsSetGit('TeamhighlightColor', '#0000ff') : settings.get('TeamhighlightColor');
-let randomFavoriteSkins = typeof settings.get('randomFavoriteSkins') === 'undefined' ? settingsSetGit('randomFavoriteSkins', false) : settings.get('randomFavoriteSkins');
-let TwitchHeight = typeof settings.get('TwitchHeight') === 'undefined' ? settingsSetGit('TwitchHeight', 'auto') : settings.get('TwitchHeight');
-let TwitchWidth = typeof settings.get('TwitchWidth') === 'undefined' ? settingsSetGit('TwitchWidth', 'auto') : settings.get('TwitchWidth');
-let TwitchLeft = typeof settings.get('TwitchLeft') === 'undefined' ? settingsSetGit('TwitchLeft', '10vw') : settings.get('TwitchLeft');
-let ShowTwitch = typeof settings.get('ShowTwitch') === 'undefined' ? settingsSetGit('ShowTwitch', true) : settings.get('ShowTwitch');
-let TwitchTop = typeof settings.get('TwitchTop') === 'undefined' ? settingsSetGit('TwitchTop', '20vw') : settings.get('TwitchTop');
-let guiHeight = typeof settings.get('guiHeight') === 'undefined' ? settingsSetGit('guiHeight', '95%') : settings.get('guiHeight');
-let guiWidth = typeof settings.get('guiWidth') === 'undefined' ? settingsSetGit('guiWidth', '51%') : settings.get('guiWidth');
+
+/* single white pixel */
+let cookiezi = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABEAIAAADA54+dAAAAC0lEQVQI12P4DwYAFPIF+zx10voAAAAASUVORK5CYII=';
+let enemyHighlightColor = typeof settings.get('enemyHighlightColor') === 'undefined' ? '#ff00ff' : settings.get('enemyHighlightColor');
+let lobbyPlayerHighlight = typeof settings.get('lobbyPlayerHighlight') === 'undefined' ? false : settings.get('lobbyPlayerHighlight');
+let teamHighlightColor = typeof settings.get('teamHighlightColor') === 'undefined' ? '#0000ff' : settings.get('teamHighlightColor');
+let randomFavoriteSkins = typeof settings.get('randomFavoriteSkins') === 'undefined' ? false : settings.get('randomFavoriteSkins');
+let gameMuzzleHighlight = typeof settings.get('gameMuzzleHighlight') === 'undefined' ? false : settings.get('gameMuzzleHighlight');
+let lobbyPlayerTexture = typeof settings.get('lobbyPlayerTexture') === 'undefined' ? false : settings.get('lobbyPlayerTexture');
+let lobbyWeapHighlight = typeof settings.get('lobbyWeapHighlight') === 'undefined' ? false : settings.get('lobbyWeapHighlight');
+let lobbyPlayerVisible = typeof settings.get('lobbyPlayerVisible') === 'undefined' ? true : settings.get('lobbyPlayerVisible');
+let lobbyShadowVisible = typeof settings.get('lobbyShadowVisible') === 'undefined' ? true : settings.get('lobbyShadowVisible');
+let lobbyPlayerColor = typeof settings.get('lobbyPlayerColor') === 'undefined' ? '#ffffff' : settings.get('lobbyPlayerColor');
+let gameWeapHighlight = typeof settings.get('gameWeapHighlight') === 'undefined' ? false : settings.get('gameWeapHighlight');
+let gameArmsHighlight = typeof settings.get('gameArmsHighlight') === 'undefined' ? false : settings.get('gameArmsHighlight');
+let gameFlagHighlight = typeof settings.get('gameFlagHighlight') === 'undefined' ? false : settings.get('gameFlagHighlight');
+let gameMuzzleColor = typeof settings.get('gameMuzzleColor') === 'undefined' ? '#ffffff' : settings.get('gameMuzzleColor');
+let lobbyWeapTexture = typeof settings.get('lobbyWeapTexture') === 'undefined' ? false : settings.get('lobbyWeapTexture');
+let lobbyWeapVisible = typeof settings.get('lobbyWeapVisible') === 'undefined' ? true : settings.get('lobbyWeapVisible');
+let lobbyWeapColor = typeof settings.get('lobbyWeapColor') === 'undefined' ? '#ffffff' : settings.get('lobbyWeapColor');
+let lobbyPlayerWire = typeof settings.get('lobbyPlayerWire') === 'undefined' ? false : settings.get('lobbyPlayerWire');
 let allFavoriteSkins = typeof settings.get('allFavoriteSkins') === 'undefined' ? {} : settings.get('allFavoriteSkins');
+let gameArmsTexture = typeof settings.get('gameArmsTexture') === 'undefined' ? false : settings.get('gameArmsTexture');
+let gameWeapTexture = typeof settings.get('gameWeapTexture') === 'undefined' ? false : settings.get('gameWeapTexture');
 let showClanInvites = typeof settings.get('showClanInvites') === 'undefined' ? true : settings.get('showClanInvites');
+let gameFlagColor = typeof settings.get('gameFlagColor') === 'undefined' ? '#ffffff' : settings.get('gameFlagColor');
+let gameWeapColor = typeof settings.get('gameWeapColor') === 'undefined' ? '#ffffff' : settings.get('gameWeapColor');
+let gameArmsColor = typeof settings.get('gameArmsColor') === 'undefined' ? '#ffffff' : settings.get('gameArmsColor');
 let MenuhoverAudio = typeof settings.get('MenuhoverAudio') === 'undefined' ? null : settings.get('MenuhoverAudio');
 let nerfChatLenght = typeof settings.get('nerfChatLenght') === 'undefined' ? 50 : settings.get('nerfChatLenght');
+let lobbyWeapWire = typeof settings.get('lobbyWeapWire') === 'undefined' ? false : settings.get('lobbyWeapWire');
+let TwitchHeight = typeof settings.get('TwitchHeight') === 'undefined' ? 'auto' : settings.get('TwitchHeight');
+let lobbyRainbow = typeof settings.get('lobbyRainbow') === 'undefined' ? false : settings.get('lobbyRainbow');
+let gameWeapWire = typeof settings.get('gameWeapWire') === 'undefined' ? false : settings.get('gameWeapWire');
+let gameArmsWire = typeof settings.get('gameArmsWire') === 'undefined' ? false : settings.get('gameArmsWire');
+let TwitchWidth = typeof settings.get('TwitchWidth') === 'undefined' ? 'auto' : settings.get('TwitchWidth');
+let gameRainbow = typeof settings.get('gameRainbow') === 'undefined' ? false : settings.get('gameRainbow');
+let TwitchLeft = typeof settings.get('TwitchLeft') === 'undefined' ? '10vw' : settings.get('TwitchLeft');
+let ShowTwitch = typeof settings.get('ShowTwitch') === 'undefined' ? true : settings.get('ShowTwitch');
+let TwitchTop = typeof settings.get('TwitchTop') === 'undefined' ? '20vw' : settings.get('TwitchTop');
 let minPlayers = typeof settings.get('minPlayers') === 'undefined' ? 1 : settings.get('minPlayers');
 let capture = typeof settings.get('capture') === 'undefined' ? false : settings.get('capture');
 let cssLinks = typeof settings.get('cssLinks') === 'undefined' ? {} : settings.get('cssLinks');
 let fpsCap = typeof settings.get('fpsCap') === 'undefined' ? false : settings.get('fpsCap');
 let minTime = typeof settings.get('minTime') === 'undefined' ? 0 : settings.get('minTime');
-let playerHighLight = !!settings.get('playerHighLight');
+let gamePlayerHighLight = !!settings.get('gamePlayerHighLight');
 let permCrosshair = !!settings.get('permCrosshair');
 let hideFlagAds = !!settings.get('hideFlagAds');
 let customCss = !!settings.get('customCss');
 let gui = document.createElement('div');
-let customEnemyColorElem;
-let customTeamColorElem;
-let frameFuncs = [];
+// prettier-ignore
+let shouldAnimate = () => !!(
+     gamePlayerHighLight
+  || gameWeapHighlight
+  || gameMuzzleHighlight
+  || gameWeapWire
+  || gameArmsWire
+  || (
+    window.mWnwM?.mWnwM?.room?.name === 'PointRoom'
+    &&
+    gameFlagHighlight
+  )
+);
+let defaultWeaponTextures = new Map([
+  [
+    '_VITA',
+    {
+      src: 'https://kirka.io/assets/img/texture.24917fd7.webp',
+    },
+  ],
+  [
+    '_Revolver',
+    {
+      src: 'https://kirka.io/assets/img/texture.aaaafd48.webp',
+    },
+  ],
+  [
+    '_LAR',
+    {
+      src: 'https://kirka.io/assets/img/texture.0437c392.webp',
+    },
+  ],
+  [
+    '_Weatie',
+    {
+      src: 'https://kirka.io/assets/img/texture.8af97560.webp',
+    },
+  ],
+  [
+    '_M60',
+    {
+      src: 'https://kirka.io/assets/img/texture.df209e5f.webp',
+    },
+  ],
+  [
+    '_AR-9',
+    {
+      src: 'https://kirka.io/assets/img/texture.9d17e5cd.webp',
+    },
+  ],
+  [
+    '_MAC-10',
+    {
+      src: 'https://kirka.io/assets/img/texture.76a66e11.webp',
+    },
+  ],
+]);
+let currentWeaponTexture;
+let weaponUpdated;
+let playerUpdated;
 let favoriteSkins;
-let colorEnemy;
-let colorTeam;
 let seenSkins;
-let scene;
-let flagMaterial;
-let animate;
+let animating;
+let lobbyAnimating;
 let streamsmenu;
 let notificationsonclick;
 let GuiResizeObserver;
@@ -233,51 +317,30 @@ let clockInterval;
 let timeContainer;
 let claninvites;
 let droptimeout;
+let lessLaggyGuiOnInput;
+let defaultsMap = new WeakMap();
 let clanSelectors = new WeakMap();
+let rrr = 255;
+let ggg = 0;
+let bbb = 0;
 let statsUpdated = false;
 let claimedQuest = false;
 let inGame = false;
-let flagmodeset = false;
-let scoped = false;
-let ShouldHiglight = false;
 let menuVisible = false;
 let SaveGuiSize = () => {
-  if (guiWidth !== gui.style.width) guiWidth = settingsSetGit('guiWidth', gui.style.width);
-  if (guiHeight !== gui.style.height) guiHeight = settingsSetGit('guiHeight', gui.style.height);
+  settings.set('guiWidth', gui.style.width);
+  settings.set('guiHeight', gui.style.height);
 };
 
 TwitchResizeObserver = new ResizeObserver(SaveTwitchSize);
-if (playerHighLight) frameFuncs.push(playerHighLightFunc);
-
-WeakMap.prototype.set = new Proxy(WeakMap.prototype.set, {
-  apply(target, thisArg, argArray) {
-    if (argArray[0] && argArray[0].type === 'Scene') {
-      if (argArray[0].children[0].type === 'AmbientLight') {
-        scene = argArray[0];
-        ShouldHiglight = true;
-        setTimeout(() => {
-          scene.children.forEach((e) => {
-            if (e.type === 'Sprite' && !e.material.depthTest && e.material.map?.image?.width === 149) {
-              flagMaterial = e.material;
-              flagmodeset = true;
-              if (hideFlagAds) {
-                if (!frameFuncs.includes(hideFlagAdsFunc)) {
-                  frameFuncs.push(hideFlagAdsFunc);
-                  window.addEventListener('mousedown', IsScoped);
-                  window.addEventListener('mouseup', IsNotScoped);
-                }
-              }
-            }
-          });
-        }, 1000);
-      }
-    }
-    return Reflect.apply(...arguments);
-  },
-});
 
 const SomeObserver = new MutationObserver(() => {
   if (inGame) {
+    if (window.mWnwM?.mWnwM?.room?.name === 'PointRoom') {
+      document.onmousedown = hideFlagAdsFunc;
+      document.onmouseup = hideFlagAdsFunc;
+    }
+    if (shouldAnimate && !animating) animating = window.requestAnimationFrame(animate);
     if (moveTime() && seenSkinsListener()) SomeObserver.disconnect();
     return;
   }
@@ -290,19 +353,21 @@ const SomeObserver = new MutationObserver(() => {
     }, 1000);
   }
 
-  let location = document.body?.childNodes[1]?.__vue__?.$router?.history?.current;
-  if (location) {
-    if (location.name === 'inventory') {
+  let current = window?.app?.__vue__?.$router?.history?.current;
+  if (current) {
+    if (current?.name === 'inventory') {
       let subjects = document.querySelector('#view div div div.content div.inventory > div.content > div.subjects');
-      let invDiv = document.body.childNodes[1].childNodes[2].__vue__.$el.__vue__.$children[1].$el;
+      let invDiv = window.app.childNodes[2].__vue__.$el.__vue__.$children[1].$el;
       let marketModaling = document.querySelector('[data-modal="market-item"]');
-      if (randomFavoriteSkins && subjects && (invDiv.__vue__.activeTabKey === 0 || invDiv.__vue__.activeTabKey === 2)) {
+      if (randomFavoriteSkins && subjects && (invDiv.__vue__.activeTabKey === 0 || invDiv.__vue__.activeTabKey === 2) && favoriteSkins) {
         appendFavedMarker();
         appendFavedButtons();
         subjects.onclick = FavedButtonsHandler;
+      } else if (subjects?.onclick) {
+        subjects.onclick = null;
       }
       if (marketModaling) customMarketPrice(invDiv);
-    } else if (location.name === 'settings-mods') {
+    } else if (current?.name === 'settings-mods') {
       let inputLabels = document.querySelectorAll('.wrapper-input.wWmMn[placeholder="Paste image url..."]');
       if (inputLabels?.length === 9) {
         inputLabels.forEach((label, index) => {
@@ -324,13 +389,12 @@ const SomeObserver = new MutationObserver(() => {
           }
         });
       }
-    } else if (location.matched[0].name === 'servers' && !document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div#bkc-minmax-selects > div.mods.tabmods')) {
+    } else if (current.matched[0]?.name === 'servers' && !document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div#bkc-minmax-selects > div.mods.tabmods')) {
       SetGameModesCheckBoxes();
     }
   }
-  if (!notificationsonclick) {
-    notificationsonclick = NotificationsOpenMenus();
-  }
+
+  if (!notificationsonclick) notificationsonclick = NotificationsOpenMenus();
 
   if (!document.querySelector('#clientJoinButton') && document.querySelector('.play-content')) {
     let btn = document.createElement('button');
@@ -388,18 +452,171 @@ const SomeObserver = new MutationObserver(() => {
     }
   }
 
-  let clanmodal = document.querySelector('#app div.interface.text-2 div.vm--container');
-  if (clanmodal?.__vue__?.name === 'clan-invitation') {
+  let modal = document.querySelector('#app div.interface.text-2 div.vm--container');
+  if (modal?.__vue__?.name === 'clan-invitation') {
     if (showClanInvites) {
       appendClanInvites();
     } else {
-      clanmodal = clanmodal.parentElement.removeChild(clanmodal);
-      clanmodal.__vue__.close();
+      modal = modal.parentElement.removeChild(modal);
+      modal.__vue__.close();
       claninvites = [];
     }
+  } else if (modal?.__vue__?.name === 'create-modal' && !document.querySelector('#bkc-quick-test') && document.querySelector('.select-all')) {
+    let gen = modal.querySelector('div.general-content.text-2');
+    let quickTestHeader = gen.firstChild;
+    let freebutton = modal.querySelector('.select-all');
+    let game = window.app.__vue__.$store._modules.root.state.game;
+    let mods = Object.keys(game.mods);
+    mods.forEach((mode) => {
+      if (mode !== 'MapEditorRoom') {
+        let quickTestButtons = gen.insertBefore(freebutton.cloneNode(true), gen.firstChild);
+        quickTestButtons.id = 'bkc-quick-test';
+        quickTestButtons.children[1].innerText = game.mods[mode].name;
+        quickTestButtons.onclick = (e) => {
+          game.minutes = 60;
+          game.privacy = 'private';
+          Object.keys(game.weapons).forEach((weapon) => {
+            game.weapons[weapon].active = true;
+          });
+          Object.keys(game.maps).forEach((map) => {
+            game.maps[map].active = true;
+          });
+          mods.forEach((mod) => {
+            if (game.mods[mod].name.toUpperCase() === e.target.children[1].innerText.trim()) game.mods[mod].active = true;
+            else game.mods[mod].active = false;
+          });
+          modal.__vue__.$children[0].create();
+        };
+      }
+    });
+    quickTestHeader = gen.insertBefore(quickTestHeader.cloneNode(true), gen.firstChild);
+    quickTestHeader.innerText = 'Quick Test';
+    quickTestHeader.style.marginBottom = '0.5rem';
   }
 });
 
+function animateLobby() {
+  if (!inGame) {
+    window.requestAnimationFrame(animateLobby);
+    let current = window?.app?.__vue__?.$router?.history?.current;
+    if (current) {
+      let rgbColor = lobbyRainbow ? getRGBcycle() : null;
+      let scenerio1 = window.app.__vue__.$store._modules.root.context.state?.user?.mwWN?.lobby;
+      // prettier-ignore
+      if (current.name === 'profile-id')
+        scenerio1 =
+          window.app.__vue__
+            .$children[0]
+            .$children[1]
+            .$children[0]?.player
+          ||
+          window.app.__vue__
+            ?.$children[1]
+            ?.$children[1]
+            ?.$children[0]?.player
+          ||
+          scenerio1;
+        
+      else if (current.name === 'inventory')
+      scenerio1 = window.app.__vue__.$store._modules.root.context.state?.user?.mwWN?.inventory || scenerio1;
+      else if (current.name === 'leaderboard')
+      scenerio1 = window.app.childNodes[2].__vue__.$children.find((a) => a?.$el?.className === 'hub-container')?.$children.find((a) => a?.players)?.players || scenerio1;
+      else if (current.name === 'game')
+      scenerio1 = window.app.__vue__.$children.filter((a) => a?.$children[0]?.Wmn)?.[0]?.$children[0].Wmn; // endscreen
+
+      if (scenerio1?.players) {
+        scenerio1.players.forEach((player) => {
+          let playerShadow = player.shadow;
+          let playerLight = player.WwNnM.model?.parent.children[0].position;
+          let playerModel = player.WwNnM.model?.children[0].children[0].children[1];
+          let playerMat = playerModel?.material;
+          let weapon = player.weapons[player.wName].model;
+          weapon = weapon?.children[weapon.children.length - 1] || weapon;
+          let weaponMat = weapon?.material;
+          let weaponMatImg = weaponMat?.map?.image;
+          let playerMatImg = playerMat?.map?.image;
+          if (playerLight && playerLight.x !== 1) playerLight.x = 1;
+          if (playerShadow && playerShadow.visible !== lobbyShadowVisible) playerShadow.visible = lobbyShadowVisible;
+          if (weaponMatImg) {
+            if (!defaultsMap.has(weapon)) {
+              defaultsMap.set(weapon, {
+                color: {
+                  r: weaponMat.color.r,
+                  g: weaponMat.color.g,
+                  b: weaponMat.color.b,
+                },
+                emissive: {
+                  r: weaponMat.emissive.r,
+                  g: weaponMat.emissive.g,
+                  b: weaponMat.emissive.b,
+                },
+                src: weaponMatImg.src,
+              });
+            }
+
+            let weapDefaults = defaultsMap.get(weapon);
+            if (weaponUpdated && (current.name === 'home' || current.name === 'inventory') && weaponMatImg.src !== (weapDefaults.src && cookiezi)) {
+              if (current.name === 'home') weaponUpdated = !weaponUpdated;
+              weapDefaults.src = currentWeaponTexture || weaponMatImg.src;
+              defaultsMap.set(weapon, weapDefaults);
+            }
+
+            if (weapon.visible !== lobbyWeapVisible) weapon.visible = lobbyWeapVisible;
+            if (lobbyWeapVisible) {
+              let weapColor = lobbyWeapHighlight ? rgbColor || lobbyWeapColor : weapDefaults.color;
+              let weapEmissive = weapColor !== weapDefaults.color ? weapColor : weapDefaults.emissive;
+              let currMapSrc = weapColor !== weapDefaults.color && !lobbyWeapTexture ? cookiezi : weapDefaults.src;
+              if (weaponMat.map.version !== 1) weaponMat.map.version = 1;
+              if (weaponMat.wireframe !== lobbyWeapWire) weaponMat.wireframe = lobbyWeapWire;
+              if (weaponMatImg.src !== currMapSrc) weaponMat = osuClassic(weaponMat, currMapSrc);
+              if (!weaponMat.color.equals(weapColor)) weaponMat.color.setRGB(weapColor.r, weapColor.g, weapColor.b);
+              if (!weaponMat.emissive.equals(weapEmissive)) weaponMat.emissive.setRGB(weapEmissive.r, weapEmissive.g, weapEmissive.b);
+            }
+          }
+
+          if (playerMatImg) {
+            if (!defaultsMap.has(playerModel)) {
+              defaultsMap.set(playerModel, {
+                color: {
+                  r: playerMat.color.r,
+                  g: playerMat.color.g,
+                  b: playerMat.color.b,
+                },
+                emissive: {
+                  r: playerMat.emissive.r,
+                  g: playerMat.emissive.g,
+                  b: playerMat.emissive.b,
+                },
+                src: playerMatImg.src,
+              });
+            }
+
+            let playerDefaults = defaultsMap.get(playerModel);
+            if (playerUpdated && (current.name === 'home' || current.name === 'inventory') && playerMatImg.src !== (playerDefaults.src && cookiezi)) {
+              if (current.name === 'home') playerUpdated = !playerUpdated;
+              playerDefaults.src = playerMatImg.src;
+              defaultsMap.set(playerModel, playerDefaults);
+            }
+
+            if (playerModel.visible !== lobbyPlayerVisible) playerModel.visible = lobbyPlayerVisible;
+            if (lobbyPlayerVisible) {
+              let playerColor = lobbyPlayerHighlight ? rgbColor || lobbyPlayerColor : playerDefaults.color;
+              let playerEmissive = playerColor !== playerDefaults.color ? playerColor : playerDefaults.emissive;
+              let playerImg = playerColor !== playerDefaults.color && !lobbyPlayerTexture ? cookiezi : playerDefaults.src;
+              if (playerMat.wireframe !== lobbyPlayerWire) playerMat.wireframe = lobbyPlayerWire;
+              if (playerMatImg.src !== playerImg) playerMat = osuClassic(playerMat, playerImg);
+              if (playerMat.map.version !== 1) playerMat.map.version = 1;
+              if (!playerMat.color.equals(playerColor)) playerMat.color.setRGB(playerColor.r, playerColor.g, playerColor.b);
+              if (!playerMat.emissive.equals(playerEmissive)) playerMat.emissive.setRGB(playerEmissive.r, playerEmissive.g, playerEmissive.b);
+            }
+          }
+        });
+      }
+    }
+  }
+}
+
+lobbyAnimating = window.requestAnimationFrame(animateLobby);
 SomeObserver.observe(document, { childList: true, subtree: true });
 
 const MainObserverr = new MutationObserver(() => {
@@ -410,33 +627,31 @@ const MainObserverr = new MutationObserver(() => {
     window.JSON.stringify = ogStringify;
     window.XMLHttpRequest = boringXMLHttpRequest;
     window.Howl.prototype.init = originalHowl;
-    if (frameFuncs.length) animate();
     if (TwitchResizeObserver) TwitchResizeObserver.disconnect();
     if (clockInterval) clockInterval = clearInterval(clockInterval);
     if (timeContainer && seenSkinsListener()) SomeObserver.disconnect();
-    document.removeEventListener('keyup', keyup);
+    //document.removeEventListener('keyup', keyup);
     claninvites = null;
     skinzInfo = null;
     stremzInfo = null;
+    lobbyAnimating = cancelAnimationFrame(lobbyAnimating);
+    if (shouldAnimate && !animating) animating = window.requestAnimationFrame(animate);
   } else if (inGame && (endmodal || !/kirka[.]io[/]game/.test(window.location.href))) {
-    ShouldHiglight = false;
     inGame = false;
+    animating = cancelAnimationFrame(animating);
     window.XMLHttpRequest = gigaXMLHttpRequest;
     window.JSON.parse = gigaJSONParse;
     window.Howl.prototype.init = meow;
     EventTarget.prototype.addEventListener = gigaAddEventListener;
-    if (flagmodeset) {
-      flagmodeset = false;
-      frameFuncsRemove(hideFlagAdsFunc);
-      window.removeEventListener('mousedown', IsScoped);
-      window.removeEventListener('mouseup', IsNotScoped);
-    }
     SomeObserver.observe(document, { childList: true, subtree: true });
-    document.addEventListener('keyup', keyup);
+    //document.addEventListener('keyup', keyup);
     inputtoggle = false;
     claimedQuest = false;
     statsUpdated = false;
     timeContainer = null;
+    lobbyAnimating = window.requestAnimationFrame(animateLobby);
+    document.onmousedown = null;
+    document.onmouseup = null;
     console.dirxml('gg');
   }
 });
@@ -513,6 +728,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
   //prettier-ignore
   gui.onclick = (e) => {
+
+    if (e.target.className === 'bkc-gui-tabbar-button') {
+      gui.querySelectorAll('.module-wrapper > .bkc-menu-tab-active,.bkc-gui-tab > .bkc-menu-tab-active')
+        .forEach((activeElements) => activeElements.classList.remove('bkc-menu-tab-active'));
+      
+      gui.querySelectorAll(`.module-wrapper > .${e.target.id}`)
+        .forEach((element) => element.classList.add('bkc-menu-tab-active'));
+      
+      e.target.classList.add('bkc-menu-tab-active');
+      settings.set('activeGuiTab', `${e.target.id}`);
+    }
+
     if (e.target.id === 'ShowTwitch') {
       ShowTwitch = e.target.checked;
       settings.set('ShowTwitch', ShowTwitch);
@@ -526,7 +753,146 @@ document.addEventListener('DOMContentLoaded', () => {
       showClanInvites = e.target.checked;
       settings.set('showClanInvites', showClanInvites);
     } 
+      
+    else if (e.target.id === 'lobbyRainbow') {
+      lobbyRainbow = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'lobbyWeapWire') {
+      lobbyWeapWire = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'lobbyWeapHighlight') {
+      lobbyWeapHighlight = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'lobbyPlayerHighlight') {
+      lobbyPlayerHighlight = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'lobbyPlayerWire') {
+      lobbyPlayerWire = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'gameRainbow') {
+      gameRainbow = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'gameWeapWire') {
+      gameWeapWire = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'gameArmsWire') {
+      gameArmsWire = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
 
+    else if (e.target.id === 'lobbyPlayerVisible') {
+      lobbyPlayerVisible = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+
+    else if (e.target.id === 'lobbyWeapVisible') {
+      lobbyWeapVisible = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'lobbyShadowVisible') {
+      lobbyShadowVisible = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'gameWeapHighlight') {
+      gameWeapHighlight = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'gameArmsHighlight') {
+      gameArmsHighlight = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'gameMuzzleHighlight') {
+      gameMuzzleHighlight = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'gameArmsTexture') {
+      gameArmsTexture = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'gameWeapTexture') {
+      gameWeapTexture = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'lobbyWeapTexture') {
+      lobbyWeapTexture = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'lobbyPlayerTexture') {
+      lobbyPlayerTexture = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'gameFlagHighlight') {
+      gameFlagHighlight = e.target.checked;
+      settings.set(`${e.target.id}`, e.target.checked);
+    } 
+      
+    else if (e.target.id === 'Bkc-export') {
+      let gameSettingsObj = {};
+      for (let key in localStorage) {
+        if (key.startsWith('m')) {
+          if (localStorage[key].startsWith('"') && localStorage[key].endsWith('"')) {
+            gameSettingsObj[key] = localStorage[key].slice(1, -1);
+          } else {
+            gameSettingsObj[key] = localStorage[key];
+          }
+        }
+      }
+      clipboard.writeText(JSON.stringify(gameSettingsObj, null, 2));
+      BKC.tip('Exported Settings To Clipboard');
+    } 
+      
+    else if (e.target.id === 'Bkc-import') {
+      let data = JSON.parse(clipboard.readText());
+      if (data) {
+        Object.assign(localStorage, data);
+        window.location.reload();
+      }
+    }
+      
+    else if (e.target.id === 'Bkc-import-file') {
+      document.querySelector('#Bkc-import-file-input').click();
+    }
+      
+    else if (e.target.id === 'Bkc-export-file') {
+      let gameSettingsObj = {};
+      for (let key in localStorage) {
+        if (key.startsWith('m')) {
+          if (localStorage[key].startsWith('"') && localStorage[key].endsWith('"')) {
+            gameSettingsObj[key] = localStorage[key].slice(1, -1);
+          } else {
+            gameSettingsObj[key] = localStorage[key];
+          }
+        }
+      } 
+      let eo = document.createElement('a');
+      eo.href = URL.createObjectURL(new Blob([JSON.stringify(gameSettingsObj, null, 2)], {type: 'application/json'}));
+      eo.download = "Kirka-Settings.json";
+      eo.click();
+    } 
+      
     else if (e.target.id === 'randomskin') {
       randomFavoriteSkins = e.target.checked;
       settings.set('randomFavoriteSkins', randomFavoriteSkins);
@@ -541,35 +907,18 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (e.target.id === 'hideflag') {
       hideFlagAds = e.target.checked;
       settings.set('hideFlagAds', hideFlagAds);
-      if (hideFlagAds) {
-        if (flagmodeset) {
-          if (!frameFuncs.includes(hideFlagAdsFunc)) {
-            frameFuncs.push(hideFlagAdsFunc);
-            window.addEventListener('mousedown', IsScoped);
-            window.addEventListener('mouseup', IsNotScoped);
-          }
-        }
+      if (hideFlagAds && window.mWnwM?.mWnwM?.room?.name === 'PointRoom') {
+        document.onmousedown = hideFlagAdsFunc;
+        document.onmouseup = hideFlagAdsFunc;
       } else {
-        frameFuncsRemove(hideFlagAdsFunc);
-        if (flagMaterial) {
-          flagMaterial.visible = true;
-        }
-        window.removeEventListener('mousedown', IsScoped);
-        window.removeEventListener('mouseup', IsNotScoped);
+        document.onmousedown = null;
+        document.onmouseup = null;
       }
     } 
     
     else if (e.target.id === 'highlight') {
-      
-      playerHighLight = e.target.checked;
-      settings.set('playerHighLight', playerHighLight);
-      if (playerHighLight) {
-        if (!frameFuncs.includes(playerHighLightFunc)) {
-          frameFuncs.push(playerHighLightFunc);
-        }
-      } else {
-        frameFuncsRemove(playerHighLightFunc);
-      }
+      gamePlayerHighLight = e.target.checked;
+      settings.set('gamePlayerHighLight', gamePlayerHighLight);
     } 
     
     else if (e.target.id === 'customCSS') {
@@ -648,48 +997,116 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (e.target.id === 'bkc-browse') {
       cssFilePicker.click();
     }
+
+    if (inGame) {
+      if (shouldAnimate) {
+        if (!animating) animating = window.requestAnimationFrame(animate);
+      } else if (animating) animating = window.cancelAnimationFrame(animate);
+    }
+
   };
 
-  gui.style = `display:none;width:${guiWidth};height:${guiHeight};`;
+  //prettier-ignore
+  gui.style = `display:none;width:${
+    typeof settings.get('guiWidth') === 'undefined' ? '51%' : settings.get('guiWidth')
+    };height:${
+    typeof settings.get('guiHeight') === 'undefined' ? '95%' : settings.get('guiHeight')
+    };`;
 
   gui = document.body.appendChild(gui);
+
+  let activeGuiTab = typeof settings.get('activeGuiTab') === 'undefined' ? 'bkc-tab-game' : settings.get('activeGuiTab');
+
+  //prettier-ignore
+  gui.querySelectorAll('.module-wrapper > .bkc-menu-tab-active,.bkc-gui-tab > .bkc-menu-tab-active')
+    .forEach((activeElements) => activeElements.classList.remove('bkc-menu-tab-active'));
+
+  //prettier-i-hate-you
+  //prettier-ignore
+  gui.querySelectorAll(`.bkc-gui-tab > #${activeGuiTab},.module-wrapper > .${activeGuiTab}`)
+    .forEach((element) => element.classList.add('bkc-menu-tab-active'));
 
   permcrossstyle = gui.querySelector('#BKC-permcrosshair');
   permCrosshairToggleFunc();
 
-  function AnotherFunction(a) {
-    return {
-      r: a.r * Number.MAX_SAFE_INTEGER,
-      g: a.g * Number.MAX_SAFE_INTEGER,
-      b: a.b * Number.MAX_SAFE_INTEGER,
-    };
-  }
-
-  function GetUsableColor(a) {
-    if (a.r !== a.g && a.r !== a.b && a.g !== a.r && a.g !== a.b) {
-      return AnotherFunction(hexToRgb(hslToHex(hexToH(rgbToHex(a.r, a.g, a.b)), 100, 50)));
+  function guiOnInput(e) {
+    if (e.target.value) {
+      let settingValue = e.target.value;
+      let settingTarget = e.target.id;
+      // prettier-u-turned-it-into-a-brick
+      if (e.target.id === 'lobbyWeapColor') {
+        lobbyWeapColor = wParamTolParam(settingValue);
+        settings.set(`${settingTarget}`, settingValue);
+      } else if (e.target.id === 'lobbyPlayerColor') {
+        lobbyPlayerColor = wParamTolParam(settingValue);
+        settings.set(`${settingTarget}`, settingValue);
+      } else if (e.target.id === 'gameWeapColor') {
+        gameWeapColor = wParamTolParam(settingValue);
+        settings.set(`${settingTarget}`, settingValue);
+      } else if (e.target.id === 'gameArmsColor') {
+        gameArmsColor = wParamTolParam(settingValue);
+        settings.set(`${settingTarget}`, settingValue);
+      } else if (e.target.id === 'gameMuzzleColor') {
+        gameMuzzleColor = wParamTolParam(settingValue);
+        settings.set(`${settingTarget}`, settingValue);
+      } else if (e.target.id === 'teamHighlightColor') {
+        teamHighlightColor = wParamTolParam(settingValue);
+        settings.set(`${settingTarget}`, settingValue);
+      } else if (e.target.id === 'enemyHighlightColor') {
+        enemyHighlightColor = wParamTolParam(settingValue);
+        settings.set(`${settingTarget}`, settingValue);
+      } else if (e.target.id === 'gameFlagColor') {
+        gameFlagColor = wParamTolParam(settingValue);
+        settings.set(`${settingTarget}`, settingValue);
+      } else if (e.target.id === 'Bkc-import-file-input') {
+        let file = e.target.files[0];
+        let reader = new FileReader();
+        reader.readAsText(file);
+        reader.onload = (ee) => {
+          let data = JSON.parse(ee.target.result);
+          if (data) {
+            Object.assign(localStorage, data);
+            window.location.reload();
+          }
+        };
+        reader.onerror = () => BKC.tip('Failed Importing File');
+      }
     }
-    return AnotherFunction(a);
   }
 
-  customEnemyColorElem = document.getElementById('EnemyhighlightColor');
-  customTeamColorElem = document.getElementById('TeamhighlightColor');
-
-  customEnemyColorElem.value = EnemyhighlightColor;
-  customTeamColorElem.value = TeamhighlightColor;
-
-  colorEnemy = GetUsableColor(hexToRgb(customEnemyColorElem.value));
-  colorTeam = GetUsableColor(hexToRgb(customTeamColorElem.value));
-
-  customEnemyColorElem.oninput = () => {
-    settings.set('EnemyhighlightColor', customEnemyColorElem.value);
-    colorEnemy = GetUsableColor(hexToRgb(customEnemyColorElem.value));
+  gui.oninput = (e) => {
+    if (window._?.throttle) {
+      if (!lessLaggyGuiOnInput) lessLaggyGuiOnInput = window._.throttle(guiOnInput, 100, { leading: false });
+      lessLaggyGuiOnInput(e);
+    }
   };
 
-  customTeamColorElem.oninput = () => {
-    settings.set('TeamhighlightColor', customTeamColorElem.value);
-    colorTeam = GetUsableColor(hexToRgb(customTeamColorElem.value));
-  };
+  let lobbyWeapColorElem = document.getElementById('lobbyWeapColor');
+  let lobbyPlayerColorElem = document.getElementById('lobbyPlayerColor');
+  let gameWeapColorElem = document.getElementById('gameWeapColor');
+  let gameArmsColorElem = document.getElementById('gameArmsColor');
+  let gameMuzzleColorElem = document.getElementById('gameMuzzleColor');
+  let customEnemyColorElem = document.getElementById('enemyHighlightColor');
+  let customTeamColorElem = document.getElementById('teamHighlightColor');
+  let gameFlagColorElem = document.getElementById('gameFlagColor');
+
+  lobbyWeapColorElem.value = lobbyWeapColor;
+  lobbyPlayerColorElem.value = lobbyPlayerColor;
+  gameWeapColorElem.value = gameWeapColor;
+  gameArmsColorElem.value = gameArmsColor;
+  gameMuzzleColorElem.value = gameMuzzleColor;
+  customEnemyColorElem.value = enemyHighlightColor;
+  customTeamColorElem.value = teamHighlightColor;
+  gameFlagColorElem.value = gameFlagColor;
+
+  lobbyWeapColor = wParamTolParam(lobbyWeapColor);
+  lobbyPlayerColor = wParamTolParam(lobbyPlayerColor);
+  gameWeapColor = wParamTolParam(gameWeapColor);
+  gameArmsColor = wParamTolParam(gameArmsColor);
+  gameMuzzleColor = wParamTolParam(gameMuzzleColor);
+  enemyHighlightColor = wParamTolParam(enemyHighlightColor);
+  teamHighlightColor = wParamTolParam(teamHighlightColor);
+  gameFlagColor = wParamTolParam(gameFlagColor);
 
   let nerfChatLenghtInput = document.getElementById('nerfChatLenght');
   let nerfChatLenghtSpan = document.getElementById('nerfChatLenghtSpan');
@@ -736,11 +1153,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (!cssSelect) {
     cssSelect = document.createElement('select');
     cssSelect.id = 'custom-css-select';
-    cssSelect.style = 'max-width:10vw;min-width:10vw;margin:0 0.5rem;color:rgb(255, 255, 255);background-color:initial;border-radius:.3rem;box-shadow:rgba(0, 0, 0, 0.5) 2px 1px 6px!important;';
     for (const cssOptions in cssLinks) {
       if (cssLinks[cssOptions] !== cssLinks.currentCss) addNewCssOption(cssLinks[cssOptions]);
     }
-    cssSelect = document.querySelector('#custom-css-wrapper').insertBefore(cssSelect, document.querySelector('#bkc-custom-css-header-button-wrapper'));
+    cssSelect = document.querySelector('#custom-css-wrapper').appendChild(cssSelect);
   }
 
   let cssFilePicker = document.querySelector('#bkc-file-picker');
@@ -799,13 +1215,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
   document.getElementById('crosshair').checked = permCrosshair;
   document.getElementById('hideflag').checked = hideFlagAds;
-  document.getElementById('highlight').checked = playerHighLight;
+  document.getElementById('highlight').checked = gamePlayerHighLight;
   document.getElementById('customCSS').checked = customCss;
   document.getElementById('ShowTwitch').checked = ShowTwitch;
   document.getElementById('fpsCap').checked = fpsCap;
   document.getElementById('capture').checked = capture;
   document.getElementById('randomskin').checked = randomFavoriteSkins;
   document.getElementById('showClanInvites').checked = showClanInvites;
+  document.getElementById('lobbyPlayerVisible').checked = lobbyPlayerVisible;
+  document.getElementById('lobbyWeapVisible').checked = lobbyWeapVisible;
+  document.getElementById('lobbyShadowVisible').checked = lobbyShadowVisible;
+  document.getElementById('lobbyRainbow').checked = lobbyRainbow;
+  document.getElementById('lobbyWeapWire').checked = lobbyWeapWire;
+  document.getElementById('lobbyPlayerWire').checked = lobbyPlayerWire;
+  document.getElementById('lobbyPlayerHighlight').checked = lobbyPlayerHighlight;
+  document.getElementById('lobbyWeapHighlight').checked = lobbyWeapHighlight;
+  document.getElementById('gameWeapHighlight').checked = gameWeapHighlight;
+  document.getElementById('gameArmsHighlight').checked = gameArmsHighlight;
+  document.getElementById('gameMuzzleHighlight').checked = gameMuzzleHighlight;
+  document.getElementById('gameArmsTexture').checked = gameArmsTexture;
+  document.getElementById('gameWeapTexture').checked = gameWeapTexture;
+  document.getElementById('lobbyWeapTexture').checked = lobbyWeapTexture;
+  document.getElementById('lobbyPlayerTexture').checked = lobbyPlayerTexture;
+  document.getElementById('gameRainbow').checked = gameRainbow;
+  document.getElementById('gameWeapWire').checked = gameWeapWire;
+  document.getElementById('gameArmsWire').checked = gameArmsWire;
+  document.getElementById('gameFlagHighlight').checked = gameFlagHighlight;
 });
 
 function keyup(e) {
@@ -815,11 +1250,6 @@ function keyup(e) {
 }
 
 document.addEventListener('keyup', keyup);
-
-animate = () => {
-  if (inGame && frameFuncs.length) window.requestAnimationFrame(animate);
-  for (let A of frameFuncs) A();
-};
 
 function cssSelectKeyDown(mwNMWnmWnMwNMandM) {
   if (mwNMWnmWnMwNMandM.key === 'PageUp' || mwNMWnmWnMwNMandM.key === 'PageDown') {
@@ -883,13 +1313,24 @@ function toggleGui() {
   settings.set('menuOpen', menuVisible);
 }
 
-function hexToRgb(hex) {
+/*function hexToRgb(hex) {
   let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
   return result
     ? {
         r: parseInt(result[1], 16),
         g: parseInt(result[2], 16),
         b: parseInt(result[3], 16),
+      }
+    : null;
+}*/
+
+function wParamTolParam(hex) {
+  let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16) / 255,
+        g: parseInt(result[2], 16) / 255,
+        b: parseInt(result[3], 16) / 255,
       }
     : null;
 }
@@ -900,58 +1341,6 @@ Function.prototype.constructor = function (...args) {
   if (args[0] === 'while (true) {}' || args[0] === 'debugger') return proxy.apply(this);
   return proxy.apply(this, arguments);
 };
-
-function hexToH(H) {
-  let r = 0;
-  let g = 0;
-  let b = 0;
-  if (H.length === 4) {
-    r = `0x${H[1]}${H[1]}`;
-    g = `0x${H[2]}${H[2]}`;
-    b = `0x${H[3]}${H[3]}`;
-  } else if (H.length === 7) {
-    r = `0x${H[1]}${H[2]}`;
-    g = `0x${H[3]}${H[4]}`;
-    b = `0x${H[5]}${H[6]}`;
-  }
-  r /= 255;
-  g /= 255;
-  b /= 255;
-  let cmin = Math.min(r, g, b);
-  let cmax = Math.max(r, g, b);
-  let delta = cmax - cmin;
-  let h = 0;
-  if (delta === 0) h = 0;
-  else if (cmax === r) h = ((g - b) / delta) % 6;
-  else if (cmax === g) h = (b - r) / delta + 2;
-  else h = (r - g) / delta + 4;
-  h *= 60;
-  if (h < 0) h += 360;
-  return h;
-}
-
-function hslToHex(h, s, l) {
-  l /= 100;
-  // eslint-disable-next-line no-mixed-operators
-  const a = (s * Math.min(l, 1 - l)) / 100;
-  const f = (n) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
-    return Math.round(255 * color)
-      .toString(16)
-      .padStart(2, '0');
-  };
-  return `#${f(0)}${f(8)}${f(4)}`;
-}
-
-function componentToHex(c) {
-  let hex = c.toString(16);
-  return hex.length === 1 ? '0' + hex : hex;
-}
-
-function rgbToHex(rr, gg, bb) {
-  return '#' + componentToHex(rr) + componentToHex(gg) + componentToHex(bb);
-}
 
 function scrollIntoView(t) {
   if (typeof t !== 'object') return;
@@ -972,13 +1361,6 @@ function scrollIntoView(t) {
   if (t) t.scrollIntoView();
 }
 
-function frameFuncsRemove(pos) {
-  let index = frameFuncs.indexOf(pos);
-  if (index > -1) {
-    frameFuncs.splice(index, 1);
-  }
-}
-
 function permCrosshairToggleFunc() {
   if (permCrosshair) {
     permcrossstyle.innerHTML = 'img#crosshair-static{opacity:1!important;visibility:visible!important;display:block!important;}';
@@ -987,53 +1369,176 @@ function permCrosshairToggleFunc() {
   }
 }
 
-function playerHighLightFunc() {
-  if (ShouldHiglight) {
-    let localPlayerClass = scene['children']['0']['parent']['entity']['_entityManager']['mWnwM']['systemManager']['_systems']['0']['_queries']['player']['entities']['0']['_components']['38'].wnWmN;
-    let qNum = 2;
+function getRGBcycle() {
+  if (rrr > 0 && bbb === 0) {
+    rrr--;
+    ggg++;
+  }
+  if (ggg > 0 && rrr === 0) {
+    ggg--;
+    bbb++;
+  }
+  if (bbb > 0 && ggg === 0) {
+    rrr++;
+    bbb--;
+  }
+  return {
+    r: rrr / 255,
+    g: ggg / 255,
+    b: bbb / 255,
+  };
+}
 
-    if (!scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players && !scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][++qNum]['_queries'].players) return;
-    for (let i = 0; i < scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players?.entities?.length; i++) {
-      let mat = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players.entities[i]['_components'][0].value.children[0].children[0].children[1].material;
+function osuClassic(mat, image) {
+  let i = new Image();
+  i.src = image;
+  mat.map.version = 0;
+  let t = mat.map.clone();
+  t.image = i;
+  mat.map = t;
+  mat.map.version = 1;
+  return mat;
+}
 
-      if (mat.color.r === 1 && mat.color.g < 1 && mat.color.b < 1) continue;
-      let player = scene['entity']['_entityManager']['mWnwM']['systemManager']['_systems'][qNum]['_queries'].players.entities[i]['_components'];
-      if (!localPlayerClass.team || localPlayerClass.team !== player['50'].team) {
-        if (mat.color !== colorEnemy) {
-          mat.map = null;
-          mat.color = colorEnemy;
-          mat.needsUpdate = true;
+function animate() {
+  if (inGame && shouldAnimate) {
+    animating = window.requestAnimationFrame(animate);
+
+    let peanutMnMs = window.mWnwM?.WMmNw._components;
+    if (peanutMnMs) {
+      let rgbColor = gameRainbow ? getRGBcycle() : null;
+      let sisManager = window.mWnwM?.mWnwM?.systemManager._systems;
+      let localPlayerClass = peanutMnMs[38]?.wnWmN;
+      let muzzleFlash = peanutMnMs[window._.findKey(peanutMnMs, 'model')]?.model.children[2]?.children.find((Muzzle) => Muzzle.name === 'Muzzle').children[0];
+      let megaWeapMap = peanutMnMs[window._.findKey(peanutMnMs, 'weapons')]?.weapons;
+      let muzzleFlashMat = muzzleFlash?.material;
+      if (muzzleFlashMat && window.mWnwM.mWnwM.systemManager._executeSystems[0].mouse?.btns[0]) {
+        if (!defaultsMap.has(muzzleFlash)) {
+          defaultsMap.set(muzzleFlash, {
+            color: {
+              b: muzzleFlashMat.color.b,
+              g: muzzleFlashMat.color.g,
+              r: muzzleFlashMat.color.r,
+            },
+          });
         }
-      } else if (mat.color !== colorTeam) {
-        mat.map = null;
-        mat.color = colorTeam;
-        mat.needsUpdate = true;
+        let muzzlecolor = gameMuzzleHighlight ? rgbColor || gameMuzzleColor : defaultsMap.get(muzzleFlash).color;
+        if (!muzzleFlashMat.color.equals(muzzlecolor)) muzzleFlashMat.color.setRGB(muzzlecolor.r, muzzlecolor.g, muzzlecolor.b);
+      }
+
+      if (megaWeapMap)
+        [Object.keys(megaWeapMap).find((models) => megaWeapMap[models]?.removed === false)].forEach((weap) => {
+          let yourWeapon = megaWeapMap[weap]?.model;
+          let yourWeaponMat = yourWeapon?.children[yourWeapon.children.length - 1].material;
+          let yourWeaponMapImg = yourWeaponMat?.map?.image;
+          if (yourWeaponMapImg) {
+            if (!defaultsMap.has(yourWeapon)) {
+              if (currentWeaponTexture) yourWeaponMat = osuClassic(yourWeaponMat, currentWeaponTexture);
+              defaultsMap.set(yourWeapon, {
+                color: {
+                  b: yourWeaponMat.color.b,
+                  g: yourWeaponMat.color.g,
+                  r: yourWeaponMat.color.r,
+                },
+                src: yourWeaponMapImg.src,
+              });
+            }
+
+            let weapDefaults = defaultsMap.get(yourWeapon);
+            let weapColor = gameWeapHighlight ? rgbColor || gameWeapColor : weapDefaults.color;
+            let currMapSrc = weapColor !== weapDefaults.color && !gameWeapTexture ? cookiezi : weapDefaults.src;
+            if (yourWeaponMat.wireframe !== gameWeapWire) yourWeaponMat.wireframe = gameWeapWire;
+            if (yourWeaponMapImg.src !== currMapSrc) yourWeaponMat = osuClassic(yourWeaponMat, currMapSrc);
+            if (!yourWeaponMat.color.equals(weapColor)) yourWeaponMat.color.setRGB(weapColor.r, weapColor.g, weapColor.b);
+          }
+        });
+
+      if (sisManager) {
+        let arms = sisManager[0]?.queries.player.results[0]._components[window._.findKey(sisManager[0].queries.player.results[0]._components, 'model')]?.model;
+
+        if (window.mWnwM.mWnwM?.room?.name === 'PointRoom') {
+          let flagMaterial = window.mWnwM.mWnwM.systemManager._executeSystems[2].wMNWn?.material || window.mWnwM.renderingSystem.scene.children.find((type) => type?.type === 'Sprite' && type.material.map?.image?.width === 149)?.material;
+          if (flagMaterial) {
+            let flagColor = gameFlagHighlight ? gameFlagColor : { b: 1, r: 1, g: 1 };
+            if (!flagMaterial.color.equals(flagColor)) flagMaterial.color.setRGB(flagColor.r, flagColor.g, flagColor.b);
+          }
+        }
+
+        if (arms?.children[0]?.visible) {
+          let armsMat = arms.children[0]?.material;
+          let armsMatMapImg = armsMat?.map?.image;
+          if (armsMatMapImg) {
+            if (!defaultsMap.has(arms)) {
+              defaultsMap.set(arms, {
+                color: {
+                  b: armsMat.color.b,
+                  g: armsMat.color.g,
+                  r: armsMat.color.r,
+                },
+                src: armsMatMapImg.src,
+              });
+            }
+            let armsDefaults = defaultsMap.get(arms);
+            let armsColor = gameArmsHighlight ? rgbColor || gameArmsColor : armsDefaults.color;
+            let armsImg = armsColor !== armsDefaults.color && !gameArmsTexture ? cookiezi : armsDefaults.src;
+            if (armsMat.wireframe !== gameArmsWire) armsMat.wireframe = gameArmsWire;
+            if (armsMatMapImg.src !== armsImg) armsMat = osuClassic(armsMat, armsImg);
+            if (!armsMat.color.equals(armsColor)) armsMat.color.setRGB(armsColor.r, armsColor.g, armsColor.b);
+          }
+        }
+
+        let otherPlayers = sisManager[2]?._queries?.players?.entities || sisManager[3]._queries.players?.entities;
+        if (otherPlayers) {
+          let otherPlayersMap = window.mWnwM.mWnwM.room.state.players.$items;
+          otherPlayers.forEach((players) => {
+            let player = players._components;
+            let mat = player[0].value.children[0].children[0].children[1].material;
+
+            if (mat) {
+              if (!defaultsMap.has(player))
+                defaultsMap.set(player, {
+                  color: {
+                    b: mat.color.b,
+                    g: mat.color.g,
+                    r: mat.color.r,
+                  },
+                });
+
+              if (gamePlayerHighLight) {
+                if (!localPlayerClass.team || localPlayerClass.team !== player['50'].team) {
+                  if (otherPlayersMap.get(player['50'].sessionId).spawnProtected === false) {
+                    if (!mat.color.equals(enemyHighlightColor)) {
+                      mat.color.setRGB(enemyHighlightColor.r, enemyHighlightColor.g, enemyHighlightColor.b);
+                    }
+                  } else {
+                    mat.color.fromArray([1, 0, 0], 0);
+                  }
+                } else if (!mat.color.equals(teamHighlightColor)) {
+                  mat.color.setRGB(teamHighlightColor.r, teamHighlightColor.g, teamHighlightColor.b);
+                }
+              } else {
+                let playerDefaults = defaultsMap.get(player);
+                if (!mat.color.equals(playerDefaults.color)) {
+                  mat.color.setRGB(playerDefaults.color.r, playerDefaults.color.g, playerDefaults.color.b);
+                }
+              }
+            }
+          });
+        }
       }
     }
   }
 }
 
 function hideFlagAdsFunc() {
-  if (flagMaterial) {
+  if (window.mWnwM?.mWnwM?.room.name === 'PointRoom') {
+    let flagMaterial = window.mWnwM?.mWnwM.systemManager._executeSystems[2].wMNWn?.material || window.mWnwM?.renderingSystem.scene.children.find((type) => type?.type === 'Sprite' && type.material.map?.image?.width === 149)?.material;
     if (hideFlagAds) {
-      flagMaterial.visible = !scoped;
+      flagMaterial.visible = !window.mWnwM.mWnwM.systemManager._executeSystems[0].mouse?.btns[2];
     } else {
       flagMaterial.visible = true;
     }
   }
-}
-
-function IsScoped(e) {
-  if (e.button === 2) scoped = true;
-}
-
-function IsNotScoped(e) {
-  if (e.button === 2) scoped = false;
-}
-
-function settingsSetGit(setting, value) {
-  settings.set(setting, value);
-  return value;
 }
 
 function SetGameModesCheckBoxes() {
@@ -1448,19 +1953,19 @@ function MoveTwitchMenu(TwitchHead) {
   function TwitchStopDragPlz() {
     document.onmouseup = null;
     document.onmousemove = null;
-    TwitchTop = settingsSetGit('TwitchTop', TwitchHead.style.top);
-    TwitchLeft = settingsSetGit('TwitchLeft', TwitchHead.style.left);
+    TwitchTop = TwitchHead.style.top;
+    TwitchLeft = TwitchHead.style.left;
+    settings.set('TwitchTop', TwitchTop);
+    settings.set('TwitchLeft', TwitchLeft);
   }
 }
 
 function SaveTwitchSize() {
-  if (TwitchWidth !== streamsmenu.style.width) {
-    TwitchWidth = settingsSetGit('TwitchWidth', streamsmenu.style.width);
-    streamsmenu.style.setProperty('--bkc-stremz-menu-width', streamsmenu.style.width);
-  }
-  if (TwitchHeight !== streamsmenu.style.height) {
-    TwitchHeight = settingsSetGit('TwitchHeight', streamsmenu.style.height);
-  }
+  TwitchWidth = streamsmenu.style.width;
+  TwitchHeight = streamsmenu.style.height;
+  streamsmenu.style.setProperty('--bkc-stremz-menu-width', TwitchWidth);
+  settings.set('TwitchWidth', TwitchWidth);
+  settings.set('TwitchHeight', TwitchHeight);
 }
 
 function newStremz(data) {
@@ -1718,6 +2223,8 @@ async function getStats() {
     }
   }
 
+  if (randomFavoriteSkins) await window.app.__vue__.$store._actions['user/getInventory'][0]();
+
   if (!allFavoriteSkins[id]) {
     allFavoriteSkins[id] = {
       SCAR: [],
@@ -1737,61 +2244,10 @@ async function getStats() {
   }
   favoriteSkins = allFavoriteSkins[id];
 
-  if (!skinzInfo && randomFavoriteSkins) {
-    let inventory = await fetch('https://api.kirka.io/api/inventory', {
-      headers: {
-        accept: 'application/json, text/plain, */*',
-        'accept-language': 'en-US,en;q=0.9,fr;q=0.8',
-        authorization: 'Bearer ' + localStorage.token,
-        'cache-control': 'no-cache',
-        pragma: 'no-cache',
-        'sec-fetch-dest': 'empty',
-        'sec-fetch-mode': 'cors',
-        'sec-fetch-site': 'same-site',
-      },
-      referrer: 'https://kirka.io/',
-      referrerPolicy: 'strict-origin-when-cross-origin',
-      body: null,
-      method: 'GET',
-      mode: 'cors',
-      credentials: 'include',
-    });
-    if (inventory.ok) skinzInfo = await inventory.json();
-  }
   let currentSkin = stats.activeWeapon1Skin.parent.name.replace(/-/, '');
-  if (!seenSkins) {
-    seenSkins = Object.keys(favoriteSkins);
-    if (skinzInfo) fixScuffedDefaults();
-  }
-  // eslint-disable-next-line no-inner-declarations
-  function fixScuffedDefaults() {
-    for (let key of seenSkins) {
-      if (favoriteSkins[key].length && key !== 'Selected') {
-        let result = favoriteSkins[key].findIndex((item) => item.name.replace(/-/, '') === key);
-        // ^ should be _key for default skins
-        // i wrote it the new way first and later on couldnt figure out why because i already had them added so i changed it lol
-        if (result > -1) {
-          let item = favoriteSkins[key][result].name;
-          favoriteSkins[key].splice(result, 1);
-          let skin = getSkin(item);
-          if (skin) {
-            let defaultskinName = skin.item.name.replace(/_/, '');
-            let parent = skin.item.type !== 'BODY_SKIN' ? (skin?.item?.parent !== null ? skin.item.parent.name.replace(/-/g, '') : defaultskinName.replace(/-/g, '')) : 'BODY_SKIN';
-            favoriteSkins[parent].push({
-              id: skin.item.id,
-              name: skin.item.name,
-              parentName: parent,
-              nameInInventory: defaultskinName,
-            });
-          }
-        }
-      }
-    }
-    settings.set('allFavoriteSkins', allFavoriteSkins);
-  }
-
-  if (!seenSkins.includes(currentSkin)) seenSkins.push(currentSkin);
-  applyRandomSkins();
+  if (!seenSkins) seenSkins = Object.keys(favoriteSkins);
+  else if (!seenSkins.includes(currentSkin)) seenSkins.push(currentSkin);
+  applyRandomSkins(currentSkin);
   return 'W';
 }
 
@@ -1883,6 +2339,26 @@ function FavedButtonsHandler(e) {
         settings.set('allFavoriteSkins', allFavoriteSkins);
       }
     }
+  } else if (e.target.innerText === ' TAKE ') {
+    let skintext = e.target.nextElementSibling.innerText;
+    let skin = getSkin(skintext);
+    if (skin) {
+      let theId = skin.item?.parent?.id || skin.item?.id;
+      let shouldUpdateWeapon = window.app.__vue__.$store._modules.root.state.user.WwNMns.WEAPON_1.item.id === theId;
+      if (skin.item.type === 'BODY_SKIN' || shouldUpdateWeapon) {
+        if (skin.item.type === 'BODY_SKIN') {
+          playerUpdated = true;
+        } else if (shouldUpdateWeapon) {
+          if (defaultWeaponTextures.has(`_${skintext}`)) currentWeaponTexture = defaultWeaponTextures.get(`_${skintext}`).src;
+          else currentWeaponTexture = null;
+          weaponUpdated = true;
+        }
+        updateSkin(skin);
+        // ^ not my fault, game just doesnt do it
+        // thats why when you change weapon skins then close inventory and open it again its same skin
+        // this wont fix when you change weapons, but not my problem
+      }
+    }
   }
 }
 
@@ -1895,7 +2371,22 @@ function getSkin(skin) {
   }
 }
 
-async function applyRandomSkins() {
+function updateSkin(skin) {
+  let user = window.app.__vue__.$children[0]?.user || window.app.__vue__.$children[0].$children[0].user;
+  let activeSkin = skin.item.type === 'BODY_SKIN' ? user.activeBodySkin : user.activeWeapon1Skin;
+  if (skin.item?.parent) {
+    activeSkin.parent.id = skin.item.parent.id;
+    activeSkin.parent.name = skin.item.parent.name;
+    activeSkin.parent.rarity = skin.item.parent.rarity;
+    activeSkin.parent.type = skin.item.parent.type;
+  }
+  activeSkin.id = skin.item.id;
+  activeSkin.name = skin.item.name.replace(/^_/, '');
+  activeSkin.rarity = skin.item.rarity;
+  activeSkin.type = skin.item.type;
+}
+
+async function applyRandomSkins(_currentWeaponSkin) {
   let Dont = [];
 
   function getRandomSkin(array) {
@@ -1913,10 +2404,12 @@ async function applyRandomSkins() {
         let index = favoriteSkins['Selected'].indexOf(skin.nameInInventory);
         if (index > -1) favoriteSkins['Selected'].splice(index, 1);
       }
+      return;
     }
+    return isSkinAlive[0];
   }
 
-  if (randomFavoriteSkins) {
+  if (randomFavoriteSkins && skinzInfo) {
     skinzInfo
       .filter((item) => item.isSelected === true && (item.item.type === 'WEAPON_SKIN' || item.item.type === 'BODY_SKIN' || item.item.type === 'WEAPON_3'))
       .forEach((me) => {
@@ -1924,27 +2417,75 @@ async function applyRandomSkins() {
         else if (!seenSkins.includes(me.item.name)) seenSkins.push(me.item.name);
       });
 
-    for (let skin of Object.keys(favoriteSkins)) {
-      if (seenSkins.includes(skin) && favoriteSkins[skin].length && skin !== 'Selected') {
+    let context1D = window.app.__vue__.$root.$store._modules.root.state.user.mwWN;
+    let fskins = Object.keys(favoriteSkins);
+    fskins.pop();
+    // prettier-ignore
+    for (let skin of
+      window._?.sortBy
+        ?
+        window._.sortBy(fskins, (key) => (
+          key === 'BODY_SKIN' || key === _currentWeaponSkin
+            ? 0
+            : 1
+        ))
+        :
+        fskins.sort((_a, key) => (
+          key === 'BODY_SKIN' || key === _currentWeaponSkin
+            ? 1
+            : -1
+        ))
+    ) {
+
+      if (seenSkins.includes(skin) && favoriteSkins[skin].length) {
         let randomSkin = getRandomSkin(favoriteSkins[skin]);
         if (!Dont.includes(randomSkin.id)) {
-          let result = await fetch('https://api.kirka.io/api/inventory/take', {
-            headers: {
-              accept: 'application/json, text/plain, */*',
-              authorization: 'Bearer ' + localStorage.token,
-              'content-type': 'application/json;charset=UTF-8',
-              csrf: 'token',
-              'sec-fetch-mode': 'cors',
-              'sec-fetch-site': 'same-site',
-            },
-            referrer: 'https://kirka.io/',
-            referrerPolicy: 'no-referrer-when-downgrade',
-            body: `{"id":"${randomSkin.id}"}`,
-            method: 'POST',
-            mode: 'cors',
-            credentials: 'include',
-          });
-          if (!result.ok) stillHasSkin(randomSkin);
+          // does nothing if ['user/getInventory'] isint called first and game doesnt have inventory.
+          // takes skin + updates lobby canvas & avatar image
+          // and breaks it and throws a WMNw if default weapon skin, it cant find texture
+          if (skin === 'BODY_SKIN' || skin === _currentWeaponSkin) {
+            let exist = stillHasSkin(randomSkin);
+            if (exist) {
+              if (skin === _currentWeaponSkin) {
+                if (defaultWeaponTextures.has(exist.item.name)) {
+                  ++ignoreError;
+                  currentWeaponTexture = defaultWeaponTextures.get(exist.item.name).src;
+                } else {
+                  currentWeaponTexture = null;
+                }
+              }
+              if (!context1D.inventory?.players)
+              context1D.inventory = context1D.lobby;
+              // ^ does nothing except prevent game from throwing a
+              // WwnMNm + WwNn combo trying to update inventory canvas
+              // makes no difference if it throws or not though just get error notification popups
+              await window.app.__vue__.$store._actions['user/takeItem'][0](exist);
+              updateSkin(exist); // <-- fixes inventory + profile canvas
+              if (skin === _currentWeaponSkin) {
+                weaponUpdated = true;
+              } else {
+                playerUpdated = true;
+              }
+            }
+          } else {
+            let result = await fetch('https://api.kirka.io/api/inventory/take', {
+              headers: {
+                accept: 'application/json, text/plain, */*',
+                authorization: 'Bearer ' + localStorage.token,
+                'content-type': 'application/json;charset=UTF-8',
+                csrf: 'token',
+                'sec-fetch-mode': 'cors',
+                'sec-fetch-site': 'same-site',
+              },
+              referrer: 'https://kirka.io/',
+              referrerPolicy: 'no-referrer-when-downgrade',
+              body: `{"id":"${randomSkin.id}"}`,
+              method: 'POST',
+              mode: 'cors',
+              credentials: 'include',
+            });
+            if (!result.ok) stillHasSkin(randomSkin);
+          }
         }
       }
     }
@@ -1957,7 +2498,7 @@ const Questobserver = new MutationObserver(() => {
   let notis = document.querySelectorAll('html body div#app div#notifications span div.vue-notification-wrapper div span.text');
   for (let i = 0; i < notis.length; i++) {
     remElement = notis[i].parentElement.parentElement;
-    if (notis[i]?.innerHTML === 'You completed a quest' && remElement.style.display !== 'none') {
+    if ((notis[i]?.innerHTML === 'You completed a quest' || notis[i]?.innerHTML === 'Take item failed') && remElement.style.display !== 'none') {
       remElement.setAttribute('style', 'display: none!important');
     } else if (/Failed to connect to the room/i.test(notis[i]?.innerHTML) && !window.location.href.startsWith('https://kirka.io/servers/') && remElement.style.display !== 'none') {
       remElement.setAttribute('style', 'display: none!important');
