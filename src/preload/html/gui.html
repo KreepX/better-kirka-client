@@ -140,6 +140,27 @@
     </div>
 
     <div class="module bkc-tab-game">
+      <label for="extraAdsZoomKey">
+        Ads Zoom Boost Key:
+        <input type="text" id="extraAdsZoomKey" name="extraAdsZoomKey" placeholder="...press something here" />
+      </label>
+    </div>
+
+    <div class="module bkc-tab-game" style="flex-direction: column">
+      <label title="Press +\- Keys inGame to adjust" for="extraAdsZoomAmount" class="bkc-menu-range">
+        Ads Zoom Boost Amount
+        <input type="range" id="extraAdsZoomAmount" name="extraAdsZoomAmount" min="1" max="5" step="0.1" />
+        <span id="extraAdsZoomAmountSpan"></span>
+      </label>
+      <span id="extraAdsZoomAmountInfo"> Press +\- Keys Ingame To Adjust </span>
+    </div>
+
+    <div class="module bkc-tab-game">
+      <input type="checkbox" id="extraAdsZoomHold" name="extraAdsZoomHold" />
+      <label for="extraAdsZoomHold"> Ads Zoom Boost Hold </label>
+    </div>
+
+    <div class="module bkc-tab-game">
       <input type="checkbox" id="gameRainbow" name="gameRainbow" />
       <label for="gameRainbow"> Rainbow Colors </label>
     </div>
@@ -236,7 +257,8 @@
     <div class="module bkc-tab-general">
       <label
         title="Reduce the amount of chat messages shown in global chat at once (Default is 50)"
-        for="nerfChatLenght">
+        for="nerfChatLenght"
+        class="bkc-menu-range">
         Chat Message Limiter
         <input type="range" id="nerfChatLenght" name="nerfChatLenght" min="1" max="50" step="0.00000001" />
         <span id="nerfChatLenghtSpan"></span>

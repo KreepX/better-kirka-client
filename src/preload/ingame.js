@@ -209,8 +209,10 @@ let lobbyPlayerColor = typeof settings.get('lobbyPlayerColor') === 'undefined' ?
 let gameWeapHighlight = typeof settings.get('gameWeapHighlight') === 'undefined' ? false : settings.get('gameWeapHighlight');
 let gameArmsHighlight = typeof settings.get('gameArmsHighlight') === 'undefined' ? false : settings.get('gameArmsHighlight');
 let gameFlagHighlight = typeof settings.get('gameFlagHighlight') === 'undefined' ? false : settings.get('gameFlagHighlight');
+let extraAdsZoomAmount = typeof settings.get('extraAdsZoomAmount') === 'undefined' ? 1 : settings.get('extraAdsZoomAmount');
 let gameMuzzleColor = typeof settings.get('gameMuzzleColor') === 'undefined' ? '#ffffff' : settings.get('gameMuzzleColor');
 let lobbyWeapTexture = typeof settings.get('lobbyWeapTexture') === 'undefined' ? false : settings.get('lobbyWeapTexture');
+let extraAdsZoomHold = typeof settings.get('extraAdsZoomHold') === 'undefined' ? true : settings.get('extraAdsZoomHold');
 let lobbyWeapVisible = typeof settings.get('lobbyWeapVisible') === 'undefined' ? true : settings.get('lobbyWeapVisible');
 let lobbyWeapColor = typeof settings.get('lobbyWeapColor') === 'undefined' ? '#ffffff' : settings.get('lobbyWeapColor');
 let lobbyPlayerWire = typeof settings.get('lobbyPlayerWire') === 'undefined' ? false : settings.get('lobbyPlayerWire');
@@ -221,6 +223,7 @@ let showClanInvites = typeof settings.get('showClanInvites') === 'undefined' ? t
 let gameFlagColor = typeof settings.get('gameFlagColor') === 'undefined' ? '#ffffff' : settings.get('gameFlagColor');
 let gameWeapColor = typeof settings.get('gameWeapColor') === 'undefined' ? '#ffffff' : settings.get('gameWeapColor');
 let gameArmsColor = typeof settings.get('gameArmsColor') === 'undefined' ? '#ffffff' : settings.get('gameArmsColor');
+let extraAdsZoomKey = typeof settings.get('extraAdsZoomKey') === 'undefined' ? '' : settings.get('extraAdsZoomKey');
 let MenuhoverAudio = typeof settings.get('MenuhoverAudio') === 'undefined' ? null : settings.get('MenuhoverAudio');
 let nerfChatLenght = typeof settings.get('nerfChatLenght') === 'undefined' ? 50 : settings.get('nerfChatLenght');
 let lobbyWeapWire = typeof settings.get('lobbyWeapWire') === 'undefined' ? false : settings.get('lobbyWeapWire');
@@ -245,15 +248,20 @@ let customCss = !!settings.get('customCss');
 let gui = document.createElement('div');
 // prettier-ignore
 let shouldAnimate = () => !!(
-     gamePlayerHighLight
-  || gameWeapHighlight
-  || gameMuzzleHighlight
-  || gameWeapWire
-  || gameArmsWire
-  || (
-    window.mWnwM?.mWnwM?.room?.name === 'PointRoom'
-    &&
-    gameFlagHighlight
+  (
+    window.mWnwM?.mWnwM?.room?.name !== "MapEditorRoom"
+  ) &&
+  (
+    gamePlayerHighLight
+    || gameWeapHighlight
+    || gameMuzzleHighlight
+    || gameWeapWire
+    || gameArmsWire
+    || (
+      window.mWnwM?.mWnwM?.room?.name === 'PointRoom'
+      &&
+      gameFlagHighlight
+    )
   )
 );
 let defaultWeaponTextures = new Map([
@@ -325,6 +333,7 @@ let ggg = 0;
 let bbb = 0;
 let statsUpdated = false;
 let claimedQuest = false;
+let zooming = false;
 let inGame = false;
 let menuVisible = false;
 let SaveGuiSize = () => {
@@ -340,7 +349,7 @@ const SomeObserver = new MutationObserver(() => {
       document.onmousedown = hideFlagAdsFunc;
       document.onmouseup = hideFlagAdsFunc;
     }
-    if (shouldAnimate && !animating) animating = window.requestAnimationFrame(animate);
+    if (shouldAnimate() && !animating) animating = window.requestAnimationFrame(animate);
     if (moveTime() && seenSkinsListener()) SomeObserver.disconnect();
     return;
   }
@@ -635,7 +644,8 @@ const MainObserverr = new MutationObserver(() => {
     skinzInfo = null;
     stremzInfo = null;
     lobbyAnimating = cancelAnimationFrame(lobbyAnimating);
-    if (shouldAnimate && !animating) animating = window.requestAnimationFrame(animate);
+    if (shouldAnimate() && !animating) animating = window.requestAnimationFrame(animate);
+    sniperButton();
   } else if (inGame && (endmodal || !/kirka[.]io[/]game/.test(window.location.href))) {
     inGame = false;
     animating = cancelAnimationFrame(animating);
@@ -933,6 +943,11 @@ document.addEventListener('DOMContentLoaded', () => {
       BKC.tip('setting will apply after client restart');
     } 
     
+    else if (e.target.id === 'extraAdsZoomHold') {
+      extraAdsZoomHold = e.target.checked;
+      settings.set('extraAdsZoomHold', extraAdsZoomHold);
+    } 
+    
     else if (e.target.id === 'capture') {
       capture = e.target.checked;
       settings.set('capture', capture);
@@ -999,7 +1014,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (inGame) {
-      if (shouldAnimate) {
+      if (shouldAnimate()) {
         if (!animating) animating = window.requestAnimationFrame(animate);
       } else if (animating) animating = window.cancelAnimationFrame(animate);
     }
@@ -1057,6 +1072,14 @@ document.addEventListener('DOMContentLoaded', () => {
         settings.set(`${settingTarget}`, settingValue);
       } else if (e.target.id === 'gameFlagColor') {
         gameFlagColor = wParamTolParam(settingValue);
+        settings.set(`${settingTarget}`, settingValue);
+      } else if (e.target.id === 'extraAdsZoomAmount') {
+        extraAdsZoomAmount = Number(settingValue);
+        extraAdsZoomAmountSpan.innerText = extraAdsZoomAmount;
+        if (inGame && window.mWnwM?.mWnwM?.room?.name !== 'MapEditorRoom') {
+          let z = window.mWnwM?.renderingSystem.camera.scale;
+          if (z) z.z = extraAdsZoomAmount;
+        }
         settings.set(`${settingTarget}`, settingValue);
       } else if (e.target.id === 'Bkc-import-file-input') {
         let file = e.target.files[0];
@@ -1118,6 +1141,29 @@ document.addEventListener('DOMContentLoaded', () => {
       if (nerfChatLenghtSpan.innerText !== nerfChatLenght) nerfChatLenghtSpan.innerText = nerfChatLenght;
       settings.set('nerfChatLenght', nerfChatLenght);
     }
+  };
+
+  let extraAdsZoomKeyElem = document.getElementById('extraAdsZoomKey');
+  let extraAdsZoomAmountElem = document.getElementById('extraAdsZoomAmount');
+  let extraAdsZoomAmountSpan = document.getElementById('extraAdsZoomAmountSpan');
+  extraAdsZoomAmountElem.value = extraAdsZoomAmount;
+  extraAdsZoomAmountSpan.innerText = extraAdsZoomAmount;
+  extraAdsZoomKeyElem.value = extraAdsZoomKey;
+
+  function getZoomKey(e) {
+    let zKey = e?.code || e.button;
+    if (zKey) {
+      extraAdsZoomKey = e?.code || e.button;
+      extraAdsZoomKeyElem.value = extraAdsZoomKey;
+      extraAdsZoomKeyElem.blur();
+      settings.set('extraAdsZoomKey', extraAdsZoomKey);
+    }
+  }
+
+  extraAdsZoomKeyElem.onkeyup = getZoomKey;
+  extraAdsZoomKeyElem.onmouseup = getZoomKey;
+  extraAdsZoomKeyElem.onmousedown = (e) => {
+    if (e.button === 0) extraAdsZoomKeyElem.value = '';
   };
 
   let t = document.querySelector('#view > div > div > div.top-bar > div.left');
@@ -1219,6 +1265,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('customCSS').checked = customCss;
   document.getElementById('ShowTwitch').checked = ShowTwitch;
   document.getElementById('fpsCap').checked = fpsCap;
+  document.getElementById('extraAdsZoomHold').checked = extraAdsZoomHold;
   document.getElementById('capture').checked = capture;
   document.getElementById('randomskin').checked = randomFavoriteSkins;
   document.getElementById('showClanInvites').checked = showClanInvites;
@@ -1401,7 +1448,7 @@ function osuClassic(mat, image) {
 }
 
 function animate() {
-  if (inGame && shouldAnimate) {
+  if (inGame && shouldAnimate()) {
     animating = window.requestAnimationFrame(animate);
 
     let peanutMnMs = window.mWnwM?.WMmNw._components;
@@ -1527,6 +1574,8 @@ function animate() {
         }
       }
     }
+  } else {
+    animating = window.cancelAnimationFrame(animate);
   }
 }
 
@@ -2758,6 +2807,86 @@ function customMarketPrice(inventory) {
         window.JSON.stringify = gigafydStringify;
       }
     };
+  }
+}
+
+function sniperButton() {
+  let game = document.querySelector('canvas#game');
+  let extraAdsZoomAmountElem = document.getElementById('extraAdsZoomAmount');
+  let extraAdsZoomAmountSpan = document.getElementById('extraAdsZoomAmountSpan');
+  zooming = false;
+
+  function gameOnKeyButtonDown(e) {
+    if (inGame && window.mWnwM?.mWnwM?.room?.name !== 'MapEditorRoom') {
+      let eKey = e?.code || e.button;
+      if (eKey === extraAdsZoomKey) {
+        let s = window.mWnwM?.WMmNw._components[55];
+        let scoped = s.WNmnwM || s.WNmM || s.mwNMW;
+        let camera = window.mWnwM?.renderingSystem.camera.scale;
+        if (extraAdsZoomHold && camera) {
+          if (scoped) {
+            camera.z = extraAdsZoomAmount;
+            zooming = true;
+          } else {
+            camera.z = 1;
+            zooming = false;
+          }
+        }
+      }
+    }
+  }
+
+  function gameOnKeyButtonUp(e) {
+    if (inGame && window.mWnwM?.mWnwM?.room?.name !== 'MapEditorRoom') {
+      let eKey = e?.code || e.button;
+      let s = window.mWnwM.WMmNw._components[55];
+      let scoped = s.WNmnwM || s.WNmM || s.mwNMW;
+      let camera = window.mWnwM?.renderingSystem.camera.scale;
+      if (scoped) {
+        if (eKey === extraAdsZoomKey) {
+          if (extraAdsZoomHold) {
+            camera.z = 1;
+            zooming = false;
+          } else if (!zooming) {
+            camera.z = extraAdsZoomAmount;
+            zooming = true;
+          } else {
+            camera.z = 1;
+            zooming = false;
+          }
+        }
+      } else if (camera) {
+        camera.z = 1;
+        zooming = false;
+      }
+
+      if (eKey === 'Minus') {
+        extraAdsZoomAmount = Number((extraAdsZoomAmount -= 0.1).toFixed(1));
+        if (extraAdsZoomAmount < 1) extraAdsZoomAmount = 1;
+        camera.z = extraAdsZoomAmount;
+        extraAdsZoomAmountElem.value = extraAdsZoomAmount;
+        extraAdsZoomAmountSpan.innerText = extraAdsZoomAmount;
+        settings.set('extraAdsZoomAmount', extraAdsZoomAmount);
+      } else if (eKey === 'Equal') {
+        extraAdsZoomAmount = Number((extraAdsZoomAmount += 0.1).toFixed(1));
+        camera.z = extraAdsZoomAmount;
+        extraAdsZoomAmountElem.value = extraAdsZoomAmount;
+        extraAdsZoomAmountSpan.innerText = extraAdsZoomAmount;
+        settings.set('extraAdsZoomAmount', extraAdsZoomAmount);
+      }
+    }
+  }
+
+  if (game) {
+    game.onmousedown = gameOnKeyButtonDown;
+    document.addEventListener('keydown', function (e) {
+      gameOnKeyButtonDown(e);
+    });
+
+    game.onmouseup = gameOnKeyButtonUp;
+    document.addEventListener('keyup', function (e) {
+      gameOnKeyButtonUp(e);
+    });
   }
 }
 

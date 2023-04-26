@@ -816,30 +816,6 @@ div#bkc-region-dropdown > div:hover {
   display: none !important;
 }
 
-label[for="nerfChatLenght"] {
-  display: flex;
-  flex-direction: row;
-  align-content: center;
-  margin: auto !important;
-  text-align: center;
-  overflow-wrap: break-word;
-}
-
-span#nerfChatLenghtSpan {
-  padding-right: 0.5rem;
-  white-space: nowrap;
-  height: auto;
-  margin: auto;
-}
-
-input#nerfChatLenght {
-  margin: auto 0.5rem;
-}
-
-label[for="nerfChatLenght"] > input::-webkit-slider-thumb {
-  cursor: e-resize;
-}
-
 div#bkc-show-trade-element > span > button {
   margin: 0.4em 0;
 }
@@ -1177,4 +1153,45 @@ button#bkc-quick-test {
 
 .module-wrapper::-webkit-scrollbar-thumb {
   background-color: #8c8c8c;
+}
+
+.module-wrapper > .module > label.bkc-menu-range > input[type="range"] {
+  margin: auto 0.5rem;
+}
+
+.module-wrapper > .module > label.bkc-menu-range > span {
+  padding-right: 0.5rem;
+  white-space: nowrap;
+  height: auto;
+  margin: auto;
+}
+
+label.bkc-menu-range {
+  display: flex;
+  flex-direction: row;
+  align-content: center;
+  margin: auto !important;
+  text-align: center;
+  overflow-wrap: break-word;
+}
+
+label.bkc-menu-range > input::-webkit-slider-thumb {
+  cursor: e-resize;
+}
+
+span#extraAdsZoomAmountInfo {
+  font-style: italic;
+  color: gray;
+  width: min-content;
+  white-space: nowrap;
+  margin: auto;
+}
+
+label[for="extraAdsZoomKey"] {
+  margin-left: 0 !important;
+}
+
+input#extraAdsZoomKey::-webkit-input-placeholder {
+  font-style: italic;
+  font-size: 0.9rem;
 }
