@@ -1195,3 +1195,28 @@ input#extraAdsZoomKey::-webkit-input-placeholder {
   font-style: italic;
   font-size: 0.9rem;
 }
+
+.module-wrapper .module label input[type="text"] {
+  width: 10.3rem;
+}
+
+div.container-card.bkc-hide-clan-accept > div.btns > :last-child {
+  display: none;
+}
+
+.discord-cont[data-v-031-May-26th-2022] {
+  display: flex;
+  align-items: center;
+  border-radius: 5px;
+  background: #7289da;
+  border: 2px solid #89a0ef;
+  margin: 1.5rem auto auto auto;
+  padding: 0 0.8rem 0 0.4rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: max-content;
+  height: 2.536rem;
+  max-height: 2.536rem;
+}

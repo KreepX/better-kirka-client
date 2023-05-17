@@ -1,3 +1,5 @@
+/* eslint-disable function-paren-newline */
+/* eslint-disable no-return-assign */
 /* eslint-disable no-void */
 /* eslint-disable no-useless-escape */
 /* eslint-disable guard-for-in */
@@ -20,7 +22,7 @@ const BKC = {
       id.parentElement?.removeChild(id);
     }
   },
-  tip(...Msg) {
+  tip() {
     let span = document?.getElementsByClassName('vue-notification-group')[0]?.getElementsByTagName('span')[0];
     if (span) {
       let tipchilds = span?.childNodes;
@@ -31,12 +33,26 @@ const BKC = {
           if (p) span.removeChild(p);
         }
       }
+
+      let isNested = (val) => String(val).split('[object').length > 1;
+      let tipString = '';
+      Array.prototype.slice.call(arguments).forEach((arg) => {
+        if (Array.isArray(arg)) return (tipString += `${!isNested(arg) ? arg.toString() : JSON.stringify(arg)}\n`);
+      
+        if (typeof arg === 'object')
+          return (tipString += `${Object.entries(arg)
+            .map((p) => `${p[0]}: ${!isNested(p[1]) ? p[1] : JSON.stringify(p[1])}`)
+            .join('\n')}\n`);
+      
+        return (tipString += `${arg}\n`);
+      });
+
       let newtip = document.createElement('div');
       newtip.setAttribute('data-id', tipchilds ? tipchilds.length + 1 : '1');
       newtip.className = 'vue-notification-wrapper vn-fade-move';
       newtip.style = 'transition-timing-function:ease;transition-delay:0s;transition-property:all;';
       newtip.id = `BKC-dev-tip${++devid}`;
-      newtip.innerHTML = getTipInnerHtml(Msg);
+      newtip.innerHTML = getTipInnerHtml(tipString);
       newtip = span.appendChild(newtip);
       let timeoutID = setTimeout(() => {
         BKC.cleartip(newtip, timeoutID);
@@ -50,15 +66,13 @@ const BKC = {
 
 window.addEventListener('error', (event) => {
   if (/ingame\.js/.test(event.filename)) {
-    event.preventDefault();
     console.error(event);
     if (DevToolTips) {
-      if (!BKC.error) {
-        if (window._?.throttle) {
-          BKC.error = window._.throttle(BKC.tip, 1000, { leading: false });
-          BKC.error(event.message);
-        }
-      } else BKC.error(event.message);
+      if (BKC.error) return BKC.error(event.message);
+      if (window._?.throttle) {
+        BKC.error = window._.throttle(BKC.tip, 1000, { leading: false });
+        BKC.error(event.message);
+      }
     }
   }
 });
@@ -74,9 +88,12 @@ let gigaJSONParse = function () {
   let data = boringJSONParse.apply(this, arguments);
   if (typeof data[0]?.metadata?.serverName !== 'undefined') {
     for (let key in data) {
-      let timeLeft = Math.ceil((60 * (data[key].metadata.minutes ? data[key].metadata.minutes : 8) - (Date.now() - Date.parse(data[key].createdAt)) / 1e3) / 60);
-      data[key]['metadata'].shortMinutesLeft = timeLeft > 0 ? `${timeLeft} ${timeLeft !== 1 ? 'mins' : 'min'}` : 'finished';
-      if (data[key]['metadata']['custom'] === false && (data[key].clients < minPlayers || timeLeft < minTime)) data[key].locked = true;
+      let timeLeft =
+        data[key].metadata.inWarmup === true
+          ? 'In Warmup'
+          : Math.ceil((60 * (data[key].metadata.minutes ? data[key].metadata.minutes : 8) - (Date.now() - Date.parse(data[key].createdAt)) / 1e3) / 60);
+      data[key]['metadata'].shortMinutesLeft = timeLeft > 0 ? `${timeLeft} ${timeLeft !== 1 ? 'mins' : 'min'}` : timeLeft === 'In Warmup' ? 'warmup' : 'finished';
+      if (data[key].clients < minPlayers || (timeLeft !== 'In Warmup' && timeLeft < minTime) || data[key]['metadata'].shortMinutesLeft === 'finished') data[key].locked = true;
     }
   }
   return data;
@@ -101,12 +118,10 @@ function gigaInfiRequest() {
       this.send = (...sendArgs) => {
         let oldChange = this.onreadystatechange;
         this.onreadystatechange = (...args) => {
-          //if (this.readyState === 4 && (this.status === 200 || this.status === 201)) {
           if (this.readyState === 4 && this.status === 200) {
             if (this.responseURL === 'https://api.kirka.io/api/user') {
               let data = boringJSONParse(this.response);
               id = data.shortId;
-              claninvites = data.clanInvites;
             } else if (this.responseURL === 'https://api.twitch.tv/helix/streams?first=10&game_id=356609813') {
               stremzInfo = boringJSONParse(this.response);
               initTwitchMenu();
@@ -125,14 +140,7 @@ function gigaInfiRequest() {
               }
             } else if (this.responseURL === 'https://api.kirka.io/api/inventory') {
               skinzInfo = boringJSONParse(this.response);
-            } /*else if (this.responseURL === 'https://api.kirka.io/api/inventory/openChest' && typeof this.response === 'object' && skinzInfo) {
-              let skin = getSkin(this.response.name);
-              if (!skin) {
-                skinzInfo[skinzInfo.length] = {
-                  item: this.response,
-                };
-              }
-            }*/
+            }
           }
           if (oldChange) oldChange.apply(this, ...args);
         };
@@ -146,36 +154,18 @@ let boringXMLHttpRequest = window.XMLHttpRequest;
 let gigaXMLHttpRequest = gigaInfiRequest();
 window.XMLHttpRequest = gigaXMLHttpRequest;
 
-let gigaAddEventListener = function (...args) {
-  if (this?.id === 'WMNn' && args[0] === 'keyup' && !window.location.pathname.startsWith('/servers/')) {
-    boringAddEventListener.apply(this, [args[0], args[1], { capture: false, passive: true }]);
-    EventTarget.prototype.addEventListener = boringAddEventListener;
-    this.addEventListener('keyup', (e) => {
-      if (e.key === 'Enter') {
-        inputtoggle = !inputtoggle;
-        if (!inputtoggle && this.value === '') this.blur();
-      }
-    });
-  } else boringAddEventListener.apply(this, args);
-};
-let boringAddEventListener = EventTarget.prototype.addEventListener;
-EventTarget.prototype.addEventListener = gigaAddEventListener;
-
 let meow = function () {
   if (arguments[0].name === 'hover') {
     arguments[0].src = MenuhoverAudio || arguments[0].src;
     window._.cleanUpOldUnusedInits();
-  } else if (arguments[0].name === 'error' && ignoreError > 0) {
-    --ignoreError;
+  } else if (arguments[0].name === 'error') {
     arguments[0].volume = 0;
   }
   return originalHowl.apply(this, arguments);
 };
 
-let ignoreError = 0;
 let stremzInfo;
 let skinzInfo;
-let inputtoggle = false;
 let id;
 let marketPrice;
 let originalHowl;
@@ -196,6 +186,8 @@ let GameModes =
 
 /* single white pixel */
 let cookiezi = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABEAIAAADA54+dAAAAC0lEQVQI12P4DwYAFPIF+zx10voAAAAASUVORK5CYII=';
+let globalChatVisibleToggleKey = typeof settings.get('globalChatVisibleToggleKey') === 'undefined' ? '7' : settings.get('globalChatVisibleToggleKey');
+let globalChatInputToggleKey = typeof settings.get('globalChatInputToggleKey') === 'undefined' ? '8' : settings.get('globalChatInputToggleKey');
 let enemyHighlightColor = typeof settings.get('enemyHighlightColor') === 'undefined' ? '#ff00ff' : settings.get('enemyHighlightColor');
 let lobbyPlayerHighlight = typeof settings.get('lobbyPlayerHighlight') === 'undefined' ? false : settings.get('lobbyPlayerHighlight');
 let teamHighlightColor = typeof settings.get('teamHighlightColor') === 'undefined' ? '#0000ff' : settings.get('teamHighlightColor');
@@ -209,6 +201,7 @@ let lobbyPlayerColor = typeof settings.get('lobbyPlayerColor') === 'undefined' ?
 let gameWeapHighlight = typeof settings.get('gameWeapHighlight') === 'undefined' ? false : settings.get('gameWeapHighlight');
 let gameArmsHighlight = typeof settings.get('gameArmsHighlight') === 'undefined' ? false : settings.get('gameArmsHighlight');
 let gameFlagHighlight = typeof settings.get('gameFlagHighlight') === 'undefined' ? false : settings.get('gameFlagHighlight');
+let globalChatVisible = typeof settings.get('globalChatVisible') === 'undefined' ? true : settings.get('globalChatVisible');
 let extraAdsZoomAmount = typeof settings.get('extraAdsZoomAmount') === 'undefined' ? 1 : settings.get('extraAdsZoomAmount');
 let gameMuzzleColor = typeof settings.get('gameMuzzleColor') === 'undefined' ? '#ffffff' : settings.get('gameMuzzleColor');
 let lobbyWeapTexture = typeof settings.get('lobbyWeapTexture') === 'undefined' ? false : settings.get('lobbyWeapTexture');
@@ -246,71 +239,59 @@ let permCrosshair = !!settings.get('permCrosshair');
 let hideFlagAds = !!settings.get('hideFlagAds');
 let customCss = !!settings.get('customCss');
 let gui = document.createElement('div');
-// prettier-ignore
-let shouldAnimate = () => !!(
-  (
-    window.mWnwM?.mWnwM?.room?.name !== "MapEditorRoom"
-  ) &&
-  (
-    gamePlayerHighLight
-    || gameWeapHighlight
-    || gameMuzzleHighlight
-    || gameWeapWire
-    || gameArmsWire
-    || (
-      window.mWnwM?.mWnwM?.room?.name === 'PointRoom'
-      &&
-      gameFlagHighlight
-    )
-  )
-);
 let defaultWeaponTextures = new Map([
   [
     '_VITA',
     {
+      name: 'VITA',
       src: 'https://kirka.io/assets/img/texture.24917fd7.webp',
     },
   ],
   [
     '_Revolver',
     {
+      name: 'Revolver',
       src: 'https://kirka.io/assets/img/texture.aaaafd48.webp',
     },
   ],
   [
     '_LAR',
     {
+      name: 'LAR',
       src: 'https://kirka.io/assets/img/texture.0437c392.webp',
     },
   ],
   [
     '_Weatie',
     {
+      name: 'Weatie',
       src: 'https://kirka.io/assets/img/texture.8af97560.webp',
     },
   ],
   [
     '_M60',
     {
+      name: 'M60',
       src: 'https://kirka.io/assets/img/texture.df209e5f.webp',
     },
   ],
   [
     '_AR-9',
     {
+      name: 'AR-9',
       src: 'https://kirka.io/assets/img/texture.9d17e5cd.webp',
     },
   ],
   [
     '_MAC-10',
     {
+      name: 'MAC-10',
       src: 'https://kirka.io/assets/img/texture.76a66e11.webp',
     },
   ],
 ]);
 let currentWeaponTexture;
 let weaponUpdated;
-let playerUpdated;
 let favoriteSkins;
 let seenSkins;
 let animating;
@@ -318,16 +299,15 @@ let lobbyAnimating;
 let streamsmenu;
 let notificationsonclick;
 let GuiResizeObserver;
-let TwitchResizeObserver;
 let permcrossstyle;
 let cssSelect;
 let clockInterval;
 let timeContainer;
-let claninvites;
 let droptimeout;
 let lessLaggyGuiOnInput;
+let rapidChests;
 let defaultsMap = new WeakMap();
-let clanSelectors = new WeakMap();
+let clanSelectors = new Map();
 let rrr = 255;
 let ggg = 0;
 let bbb = 0;
@@ -340,8 +320,7 @@ let SaveGuiSize = () => {
   settings.set('guiWidth', gui.style.width);
   settings.set('guiHeight', gui.style.height);
 };
-
-TwitchResizeObserver = new ResizeObserver(SaveTwitchSize);
+let TwitchResizeObserver = new ResizeObserver(SaveTwitchSize);
 
 const SomeObserver = new MutationObserver(() => {
   if (inGame) {
@@ -349,7 +328,7 @@ const SomeObserver = new MutationObserver(() => {
       document.onmousedown = hideFlagAdsFunc;
       document.onmouseup = hideFlagAdsFunc;
     }
-    if (shouldAnimate() && !animating) animating = window.requestAnimationFrame(animate);
+    if (!animating) animating = window.requestAnimationFrame(animate);
     if (moveTime() && seenSkinsListener()) SomeObserver.disconnect();
     return;
   }
@@ -366,12 +345,14 @@ const SomeObserver = new MutationObserver(() => {
   if (current) {
     if (current?.name === 'inventory') {
       let subjects = document.querySelector('#view div div div.content div.inventory > div.content > div.subjects');
-      let invDiv = window.app.childNodes[2].__vue__.$el.__vue__.$children[1].$el;
+      let invDiv = window.view.__vue__.$children[1].$el;
       let marketModaling = document.querySelector('[data-modal="market-item"]');
       if (randomFavoriteSkins && subjects && (invDiv.__vue__.activeTabKey === 0 || invDiv.__vue__.activeTabKey === 2) && favoriteSkins) {
         appendFavedMarker();
         appendFavedButtons();
         subjects.onclick = FavedButtonsHandler;
+        subjects.previousSibling.firstChild.onclick = window.app.__vue__.$store._actions['user/getInventory'][0];
+        subjects.previousSibling.firstChild.nextSibling.nextSibling.onclick = window.app.__vue__.$store._actions['user/getInventory'][0];
       } else if (subjects?.onclick) {
         subjects.onclick = null;
       }
@@ -398,7 +379,10 @@ const SomeObserver = new MutationObserver(() => {
           }
         });
       }
-    } else if (current.matched[0]?.name === 'servers' && !document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div#bkc-minmax-selects > div.mods.tabmods')) {
+    } else if (
+      current.matched[0]?.name === 'servers' &&
+      !document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div#bkc-minmax-selects > div.mods.tabmods')
+    ) {
       SetGameModesCheckBoxes();
     }
   }
@@ -408,17 +392,58 @@ const SomeObserver = new MutationObserver(() => {
   if (!document.querySelector('#clientJoinButton') && document.querySelector('.play-content')) {
     let btn = document.createElement('button');
     btn.id = 'clientJoinButton';
-    btn.style = 'background-color: var(--primary-1);--hover-color: var(--primary-2);--top: var(--primary-2);--bottom: var(--primary-3);display: flex;justify-content: center;align-items: center;border: none;position: absolute;color: var(--white);font-size: 1rem;transition: all .3s ease;font-family: Rowdies;padding: .9em 1.4em;transform: skew(-10deg);font-weight: 900;overflow: hidden;text-transform: uppercase;border-radius: .2em;outline: none;text-shadow: 0 0.1em 0 #000;-webkit-text-stroke: 1px var(--black);box-shadow: 0 0.15rem 0 rgba(0,0,0,.315);cursor: pointer;box-shadow: 0 5.47651px 0 rgba(0,0,0,.5);text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 1px 1px rgba(0,0,0,.486);width: 150px;height: 50px;bottom: 20px;right: 100%;margin-right: 10px;font-size: 20px;';
+    btn.style = `
+    background-color: var(--primary-1);
+    --hover-color: var(--primary-2);
+    --top: var(--primary-2);
+    --bottom: var(--primary-3);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: none;
+    position: absolute;
+    color: var(--white);
+    font-size: 1rem;
+    transition: all .3s ease;
+    font-family: Rowdies;
+    padding: .9em 1.4em;
+    transform: skew(-10deg);
+    font-weight: 900;
+    overflow: hidden;
+    text-transform: uppercase;
+    border-radius: .2em;
+    outline: none;
+    text-shadow: 0 0.1em 0 #000;
+    -webkit-text-stroke: 1px var(--black);
+    box-shadow: 0 0.15rem 0 rgba(0,0,0,.315);
+    cursor: pointer;box-shadow: 0 5.47651px 0 rgba(0,0,0,.5);
+    text-shadow: -1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000,1px 1px 0 #000,0 1px 1px rgba(0,0,0,.486);
+    width: 150px;
+    height: 50px;
+    bottom: 20px;
+    right: 100%;
+    margin-right: 10px;
+    font-size: 20px;`;
     btn.innerText = 'Join Link';
     btn.onclick = () => {
-      window.open(clipboard.readText());
+      let url = clipboard.readText();
+      if (url.startsWith('https://kirka.io/games/')) window.open(clipboard.readText());
     };
     document.getElementsByClassName('play-content')[0].append(btn);
   }
 
-  if (!statsUpdated && (id || document.querySelector('.username')?.innerHTML)) {
+  if (!statsUpdated && document.querySelector('.username')?.innerHTML) {
     statsUpdated = true;
     fetchStats(0);
+  }
+
+  function clock() {
+    if (!clockInterval) {
+      clockInterval = setInterval(() => {
+        let titTok = document.querySelector('#free-clock');
+        if (titTok) titTok.innerHTML = new Date().toLocaleTimeString();
+      }, 1000);
+    }
   }
 
   let freeClockElem = document.querySelector('#ad-bottom');
@@ -461,14 +486,13 @@ const SomeObserver = new MutationObserver(() => {
     }
   }
 
-  let modal = document.querySelector('#app div.interface.text-2 div.vm--container');
+  let modal = document.querySelector('div.vm--container');
   if (modal?.__vue__?.name === 'clan-invitation') {
     if (showClanInvites) {
       appendClanInvites();
     } else {
       modal = modal.parentElement.removeChild(modal);
       modal.__vue__.close();
-      claninvites = [];
     }
   } else if (modal?.__vue__?.name === 'create-modal' && !document.querySelector('#bkc-quick-test') && document.querySelector('.select-all')) {
     let gen = modal.querySelector('div.general-content.text-2');
@@ -501,128 +525,138 @@ const SomeObserver = new MutationObserver(() => {
     quickTestHeader = gen.insertBefore(quickTestHeader.cloneNode(true), gen.firstChild);
     quickTestHeader.innerText = 'Quick Test';
     quickTestHeader.style.marginBottom = '0.5rem';
-  }
+  } else if (modal?.__vue__?.name === 'chest-open') {
+    if (!rapidChests)
+      rapidChests = setInterval(() => {
+        let chests = modal?.querySelector('div.chest-container')?.__vue__;
+        let chestNextBut = modal?.querySelector('button.next');
+        if (!chests) return;
+        if (chests.animation === 'animation') chests.open = 'circle-resize';
+
+        chests.nextChest = function () {
+          this.open = 'circle-resize-disable';
+          this.animation = '';
+        }.bind(chests);
+
+        if (!chestNextBut) return;
+        chestNextBut.onclick = () => {
+          chests.opening = false;
+          if (chests.chestsState[chests.activeChestName]?.amount) {
+            chests.clickChest();
+          }
+        };
+      }, Infinity);
+  } else if (rapidChests) rapidChests = clearInterval(rapidChests);
 });
 
 function animateLobby() {
-  if (!inGame) {
-    window.requestAnimationFrame(animateLobby);
-    let current = window?.app?.__vue__?.$router?.history?.current;
-    if (current) {
-      let rgbColor = lobbyRainbow ? getRGBcycle() : null;
-      let scenerio1 = window.app.__vue__.$store._modules.root.context.state?.user?.mwWN?.lobby;
-      // prettier-ignore
-      if (current.name === 'profile-id')
-        scenerio1 =
-          window.app.__vue__
-            .$children[0]
-            .$children[1]
-            .$children[0]?.player
-          ||
-          window.app.__vue__
-            ?.$children[1]
-            ?.$children[1]
-            ?.$children[0]?.player
-          ||
-          scenerio1;
-        
-      else if (current.name === 'inventory')
-      scenerio1 = window.app.__vue__.$store._modules.root.context.state?.user?.mwWN?.inventory || scenerio1;
-      else if (current.name === 'leaderboard')
-      scenerio1 = window.app.childNodes[2].__vue__.$children.find((a) => a?.$el?.className === 'hub-container')?.$children.find((a) => a?.players)?.players || scenerio1;
-      else if (current.name === 'game')
-      scenerio1 = window.app.__vue__.$children.filter((a) => a?.$children[0]?.Wmn)?.[0]?.$children[0].Wmn; // endscreen
+  if (inGame) return;
+  window.requestAnimationFrame(animateLobby);
+  let current = window?.app?.__vue__?.$router?.history?.current;
+  if (!current) return;
+  let rgbColor = lobbyRainbow ? getRGBcycle() : null;
+  let app = window.app.__vue__;
+  let updateLocation = current.name === 'home' || current.name === 'inventory';
+  let scenerio1 = app.$store._modules.root.context.state?.user?.mwWN?.lobby;
 
-      if (scenerio1?.players) {
-        scenerio1.players.forEach((player) => {
-          let playerShadow = player.shadow;
-          let playerLight = player.WwNnM.model?.parent.children[0].position;
-          let playerModel = player.WwNnM.model?.children[0].children[0].children[1];
-          let playerMat = playerModel?.material;
-          let weapon = player.weapons[player.wName].model;
-          weapon = weapon?.children[weapon.children.length - 1] || weapon;
-          let weaponMat = weapon?.material;
-          let weaponMatImg = weaponMat?.map?.image;
-          let playerMatImg = playerMat?.map?.image;
-          if (playerLight && playerLight.x !== 1) playerLight.x = 1;
-          if (playerShadow && playerShadow.visible !== lobbyShadowVisible) playerShadow.visible = lobbyShadowVisible;
-          if (weaponMatImg) {
-            if (!defaultsMap.has(weapon)) {
-              defaultsMap.set(weapon, {
-                color: {
-                  r: weaponMat.color.r,
-                  g: weaponMat.color.g,
-                  b: weaponMat.color.b,
-                },
-                emissive: {
-                  r: weaponMat.emissive.r,
-                  g: weaponMat.emissive.g,
-                  b: weaponMat.emissive.b,
-                },
-                src: weaponMatImg.src,
-              });
-            }
+  if (current.name === 'profile-id') scenerio1 = window.view.__vue__?.$children[1]?.$children[0]?.player || scenerio1;
+  else if (current.name === 'inventory') scenerio1 = app.$store._modules.root.context.state?.user?.mwWN?.inventory || scenerio1;
+  else if (current.name === 'leaderboard') scenerio1 = window.view.__vue__.$children.find((a) => a?.$el?.className === 'hub-container')?.$children.find((a) => a?.players)?.players || scenerio1;
+  else if (current.name === 'game') scenerio1 = app.$children.filter((a) => a?.$children[0]?.Wmn)?.[0]?.$children[0].Wmn; // endscreen
 
-            let weapDefaults = defaultsMap.get(weapon);
-            if (weaponUpdated && (current.name === 'home' || current.name === 'inventory') && weaponMatImg.src !== (weapDefaults.src && cookiezi)) {
-              if (current.name === 'home') weaponUpdated = !weaponUpdated;
-              weapDefaults.src = currentWeaponTexture || weaponMatImg.src;
-              defaultsMap.set(weapon, weapDefaults);
-            }
+  if (!scenerio1?.players) return;
+  let isOwnGun = scenerio1.players[0].wName === currentWeaponTexture?.name;
 
-            if (weapon.visible !== lobbyWeapVisible) weapon.visible = lobbyWeapVisible;
-            if (lobbyWeapVisible) {
-              let weapColor = lobbyWeapHighlight ? rgbColor || lobbyWeapColor : weapDefaults.color;
-              let weapEmissive = weapColor !== weapDefaults.color ? weapColor : weapDefaults.emissive;
-              let currMapSrc = weapColor !== weapDefaults.color && !lobbyWeapTexture ? cookiezi : weapDefaults.src;
-              if (weaponMat.map.version !== 1) weaponMat.map.version = 1;
-              if (weaponMat.wireframe !== lobbyWeapWire) weaponMat.wireframe = lobbyWeapWire;
-              if (weaponMatImg.src !== currMapSrc) weaponMat = osuClassic(weaponMat, currMapSrc);
-              if (!weaponMat.color.equals(weapColor)) weaponMat.color.setRGB(weapColor.r, weapColor.g, weapColor.b);
-              if (!weaponMat.emissive.equals(weapEmissive)) weaponMat.emissive.setRGB(weapEmissive.r, weapEmissive.g, weapEmissive.b);
-            }
-          }
+  scenerio1.players.forEach((player, index) => {
+    let playerShadow = player.shadow;
+    let playerLight = player.WwNnM.model?.parent.children[0].position;
+    let playerModel = player.WwNnM.model?.children[0].children[0].children[1];
+    let playerMat = playerModel?.material;
+    let weapon = player.weapons[player.wName].model;
+    weapon = weapon?.children[weapon.children.length - 1] || weapon;
+    let weaponMat = weapon?.material;
+    let weaponMatImg = weaponMat?.map?.image;
+    let playerMatImg = playerMat?.map?.image;
 
-          if (playerMatImg) {
-            if (!defaultsMap.has(playerModel)) {
-              defaultsMap.set(playerModel, {
-                color: {
-                  r: playerMat.color.r,
-                  g: playerMat.color.g,
-                  b: playerMat.color.b,
-                },
-                emissive: {
-                  r: playerMat.emissive.r,
-                  g: playerMat.emissive.g,
-                  b: playerMat.emissive.b,
-                },
-                src: playerMatImg.src,
-              });
-            }
-
-            let playerDefaults = defaultsMap.get(playerModel);
-            if (playerUpdated && (current.name === 'home' || current.name === 'inventory') && playerMatImg.src !== (playerDefaults.src && cookiezi)) {
-              if (current.name === 'home') playerUpdated = !playerUpdated;
-              playerDefaults.src = playerMatImg.src;
-              defaultsMap.set(playerModel, playerDefaults);
-            }
-
-            if (playerModel.visible !== lobbyPlayerVisible) playerModel.visible = lobbyPlayerVisible;
-            if (lobbyPlayerVisible) {
-              let playerColor = lobbyPlayerHighlight ? rgbColor || lobbyPlayerColor : playerDefaults.color;
-              let playerEmissive = playerColor !== playerDefaults.color ? playerColor : playerDefaults.emissive;
-              let playerImg = playerColor !== playerDefaults.color && !lobbyPlayerTexture ? cookiezi : playerDefaults.src;
-              if (playerMat.wireframe !== lobbyPlayerWire) playerMat.wireframe = lobbyPlayerWire;
-              if (playerMatImg.src !== playerImg) playerMat = osuClassic(playerMat, playerImg);
-              if (playerMat.map.version !== 1) playerMat.map.version = 1;
-              if (!playerMat.color.equals(playerColor)) playerMat.color.setRGB(playerColor.r, playerColor.g, playerColor.b);
-              if (!playerMat.emissive.equals(playerEmissive)) playerMat.emissive.setRGB(playerEmissive.r, playerEmissive.g, playerEmissive.b);
-            }
-          }
+    if (playerLight && playerLight.x !== 1) playerLight.x = 1;
+    if (playerShadow && playerShadow.visible !== lobbyShadowVisible) playerShadow.visible = lobbyShadowVisible;
+    if (weaponMatImg) {
+      if (!defaultsMap.has(weapon)) {
+        defaultsMap.set(weapon, {
+          color: {
+            r: weaponMat.color.r,
+            g: weaponMat.color.g,
+            b: weaponMat.color.b,
+          },
+          emissive: {
+            r: weaponMat.emissive.r,
+            g: weaponMat.emissive.g,
+            b: weaponMat.emissive.b,
+          },
+          src: weaponMatImg.src,
         });
       }
+
+      let weapDefaults = defaultsMap.get(weapon);
+      if (index === 0 && updateLocation) {
+        if (isOwnGun && weapDefaults.src !== currentWeaponTexture.src) {
+          weapDefaults.src = currentWeaponTexture.src;
+          defaultsMap.set(weapon, weapDefaults);
+        }
+        if (weaponUpdated && weaponMatImg.src !== weapDefaults.src && weaponMatImg.src !== cookiezi) {
+          if (current.name === 'home') weaponUpdated = false;
+          weapDefaults.src = currentWeaponTexture?.src || weaponMatImg.src;
+          defaultsMap.set(weapon, weapDefaults);
+        }
+      }
+
+      if (weapon.visible !== lobbyWeapVisible) weapon.visible = lobbyWeapVisible;
+      if (lobbyWeapVisible) {
+        let weapColor = lobbyWeapHighlight ? rgbColor || lobbyWeapColor : weapDefaults.color;
+        let weapEmissive = weapColor !== weapDefaults.color ? weapColor : weapDefaults.emissive;
+        let currMapSrc = weapColor !== weapDefaults.color && !lobbyWeapTexture ? cookiezi : weapDefaults.src;
+        if (weaponMat.map.version !== 1) weaponMat.map.version = 1;
+        if (weaponMat.wireframe !== lobbyWeapWire) weaponMat.wireframe = lobbyWeapWire;
+        if (weaponMatImg.src !== currMapSrc) weaponMat = osuClassic(weaponMat, currMapSrc);
+        if (!weaponMat.color.equals(weapColor)) weaponMat.color.setRGB(weapColor.r, weapColor.g, weapColor.b);
+        if (!weaponMat.emissive.equals(weapEmissive)) weaponMat.emissive.setRGB(weapEmissive.r, weapEmissive.g, weapEmissive.b);
+      }
     }
-  }
+
+    if (!playerMatImg) return;
+    if (!defaultsMap.has(playerModel)) {
+      defaultsMap.set(playerModel, {
+        color: {
+          r: playerMat.color.r,
+          g: playerMat.color.g,
+          b: playerMat.color.b,
+        },
+        emissive: {
+          r: playerMat.emissive.r,
+          g: playerMat.emissive.g,
+          b: playerMat.emissive.b,
+        },
+        src: playerMatImg.src,
+      });
+    }
+
+    let playerDefaults = defaultsMap.get(playerModel);
+    if (updateLocation && playerMatImg?.src && playerMatImg.src !== playerDefaults.src && playerMatImg.src !== cookiezi) {
+      playerDefaults.src = playerMatImg.src;
+      defaultsMap.set(playerModel, playerDefaults);
+    }
+
+    if (playerModel.visible !== lobbyPlayerVisible) playerModel.visible = lobbyPlayerVisible;
+    if (!lobbyPlayerVisible) return;
+    let playerColor = lobbyPlayerHighlight ? rgbColor || lobbyPlayerColor : playerDefaults.color;
+    let playerEmissive = playerColor !== playerDefaults.color ? playerColor : playerDefaults.emissive;
+    let playerImg = playerColor !== playerDefaults.color && !lobbyPlayerTexture ? cookiezi : playerDefaults.src;
+    if (playerMat.wireframe !== lobbyPlayerWire) playerMat.wireframe = lobbyPlayerWire;
+    if (playerMatImg.src !== playerImg) playerMat = osuClassic(playerMat, playerImg);
+    if (playerMat.map.version !== 1) playerMat.map.version = 1;
+    if (!playerMat.color.equals(playerColor)) playerMat.color.setRGB(playerColor.r, playerColor.g, playerColor.b);
+    if (!playerMat.emissive.equals(playerEmissive)) playerMat.emissive.setRGB(playerEmissive.r, playerEmissive.g, playerEmissive.b);
+  });
 }
 
 lobbyAnimating = window.requestAnimationFrame(animateLobby);
@@ -635,27 +669,20 @@ const MainObserverr = new MutationObserver(() => {
     window.JSON.parse = boringJSONParse;
     window.JSON.stringify = ogStringify;
     window.XMLHttpRequest = boringXMLHttpRequest;
-    window.Howl.prototype.init = originalHowl;
     if (TwitchResizeObserver) TwitchResizeObserver.disconnect();
     if (clockInterval) clockInterval = clearInterval(clockInterval);
     if (timeContainer && seenSkinsListener()) SomeObserver.disconnect();
-    //document.removeEventListener('keyup', keyup);
-    claninvites = null;
     skinzInfo = null;
     stremzInfo = null;
     lobbyAnimating = cancelAnimationFrame(lobbyAnimating);
-    if (shouldAnimate() && !animating) animating = window.requestAnimationFrame(animate);
+    if (!animating) animating = window.requestAnimationFrame(animate);
     sniperButton();
   } else if (inGame && (endmodal || !/kirka[.]io[/]game/.test(window.location.href))) {
     inGame = false;
     animating = cancelAnimationFrame(animating);
     window.XMLHttpRequest = gigaXMLHttpRequest;
     window.JSON.parse = gigaJSONParse;
-    window.Howl.prototype.init = meow;
-    EventTarget.prototype.addEventListener = gigaAddEventListener;
     SomeObserver.observe(document, { childList: true, subtree: true });
-    //document.addEventListener('keyup', keyup);
-    inputtoggle = false;
     claimedQuest = false;
     statsUpdated = false;
     timeContainer = null;
@@ -755,7 +782,19 @@ document.addEventListener('DOMContentLoaded', () => {
       settings.set('ShowTwitch', ShowTwitch);
       let stremz = document.querySelector('#live-streams-menu');
       if (stremz) {
-        stremz.style = `position:absolute;resize:both;overflow: auto hidden!important;opacity:1!important;z-index:3!important;min-height:5vh!important;pointer-events:all!important;top:${TwitchTop};left:${TwitchLeft};width:${TwitchWidth};height:${TwitchHeight};${ShowTwitch ? 'display:block!important;' : 'display:none!important;'}`;
+        stremz.style = `
+        position:absolute;
+        resize:both;
+        overflow: auto hidden!important;
+        opacity:1!important;
+        z-index:3!important;
+        min-height:5vh!important;
+        pointer-events:all!important;
+        top:${TwitchTop};
+        left:${TwitchLeft};
+        width:${TwitchWidth};
+        height:${TwitchHeight};
+        display:${ShowTwitch ? 'block' : 'none'}!important;`;
       }
     } 
     
@@ -857,7 +896,7 @@ document.addEventListener('DOMContentLoaded', () => {
     else if (e.target.id === 'gameFlagHighlight') {
       gameFlagHighlight = e.target.checked;
       settings.set(`${e.target.id}`, e.target.checked);
-    } 
+    }
       
     else if (e.target.id === 'Bkc-export') {
       let gameSettingsObj = {};
@@ -1013,12 +1052,6 @@ document.addEventListener('DOMContentLoaded', () => {
       cssFilePicker.click();
     }
 
-    if (inGame) {
-      if (shouldAnimate()) {
-        if (!animating) animating = window.requestAnimationFrame(animate);
-      } else if (animating) animating = window.cancelAnimationFrame(animate);
-    }
-
   };
 
   //prettier-ignore
@@ -1093,16 +1126,34 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         };
         reader.onerror = () => BKC.tip('Failed Importing File');
+      } else if (e.target === nerfChatLenghtInput) {
+        nerfChatLenght = Math.ceil(e.target.value);
+        if (nerfChatLenghtSpan.innerText !== nerfChatLenght) nerfChatLenghtSpan.innerText = nerfChatLenght;
+        settings.set('nerfChatLenght', nerfChatLenght);
+      } else if (e.target === cssSelect && cssSelect.value) {
+        cssLinks.currentCss = cssLinks[cssSelect.options[cssSelect.selectedIndex].title];
+        resetCssWrapper();
+        settings.set('cssLinks', cssLinks);
+        applyCss();
+      } else if (e.target === cssFilePicker && cssFilePicker.value) {
+        if (cssFilePicker.files[0].type === 'text/css') {
+          cssUrlInput.value = `file:///${cssFilePicker.files[0].path.replace(/\\/g, '/')}`;
+        } else {
+          BKC.tip('Invalid FileType');
+        }
       }
     }
   }
 
-  gui.oninput = (e) => {
+  function guiinput(e) {
     if (window._?.throttle) {
-      if (!lessLaggyGuiOnInput) lessLaggyGuiOnInput = window._.throttle(guiOnInput, 100, { leading: false });
+      if (!lessLaggyGuiOnInput)
+        lessLaggyGuiOnInput = window._.throttle(guiOnInput, 100, {
+          leading: false,
+        });
       lessLaggyGuiOnInput(e);
     }
-  };
+  }
 
   let lobbyWeapColorElem = document.getElementById('lobbyWeapColor');
   let lobbyPlayerColorElem = document.getElementById('lobbyPlayerColor');
@@ -1133,38 +1184,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let nerfChatLenghtInput = document.getElementById('nerfChatLenght');
   let nerfChatLenghtSpan = document.getElementById('nerfChatLenghtSpan');
-  nerfChatLenghtInput.value = nerfChatLenght;
-  nerfChatLenghtSpan.innerText = nerfChatLenght;
-  nerfChatLenghtInput.oninput = (e) => {
-    if (e.target.value) {
-      nerfChatLenght = Math.ceil(e.target.value);
-      if (nerfChatLenghtSpan.innerText !== nerfChatLenght) nerfChatLenghtSpan.innerText = nerfChatLenght;
-      settings.set('nerfChatLenght', nerfChatLenght);
-    }
-  };
-
+  let globalChatVisibleToggleKeyElem = document.getElementById('globalChatVisibleToggleKey');
+  let globalChatInputToggleKeyElem = document.getElementById('globalChatInputToggleKey');
   let extraAdsZoomKeyElem = document.getElementById('extraAdsZoomKey');
   let extraAdsZoomAmountElem = document.getElementById('extraAdsZoomAmount');
   let extraAdsZoomAmountSpan = document.getElementById('extraAdsZoomAmountSpan');
-  extraAdsZoomAmountElem.value = extraAdsZoomAmount;
-  extraAdsZoomAmountSpan.innerText = extraAdsZoomAmount;
-  extraAdsZoomKeyElem.value = extraAdsZoomKey;
 
-  function getZoomKey(e) {
-    let zKey = e?.code || e.button;
-    if (zKey) {
+  nerfChatLenghtInput.value = nerfChatLenght;
+  extraAdsZoomAmountElem.value = extraAdsZoomAmount;
+  extraAdsZoomKeyElem.value = extraAdsZoomKey;
+  globalChatVisibleToggleKeyElem.value = globalChatVisibleToggleKey;
+  globalChatInputToggleKeyElem.value = globalChatInputToggleKey;
+
+  nerfChatLenghtSpan.innerText = nerfChatLenght;
+  extraAdsZoomAmountSpan.innerText = extraAdsZoomAmount;
+
+  function getKeyCodeButton(e) {
+    let zKey = e?.code || e?.button;
+    let Key = e?.key;
+    if (e.target === extraAdsZoomKeyElem && zKey) {
       extraAdsZoomKey = e?.code || e.button;
       extraAdsZoomKeyElem.value = extraAdsZoomKey;
       extraAdsZoomKeyElem.blur();
-      settings.set('extraAdsZoomKey', extraAdsZoomKey);
+      return settings.set('extraAdsZoomKey', extraAdsZoomKey);
     }
+    if (!Key) return;
+    if (e.target === globalChatInputToggleKeyElem) {
+      globalChatInputToggleKey = Key;
+      globalChatInputToggleKeyElem.value = Key;
+    } else if (e.target === globalChatVisibleToggleKeyElem) {
+      globalChatVisibleToggleKey = Key;
+      globalChatVisibleToggleKeyElem.value = Key;
+    }
+    settings.set(`${e.target}`, Key);
   }
 
-  extraAdsZoomKeyElem.onkeyup = getZoomKey;
-  extraAdsZoomKeyElem.onmouseup = getZoomKey;
-  extraAdsZoomKeyElem.onmousedown = (e) => {
-    if (e.button === 0) extraAdsZoomKeyElem.value = '';
-  };
+  function clearInputs(e) {
+    if (e.button === 0 && [extraAdsZoomKeyElem, globalChatInputToggleKeyElem, globalChatVisibleToggleKeyElem].includes(e.target)) e.target.value = '';
+  }
 
   let t = document.querySelector('#view > div > div > div.top-bar > div.left');
   if (t && !document.querySelector('#searchfrnds')) {
@@ -1240,25 +1297,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  cssSelect.oninput = () => {
-    if (cssSelect.value) {
-      cssLinks.currentCss = cssLinks[cssSelect.options[cssSelect.selectedIndex].title];
-      resetCssWrapper();
-      settings.set('cssLinks', cssLinks);
-      applyCss();
-    }
-  };
-
-  cssFilePicker.oninput = () => {
-    if (cssFilePicker.value) {
-      if (cssFilePicker.files[0].type === 'text/css') {
-        cssUrlInput.value = `file:///${cssFilePicker.files[0].path.replace(/\\/g, '/')}`;
-      } else {
-        BKC.tip('Invalid FileType');
-      }
-    }
-  };
-
   document.getElementById('crosshair').checked = permCrosshair;
   document.getElementById('hideflag').checked = hideFlagAds;
   document.getElementById('highlight').checked = gamePlayerHighLight;
@@ -1288,77 +1326,74 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('gameWeapWire').checked = gameWeapWire;
   document.getElementById('gameArmsWire').checked = gameArmsWire;
   document.getElementById('gameFlagHighlight').checked = gameFlagHighlight;
+
+  function keydown(e) {
+    if (!e.repeat && e.key === 'PageUp') {
+      e.preventDefault();
+      toggleGui();
+    }
+  }
+
+  document.addEventListener('keydown', keydown, false);
+
+  function cssAddFromDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    cssDropEnd();
+    if (e.dataTransfer.files[0].type === 'text/css') {
+      if (cssAddNewContainer.style.display !== 'flex') {
+        cssAddNewContainer.style.display = 'flex';
+      }
+      document.querySelector('#css-new-url-input').value = `file:///${e.dataTransfer.files[0].path.replace(/\\/g, '/')}`;
+    } else {
+      BKC.tip('Invalid FileType');
+    }
+  }
+
+  function cssWhileDrop(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (droptimeout) droptimeout = clearTimeout(droptimeout);
+    if (!gui.classList.contains('bkc-drop')) gui.classList.add('bkc-drop');
+  }
+
+  function cssDropEnd() {
+    if (droptimeout) droptimeout = clearTimeout(droptimeout);
+    droptimeout = setTimeout(() => {
+      if (gui.classList.contains('bkc-drop')) gui.classList.remove('bkc-drop');
+    }, 100);
+  }
+
+  function toggleGui() {
+    menuVisible = !menuVisible;
+    if (menuVisible) {
+      document.exitPointerLock();
+      gui.style.display = 'flex';
+      if (!GuiResizeObserver) GuiResizeObserver = new ResizeObserver(SaveGuiSize);
+      GuiResizeObserver.observe(gui);
+      gui.addEventListener('drop', cssAddFromDrop, false);
+      gui.addEventListener('dragover', cssWhileDrop, false);
+      gui.addEventListener('dragenter', cssWhileDrop, false);
+      gui.addEventListener('dragleave', cssDropEnd, false);
+      gui.onkeyup = getKeyCodeButton;
+      gui.onmousedown = clearInputs;
+      extraAdsZoomKeyElem.onmouseup = getKeyCodeButton;
+      gui.oninput = guiinput;
+    } else {
+      GuiResizeObserver.disconnect();
+      gui.style.display = 'none';
+      gui.removeEventListener('drop', cssAddFromDrop, false);
+      gui.removeEventListener('dragover', cssWhileDrop, false);
+      gui.removeEventListener('dragenter', cssWhileDrop, false);
+      gui.removeEventListener('dragleave', cssDropEnd, false);
+      gui.onkeyup = null;
+      gui.onmousedown = null;
+      extraAdsZoomKeyElem.onmouseup = null;
+      gui.oninput = null;
+    }
+    settings.set('menuOpen', menuVisible);
+  }
 });
-
-function keyup(e) {
-  if (e.key === 'PageUp') {
-    toggleGui();
-  }
-}
-
-document.addEventListener('keyup', keyup);
-
-function cssSelectKeyDown(mwNMWnmWnMwNMandM) {
-  if (mwNMWnmWnMwNMandM.key === 'PageUp' || mwNMWnmWnMwNMandM.key === 'PageDown') {
-    mwNMWnmWnMwNMandM.preventDefault();
-    mwNMWnmWnMwNMandM.stopPropagation();
-  }
-}
-
-function cssAddFromDrop(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  cssDropEnd();
-  let cssAddNewContainer = document.querySelector('#add-new-css-menu');
-  if (e.dataTransfer.files[0].type === 'text/css') {
-    if (cssAddNewContainer.style.display !== 'flex') {
-      cssAddNewContainer.style.display = 'flex';
-    }
-    document.querySelector('#css-new-url-input').value = `file:///${e.dataTransfer.files[0].path.replace(/\\/g, '/')}`;
-  } else {
-    BKC.tip('Invalid FileType');
-  }
-}
-
-function cssWhileDrop(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  if (droptimeout) droptimeout = clearTimeout(droptimeout);
-  if (!gui.classList.contains('bkc-drop')) gui.classList.add('bkc-drop');
-}
-
-function cssDropEnd() {
-  if (droptimeout) droptimeout = clearTimeout(droptimeout);
-  droptimeout = setTimeout(() => {
-    if (gui.classList.contains('bkc-drop')) gui.classList.remove('bkc-drop');
-  }, 100);
-}
-
-function toggleGui() {
-  menuVisible = !menuVisible;
-  if (menuVisible) {
-    document.exitPointerLock();
-    gui.style.display = 'flex';
-    if (!GuiResizeObserver) {
-      GuiResizeObserver = new ResizeObserver(SaveGuiSize);
-    }
-    GuiResizeObserver.observe(gui);
-    cssSelect.addEventListener('keydown', cssSelectKeyDown, false);
-    gui.addEventListener('drop', cssAddFromDrop, false);
-    gui.addEventListener('dragover', cssWhileDrop, false);
-    gui.addEventListener('dragenter', cssWhileDrop, false);
-    gui.addEventListener('dragleave', cssDropEnd, false);
-  } else {
-    GuiResizeObserver.disconnect();
-    gui.style.display = 'none';
-    cssSelect.removeEventListener('keydown', cssSelectKeyDown, false);
-    gui.removeEventListener('drop', cssAddFromDrop, false);
-    gui.removeEventListener('dragover', cssWhileDrop, false);
-    gui.removeEventListener('dragenter', cssWhileDrop, false);
-    gui.removeEventListener('dragleave', cssDropEnd, false);
-  }
-  settings.set('menuOpen', menuVisible);
-}
 
 /*function hexToRgb(hex) {
   let result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -1410,7 +1445,12 @@ function scrollIntoView(t) {
 
 function permCrosshairToggleFunc() {
   if (permCrosshair) {
-    permcrossstyle.innerHTML = 'img#crosshair-static{opacity:1!important;visibility:visible!important;display:block!important;}';
+    permcrossstyle.innerHTML = `
+    img#crosshair-static {
+      opacity:1!important;
+      visibility:visible!important;
+      display:block!important;
+    }`;
   } else {
     permcrossstyle.innerHTML = '';
   }
@@ -1448,140 +1488,141 @@ function osuClassic(mat, image) {
 }
 
 function animate() {
-  if (inGame && shouldAnimate()) {
-    animating = window.requestAnimationFrame(animate);
-
-    let peanutMnMs = window.mWnwM?.WMmNw._components;
-    if (peanutMnMs) {
-      let rgbColor = gameRainbow ? getRGBcycle() : null;
-      let sisManager = window.mWnwM?.mWnwM?.systemManager._systems;
-      let localPlayerClass = peanutMnMs[38]?.wnWmN;
-      let muzzleFlash = peanutMnMs[window._.findKey(peanutMnMs, 'model')]?.model.children[2]?.children.find((Muzzle) => Muzzle.name === 'Muzzle').children[0];
-      let megaWeapMap = peanutMnMs[window._.findKey(peanutMnMs, 'weapons')]?.weapons;
-      let muzzleFlashMat = muzzleFlash?.material;
-      if (muzzleFlashMat && window.mWnwM.mWnwM.systemManager._executeSystems[0].mouse?.btns[0]) {
-        if (!defaultsMap.has(muzzleFlash)) {
-          defaultsMap.set(muzzleFlash, {
-            color: {
-              b: muzzleFlashMat.color.b,
-              g: muzzleFlashMat.color.g,
-              r: muzzleFlashMat.color.r,
-            },
-          });
-        }
-        let muzzlecolor = gameMuzzleHighlight ? rgbColor || gameMuzzleColor : defaultsMap.get(muzzleFlash).color;
-        if (!muzzleFlashMat.color.equals(muzzlecolor)) muzzleFlashMat.color.setRGB(muzzlecolor.r, muzzlecolor.g, muzzlecolor.b);
-      }
-
-      if (megaWeapMap)
-        [Object.keys(megaWeapMap).find((models) => megaWeapMap[models]?.removed === false)].forEach((weap) => {
-          let yourWeapon = megaWeapMap[weap]?.model;
-          let yourWeaponMat = yourWeapon?.children[yourWeapon.children.length - 1].material;
-          let yourWeaponMapImg = yourWeaponMat?.map?.image;
-          if (yourWeaponMapImg) {
-            if (!defaultsMap.has(yourWeapon)) {
-              if (currentWeaponTexture) yourWeaponMat = osuClassic(yourWeaponMat, currentWeaponTexture);
-              defaultsMap.set(yourWeapon, {
-                color: {
-                  b: yourWeaponMat.color.b,
-                  g: yourWeaponMat.color.g,
-                  r: yourWeaponMat.color.r,
-                },
-                src: yourWeaponMapImg.src,
-              });
-            }
-
-            let weapDefaults = defaultsMap.get(yourWeapon);
-            let weapColor = gameWeapHighlight ? rgbColor || gameWeapColor : weapDefaults.color;
-            let currMapSrc = weapColor !== weapDefaults.color && !gameWeapTexture ? cookiezi : weapDefaults.src;
-            if (yourWeaponMat.wireframe !== gameWeapWire) yourWeaponMat.wireframe = gameWeapWire;
-            if (yourWeaponMapImg.src !== currMapSrc) yourWeaponMat = osuClassic(yourWeaponMat, currMapSrc);
-            if (!yourWeaponMat.color.equals(weapColor)) yourWeaponMat.color.setRGB(weapColor.r, weapColor.g, weapColor.b);
-          }
-        });
-
-      if (sisManager) {
-        let arms = sisManager[0]?.queries.player.results[0]._components[window._.findKey(sisManager[0].queries.player.results[0]._components, 'model')]?.model;
-
-        if (window.mWnwM.mWnwM?.room?.name === 'PointRoom') {
-          let flagMaterial = window.mWnwM.mWnwM.systemManager._executeSystems[2].wMNWn?.material || window.mWnwM.renderingSystem.scene.children.find((type) => type?.type === 'Sprite' && type.material.map?.image?.width === 149)?.material;
-          if (flagMaterial) {
-            let flagColor = gameFlagHighlight ? gameFlagColor : { b: 1, r: 1, g: 1 };
-            if (!flagMaterial.color.equals(flagColor)) flagMaterial.color.setRGB(flagColor.r, flagColor.g, flagColor.b);
-          }
-        }
-
-        if (arms?.children[0]?.visible) {
-          let armsMat = arms.children[0]?.material;
-          let armsMatMapImg = armsMat?.map?.image;
-          if (armsMatMapImg) {
-            if (!defaultsMap.has(arms)) {
-              defaultsMap.set(arms, {
-                color: {
-                  b: armsMat.color.b,
-                  g: armsMat.color.g,
-                  r: armsMat.color.r,
-                },
-                src: armsMatMapImg.src,
-              });
-            }
-            let armsDefaults = defaultsMap.get(arms);
-            let armsColor = gameArmsHighlight ? rgbColor || gameArmsColor : armsDefaults.color;
-            let armsImg = armsColor !== armsDefaults.color && !gameArmsTexture ? cookiezi : armsDefaults.src;
-            if (armsMat.wireframe !== gameArmsWire) armsMat.wireframe = gameArmsWire;
-            if (armsMatMapImg.src !== armsImg) armsMat = osuClassic(armsMat, armsImg);
-            if (!armsMat.color.equals(armsColor)) armsMat.color.setRGB(armsColor.r, armsColor.g, armsColor.b);
-          }
-        }
-
-        let otherPlayers = sisManager[2]?._queries?.players?.entities || sisManager[3]._queries.players?.entities;
-        if (otherPlayers) {
-          let otherPlayersMap = window.mWnwM.mWnwM.room.state.players.$items;
-          otherPlayers.forEach((players) => {
-            let player = players._components;
-            let mat = player[0].value.children[0].children[0].children[1].material;
-
-            if (mat) {
-              if (!defaultsMap.has(player))
-                defaultsMap.set(player, {
-                  color: {
-                    b: mat.color.b,
-                    g: mat.color.g,
-                    r: mat.color.r,
-                  },
-                });
-
-              if (gamePlayerHighLight) {
-                if (!localPlayerClass.team || localPlayerClass.team !== player['50'].team) {
-                  if (otherPlayersMap.get(player['50'].sessionId).spawnProtected === false) {
-                    if (!mat.color.equals(enemyHighlightColor)) {
-                      mat.color.setRGB(enemyHighlightColor.r, enemyHighlightColor.g, enemyHighlightColor.b);
-                    }
-                  } else {
-                    mat.color.fromArray([1, 0, 0], 0);
-                  }
-                } else if (!mat.color.equals(teamHighlightColor)) {
-                  mat.color.setRGB(teamHighlightColor.r, teamHighlightColor.g, teamHighlightColor.b);
-                }
-              } else {
-                let playerDefaults = defaultsMap.get(player);
-                if (!mat.color.equals(playerDefaults.color)) {
-                  mat.color.setRGB(playerDefaults.color.r, playerDefaults.color.g, playerDefaults.color.b);
-                }
-              }
-            }
-          });
-        }
-      }
-    }
-  } else {
+  if (!inGame || window.mWnwM?.mWnwM?.room?.name === 'MapEditorRoom') {
     animating = window.cancelAnimationFrame(animate);
+    return;
   }
+
+  animating = window.requestAnimationFrame(animate);
+
+  let peanutMnMs = window.mWnwM?.WMmNw._components;
+  if (!peanutMnMs) return;
+  let rgbColor = gameRainbow ? getRGBcycle() : null;
+  let sisManager = window.mWnwM?.mWnwM?.systemManager._systems;
+  let localPlayerClass = peanutMnMs[38]?.wnWmN;
+  let muzzleFlash = peanutMnMs[window._.findKey(peanutMnMs, 'model')]?.model.children[2]?.children.find((Muzzle) => Muzzle.name === 'Muzzle').children[0];
+  let megaWeapMap = peanutMnMs[window._.findKey(peanutMnMs, 'weapons')]?.weapons;
+  let muzzleFlashMat = muzzleFlash?.material;
+  if (muzzleFlashMat && window.mWnwM.mWnwM.systemManager._executeSystems[0].mouse?.btns[0]) {
+    if (!defaultsMap.has(muzzleFlash)) {
+      defaultsMap.set(muzzleFlash, {
+        color: {
+          b: muzzleFlashMat.color.b,
+          g: muzzleFlashMat.color.g,
+          r: muzzleFlashMat.color.r,
+        },
+      });
+    }
+    let muzzlecolor = gameMuzzleHighlight ? rgbColor || gameMuzzleColor : defaultsMap.get(muzzleFlash).color;
+    if (!muzzleFlashMat.color.equals(muzzlecolor)) muzzleFlashMat.color.setRGB(muzzlecolor.r, muzzlecolor.g, muzzlecolor.b);
+  }
+
+  if (megaWeapMap)
+    [Object.keys(megaWeapMap).find((models) => megaWeapMap[models]?.removed === false)].forEach((weap) => {
+      let yourWeapon = megaWeapMap[weap]?.model;
+      let yourWeaponMat = yourWeapon?.children[yourWeapon.children.length - 1].material;
+      let yourWeaponMapImg = yourWeaponMat?.map?.image;
+      if (yourWeaponMapImg) {
+        if (!defaultsMap.has(yourWeapon)) {
+          if (currentWeaponTexture?.name === weap) yourWeaponMat = osuClassic(yourWeaponMat, currentWeaponTexture.src);
+          defaultsMap.set(yourWeapon, {
+            color: {
+              b: yourWeaponMat.color.b,
+              g: yourWeaponMat.color.g,
+              r: yourWeaponMat.color.r,
+            },
+            src: yourWeaponMapImg.src,
+          });
+        }
+
+        let weapDefaults = defaultsMap.get(yourWeapon);
+        let weapColor = gameWeapHighlight ? rgbColor || gameWeapColor : weapDefaults.color;
+        let currMapSrc = weapColor !== weapDefaults.color && !gameWeapTexture ? cookiezi : weapDefaults.src;
+        if (yourWeaponMat.wireframe !== gameWeapWire) yourWeaponMat.wireframe = gameWeapWire;
+        if (yourWeaponMapImg.src !== currMapSrc) yourWeaponMat = osuClassic(yourWeaponMat, currMapSrc);
+        if (!yourWeaponMat.color.equals(weapColor)) yourWeaponMat.color.setRGB(weapColor.r, weapColor.g, weapColor.b);
+      }
+    });
+
+  if (!sisManager) return;
+
+  let arms = sisManager[0]?.queries.player.results[0]._components[window._.findKey(sisManager[0].queries.player.results[0]._components, 'model')]?.model;
+
+  if (window.mWnwM.mWnwM?.room?.name === 'PointRoom') {
+    let flagMaterial =
+      window.mWnwM.mWnwM.systemManager._executeSystems[2].wMNWn?.material ||
+      window.mWnwM.renderingSystem.scene.children.find((type) => type?.type === 'Sprite' && type.material.map?.image?.width === 149)?.material;
+    if (flagMaterial) {
+      let flagColor = gameFlagHighlight ? gameFlagColor : { b: 1, r: 1, g: 1 };
+      if (!flagMaterial.color.equals(flagColor)) flagMaterial.color.setRGB(flagColor.r, flagColor.g, flagColor.b);
+    }
+  }
+
+  if (arms?.children[0]?.visible) {
+    let armsMat = arms.children[0]?.material;
+    let armsMatMapImg = armsMat?.map?.image;
+    if (armsMatMapImg) {
+      if (!defaultsMap.has(arms)) {
+        defaultsMap.set(arms, {
+          color: {
+            b: armsMat.color.b,
+            g: armsMat.color.g,
+            r: armsMat.color.r,
+          },
+          src: armsMatMapImg.src,
+        });
+      }
+      let armsDefaults = defaultsMap.get(arms);
+      let armsColor = gameArmsHighlight ? rgbColor || gameArmsColor : armsDefaults.color;
+      let armsImg = armsColor !== armsDefaults.color && !gameArmsTexture ? cookiezi : armsDefaults.src;
+      if (armsMat.wireframe !== gameArmsWire) armsMat.wireframe = gameArmsWire;
+      if (armsMatMapImg.src !== armsImg) armsMat = osuClassic(armsMat, armsImg);
+      if (!armsMat.color.equals(armsColor)) armsMat.color.setRGB(armsColor.r, armsColor.g, armsColor.b);
+    }
+  }
+
+  let otherPlayers = sisManager[2]?._queries?.players?.entities || sisManager[3]._queries.players?.entities;
+  if (!otherPlayers) return;
+  let otherPlayersMap = window.mWnwM.mWnwM.room.state.players.$items;
+  otherPlayers.forEach((players) => {
+    let player = players._components;
+    let mat = player[0].value.children[0].children[0].children[1].material;
+    if (!mat) return;
+
+    if (!defaultsMap.has(player))
+      defaultsMap.set(player, {
+        color: {
+          b: mat.color.b,
+          g: mat.color.g,
+          r: mat.color.r,
+        },
+      });
+
+    if (gamePlayerHighLight) {
+      if (!localPlayerClass.team || localPlayerClass.team !== player['50'].team) {
+        if (otherPlayersMap.get(player['50'].sessionId).spawnProtected === false) {
+          if (!mat.color.equals(enemyHighlightColor)) {
+            mat.color.setRGB(enemyHighlightColor.r, enemyHighlightColor.g, enemyHighlightColor.b);
+          }
+        } else {
+          mat.color.fromArray([1, 0, 0], 0);
+        }
+      } else if (!mat.color.equals(teamHighlightColor)) {
+        mat.color.setRGB(teamHighlightColor.r, teamHighlightColor.g, teamHighlightColor.b);
+      }
+    } else {
+      let playerDefaults = defaultsMap.get(player);
+      if (mat.color.equals(playerDefaults.color)) return;
+      mat.color.setRGB(playerDefaults.color.r, playerDefaults.color.g, playerDefaults.color.b);
+    }
+  });
 }
 
 function hideFlagAdsFunc() {
   if (window.mWnwM?.mWnwM?.room.name === 'PointRoom') {
-    let flagMaterial = window.mWnwM?.mWnwM.systemManager._executeSystems[2].wMNWn?.material || window.mWnwM?.renderingSystem.scene.children.find((type) => type?.type === 'Sprite' && type.material.map?.image?.width === 149)?.material;
+    let flagMaterial =
+      window.mWnwM?.mWnwM.systemManager._executeSystems[2].wMNWn?.material ||
+      window.mWnwM?.renderingSystem.scene.children.find((type) => type?.type === 'Sprite' && type.material.map?.image?.width === 149)?.material;
     if (hideFlagAds) {
       flagMaterial.visible = !window.mWnwM.mWnwM.systemManager._executeSystems[0].mouse?.btns[2];
     } else {
@@ -1631,7 +1672,7 @@ function SetGameModesCheckBoxes() {
 
   function ShowHideGameModes() {
     let servers = document.querySelector('div#view > div.background > div.container > div.content > div.servers').__vue__;
-    document.querySelectorAll('html body div#app div#view div.background div.container div.content div.servers div.container-games div.list-cont div.list div.server').forEach((map, indexfoxx) => {
+    document.querySelectorAll('div.servers div.container-games div.list-cont div.list div.server').forEach((map, indexfoxx) => {
       function getsessionid() {
         if (currentRoom.metadata.custom === true) {
           let s = left?.querySelector('#bkc-session-id');
@@ -1659,7 +1700,6 @@ function SetGameModesCheckBoxes() {
       }
 
       let currentRoom = servers.rooms[indexfoxx];
-      //let timeLeft = servers.__vue__.minutesLeft(currentRoom);
       let right = map?.querySelector('div.right');
       let left = map?.querySelector('div.left');
       let bkcJwfCheckBox = right?.querySelector('#bkc-JWF-cb');
@@ -1667,26 +1707,27 @@ function SetGameModesCheckBoxes() {
       let timesSpan = left?.querySelector('span#bkc-map-time');
       let sessionIdDiv = getsessionid();
       let ThisIdd = sessionIdDiv?.innerHTML;
+      let shortMins = currentRoom.metadata?.shortMinutesLeft;
 
       if (typeof GameModes[currentRoom.metadata.mod] !== 'undefined') {
         map.style.display = GameModes[currentRoom.metadata.mod] === true ? 'flex' : 'none';
       } else {
         map.style.display = 'flex';
-        GameModes[currentRoom.metadata.mod] = true;
-        let modesCont = document.querySelector('.mods.tabmods');
-        let moddiv = document.createElement('div');
-        moddiv.className = currentRoom.metadata.mod;
-        moddiv.innerHTML = `
-      <label for="${currentRoom.metadata.mod}" class="custom-checkbox checkbox-size">
-      <input name="${currentRoom.metadata.mod}" id="${currentRoom.metadata.mod}" type="checkbox" class="${currentRoom.metadata.mod}-checkbox">
-      <span> ${currentRoom.metadata.mod} </span>
-      </label>
-      `;
-        moddiv = modesCont.appendChild(moddiv);
-        modesCont.getElementsByClassName(`${currentRoom.metadata.mod}-checkbox`)[0].checked = GameModes[currentRoom.metadata.mod];
-        settings.set('GameModes', GameModes);
+        if (currentRoom.metadata.mod !== 'P') {
+          GameModes[currentRoom.metadata.mod] = true;
+          let modesCont = document.querySelector('.mods.tabmods');
+          let moddiv = document.createElement('div');
+          moddiv.className = currentRoom.metadata.mod;
+          moddiv.innerHTML = `
+          <label for="${currentRoom.metadata.mod}" class="custom-checkbox checkbox-size">
+          <input name="${currentRoom.metadata.mod}" id="${currentRoom.metadata.mod}" type="checkbox" class="${currentRoom.metadata.mod}-checkbox">
+          <span> ${currentRoom.metadata.mod} </span>
+          </label>`;
+          moddiv = modesCont.appendChild(moddiv);
+          modesCont.getElementsByClassName(`${currentRoom.metadata.mod}-checkbox`)[0].checked = GameModes[currentRoom.metadata.mod];
+          settings.set('GameModes', GameModes);
+        }
       }
-
       if (!Number.isNaN(currentRoom.clients + currentRoom.maxClients)) {
         if (currentRoom.clients >= minPlayers && currentRoom.clients < currentRoom.maxClients && !currentRoom.locked) {
           if (playerCnt.style.color !== 'var(--green-1)') playerCnt.style.color = 'var(--green-1)';
@@ -1707,7 +1748,31 @@ function SetGameModesCheckBoxes() {
           x.className = 'input-checkbox  button';
           x.id = 'bkc-JWF-cb';
           x.title = 'Join Lobby When Available';
-          x.style = 'margin-right:0.5rem;margin-left:1rem;--hover-color:var(--primary-2);display:flex;justify-content:center;align-items:center;border:none;position:relative;color:var(--white);font-size:1rem;transition:all .3s ease;font-family:Rowdies;padding:.9em 1.4em;transform:skew(-10deg);font-weight:900;overflow:hidden;text-transform:uppercase;border-radius:.2em;outline:none;text-shadow:0 .1em 0 #000;-webkit-text-stroke:1px var(--black);box-shadow:0 .15rem 0 rgba(0,0,0,.315);cursor:pointer;';
+          x.style = `
+            margin-right:0.5rem;
+            margin-left:1rem;
+            --hover-color:var(--primary-2);
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            border:none;
+            position:relative;
+            color:var(--white);
+            font-size:1rem;
+            transition:all .3s ease;
+            font-family:Rowdies;
+            padding:.9em 1.4em;
+            transform:skew(-10deg);
+            font-weight:900;
+            overflow:hidden;
+            text-transform:uppercase;
+            border-radius:.2em;
+            outline:none;
+            text-shadow:0 .1em 0 #000;
+            -webkit-text-stroke:1px var(--black);
+            box-shadow:0 .15rem 0 rgba(0,0,0,.315);
+            cursor:pointer;
+            `;
           right.appendChild(x);
           x.addEventListener('change', function () {
             let thisId = this.parentElement.parentElement.getElementsByClassName('session-id')[0].innerHTML;
@@ -1729,9 +1794,9 @@ function SetGameModesCheckBoxes() {
         if (!timesSpan) {
           let teatime = document.createElement('span');
           teatime.id = 'bkc-map-time';
-          teatime.innerHTML = currentRoom.metadata.shortMinutesLeft;
+          teatime.innerHTML = shortMins;
           left.appendChild(teatime);
-        } else if (timesSpan.innerHTML !== currentRoom.metadata.shortMinutesLeft) timesSpan.innerHTML = currentRoom.metadata.shortMinutesLeft;
+        } else if (timesSpan.innerHTML !== shortMins) timesSpan.innerHTML = shortMins;
       }
     });
 
@@ -1741,167 +1806,167 @@ function SetGameModesCheckBoxes() {
     }
   }
   let list = document.querySelector('#view div.background div.container div.content div.servers div.container-games div.list-cont div.list');
-  if (list && !document.querySelector('#bkc-minmax-selects')) {
-    let app = document.querySelector('#app');
-    let modesCont = document.createElement('div');
-    let bkcMinSelect = document.createElement('div');
-    let bkcRegion = document.createElement('div');
-    let bkcRegionSpan = bkcRegion.appendChild(document.createElement('span'));
-    bkcRegion.id = 'bkc-regional-menu';
-    modesCont.className = 'mods tabmods';
-    let bkcRegionDropdown = bkcRegion.appendChild(
-      (() => {
-        let menu = document.createElement('div');
-        menu.id = 'bkc-region-dropdown';
-        let pp =
-          app.__vue__.$children[0].canFilterRegions ||
-          app.__vue__.$children[0].$children[0].canFilterRegions ||
-          window._.keyBy(
-            window._.filter(app.__vue__.$children[0]?.regions || app.__vue__.$children[1]?.regions || app.__vue__.$children[0].$children[1]?.regions, (filter) => filter.canFilter === true),
-            'type'
-          );
-        Object.keys(pp).forEach((g) => {
-          let p = document.createElement('div');
-          p.id = pp[g].type;
-          p.className = 'bkc-region-option';
-          p.innerHTML = pp[g].type;
-          menu.appendChild(p);
-        });
-        return menu;
-      })()
-    );
+  if (!list || document.querySelector('#bkc-minmax-selects')) return;
 
-    let rgion = document.querySelector('#play').__vue__.$options.parent?.selectedRegion;
-    bkcRegionSpan.innerText = rgion || '....';
-    bkcRegionDropdown.className = rgion ? `server-${rgion}` : '';
-    bkcMinSelect.id = 'bkc-minmax-selects';
-    bkcMinSelect.innerHTML = getBkcMinSelectInnerHtml();
+  let app = document.querySelector('#app');
+  let modesCont = document.createElement('div');
+  let bkcMinSelect = document.createElement('div');
+  let bkcRegion = document.createElement('div');
+  let bkcRegionSpan = bkcRegion.appendChild(document.createElement('span'));
+  bkcRegion.id = 'bkc-regional-menu';
+  modesCont.className = 'mods tabmods';
+  let bkcRegionDropdown = bkcRegion.appendChild(
+    (() => {
+      let menu = document.createElement('div');
+      menu.id = 'bkc-region-dropdown';
+      let pp = app.__vue__.$children.find((a) => a?.canFilterRegions).canFilterRegions;
+      Object.keys(pp).forEach((g) => {
+        let p = document.createElement('div');
+        p.id = pp[g].type;
+        p.className = 'bkc-region-option';
+        p.innerHTML = pp[g].type;
+        menu.appendChild(p);
+      });
+      return menu;
+    })()
+  );
 
-    Object.keys(GameModes).forEach((mode) => {
-      let moddiv = document.createElement('div');
-      moddiv.className = mode;
-      moddiv.innerHTML = `
+  let rgion = document.querySelector('#play').__vue__.$options.parent?.selectedRegion;
+  bkcRegionSpan.innerText = rgion || '....';
+  bkcRegionDropdown.className = rgion ? `server-${rgion}` : '';
+  bkcMinSelect.id = 'bkc-minmax-selects';
+  bkcMinSelect.innerHTML = getBkcMinSelectInnerHtml();
+
+  if (typeof GameModes['P'] !== 'undefined') {
+    delete GameModes['P'];
+    settings.set('GameModes', GameModes);
+  }
+
+  Object.keys(GameModes).forEach((mode) => {
+    let moddiv = document.createElement('div');
+    moddiv.className = mode;
+    moddiv.innerHTML = `
     <label for="${mode}" class="custom-checkbox checkbox-size">
     <input name="${mode}" id="${mode}" type="checkbox" class="${mode}-checkbox">
     <span> ${mode} </span>
     </label>
     `;
-      moddiv = modesCont.appendChild(moddiv);
-      modesCont.getElementsByClassName(`${mode}-checkbox`)[0].checked = GameModes[mode];
-    });
-    bkcRegion = document.querySelector('#view > div > div > div.content > div > div > div.list-cont > div.tabs').appendChild(bkcRegion);
-    modesCont = bkcMinSelect.appendChild(modesCont);
+    moddiv = modesCont.appendChild(moddiv);
+    modesCont.getElementsByClassName(`${mode}-checkbox`)[0].checked = GameModes[mode];
+  });
+  bkcRegion = document.querySelector('#view > div > div > div.content > div > div > div.list-cont > div.tabs').appendChild(bkcRegion);
+  modesCont = bkcMinSelect.appendChild(modesCont);
 
-    let bkcMinPlayers = bkcMinSelect.querySelector('#bkc-minmax-left');
-    let bkcMinTime = bkcMinSelect.querySelector('#bkc-minmax-right');
-    let bkcMinTimeValueInput = bkcMinTime.querySelector('.bkc-min-players-time-text');
-    let bkcMinPlayersValueInput = bkcMinPlayers.querySelector('.bkc-min-players-time-text');
-    let bkcMinPlayersSlider = bkcMinPlayers.querySelector('#bkc-min-players');
-    let bkcMinTimeSlider = bkcMinTime.querySelector('#bkc-min-time');
+  let bkcMinPlayers = bkcMinSelect.querySelector('#bkc-minmax-left');
+  let bkcMinTime = bkcMinSelect.querySelector('#bkc-minmax-right');
+  let bkcMinTimeValueInput = bkcMinTime.querySelector('.bkc-min-players-time-text');
+  let bkcMinPlayersValueInput = bkcMinPlayers.querySelector('.bkc-min-players-time-text');
+  let bkcMinPlayersSlider = bkcMinPlayers.querySelector('#bkc-min-players');
+  let bkcMinTimeSlider = bkcMinTime.querySelector('#bkc-min-time');
 
-    bkcMinPlayersSlider.value = minPlayers;
-    bkcMinPlayersValueInput.value = minPlayers;
-    bkcMinTimeSlider.value = minTime;
-    bkcMinTimeValueInput.value = minTime;
+  bkcMinPlayersSlider.value = minPlayers;
+  bkcMinPlayersValueInput.value = minPlayers;
+  bkcMinTimeSlider.value = minTime;
+  bkcMinTimeValueInput.value = minTime;
 
-    let _8minPowerNap = new Map([
-      [
-        bkcMinPlayers,
-        {
-          g: bkcMinPlayers,
-          p: bkcMinPlayers.querySelector('.bkc-gamemodes-players-dropdown'),
-          l: bkcMinPlayersValueInput,
-          w: bkcMinPlayersSlider,
-        },
-      ],
-      [
-        bkcMinTime,
-        {
-          g: bkcMinTime,
-          p: bkcMinTime.querySelector('.bkc-gamemodes-players-dropdown'),
-          l: bkcMinTimeValueInput,
-          w: bkcMinTimeSlider,
-        },
-      ],
-      [
-        bkcRegion,
-        {
-          g: bkcRegion,
-          p: bkcRegionDropdown,
-          a: bkcRegionSpan,
-        },
-      ],
-    ]);
+  let _8minPowerNap = new Map([
+    [
+      bkcMinPlayers,
+      {
+        g: bkcMinPlayers,
+        p: bkcMinPlayers.querySelector('.bkc-gamemodes-players-dropdown'),
+        l: bkcMinPlayersValueInput,
+        w: bkcMinPlayersSlider,
+      },
+    ],
+    [
+      bkcMinTime,
+      {
+        g: bkcMinTime,
+        p: bkcMinTime.querySelector('.bkc-gamemodes-players-dropdown'),
+        l: bkcMinTimeValueInput,
+        w: bkcMinTimeSlider,
+      },
+    ],
+    [
+      bkcRegion,
+      {
+        g: bkcRegion,
+        p: bkcRegionDropdown,
+        a: bkcRegionSpan,
+      },
+    ],
+  ]);
 
-    let boundShowHideGameModes = ShowHideGameModes.bind(_8minPowerNap.get(bkcRegion));
+  let boundShowHideGameModes = ShowHideGameModes.bind(_8minPowerNap.get(bkcRegion));
 
-    bkcMinPlayers.onclick = (e) => {
-      minPlayers = pointsFlagAndChill.call(_8minPowerNap.get(bkcMinPlayers), e, minPlayers);
-      settings.set('minPlayers', minPlayers);
+  bkcMinPlayers.onclick = (e) => {
+    minPlayers = pointsFlagAndChill.call(_8minPowerNap.get(bkcMinPlayers), e, minPlayers);
+    settings.set('minPlayers', minPlayers);
+    boundShowHideGameModes();
+  };
+
+  bkcMinTime.onclick = (e) => {
+    minTime = pointsFlagAndChill.call(_8minPowerNap.get(bkcMinTime), e, minTime);
+    settings.set('minTime', minTime);
+    boundShowHideGameModes();
+  };
+
+  bkcRegion.onclick = (e) => {
+    let reg = pointsFlagAndChill.call(_8minPowerNap.get(bkcRegion), e);
+    if (reg) {
+      bkcRegionDropdown.className = `server-${reg}`;
+      let regionals = app.__vue__.$children.find((a) => a?.changeRegion)?.changeRegion;
+      if (!regionals) return BKC.tip('cant find changeRegion');
+      regionals(reg);
       boundShowHideGameModes();
-    };
+    }
+  };
 
-    bkcMinTime.onclick = (e) => {
-      minTime = pointsFlagAndChill.call(_8minPowerNap.get(bkcMinTime), e, minTime);
+  bkcRegion.onmouseenter = playHoverAudio;
+
+  bkcMinSelect.addEventListener('input', (event) => {
+    if (event.target?.name && typeof GameModes[event.target.name] !== 'undefined') {
+      GameModes[event.target.name] = event.target.checked;
+      settings.set('GameModes', GameModes);
+    } else if (event.target.id === 'bkc-min-time') {
+      minTime = Math.ceil(event.target.value);
+      bkcMinTimeValueInput.value = minTime;
       settings.set('minTime', minTime);
-      boundShowHideGameModes();
-    };
+    } else if (event.target.id === 'bkc-min-players') {
+      minPlayers = Math.ceil(event.target.value);
+      bkcMinPlayersValueInput.value = minPlayers;
+      settings.set('minPlayers', minPlayers);
+    }
+    boundShowHideGameModes();
+  });
+  bkcMinSelect = list.parentElement.insertBefore(bkcMinSelect, list);
 
-    bkcRegion.onclick = (e) => {
-      let reg = pointsFlagAndChill.call(_8minPowerNap.get(bkcRegion), e);
-      if (reg) {
-        bkcRegionDropdown.className = `server-${reg}`;
-        let regionals = app.__vue__.$children[0]?.changeRegion || app.__vue__.$children[app.__vue__.$children.length - 1]?.changeRegion;
-        if (regionals) {
-          regionals(reg);
-          boundShowHideGameModes();
-        }
-      }
-    };
+  new MutationObserver(() => {
+    boundShowHideGameModes();
+  }).observe(list, {
+    childList: true,
+    attributes: true,
+    subtree: true,
+    attributeOldValue: true,
+    characterData: true,
+    characterDataOldValue: true,
+  });
 
-    bkcRegion.onmouseenter = playHoverAudio;
+  let chatGpt = document.querySelector('div.chat-cont > div.chat.chat > div.messages.messages-cont');
+  if (!chatGpt) return;
 
-    bkcMinSelect.addEventListener('input', (event) => {
-      if (event.target?.name && typeof GameModes[event.target.name] !== 'undefined') {
-        GameModes[event.target.name] = event.target.checked;
-        settings.set('GameModes', GameModes);
-      } else if (event.target.id === 'bkc-min-time') {
-        minTime = Math.ceil(event.target.value);
-        bkcMinTimeValueInput.value = minTime;
-        settings.set('minTime', minTime);
-      } else if (event.target.id === 'bkc-min-players') {
-        minPlayers = Math.ceil(event.target.value);
-        bkcMinPlayersValueInput.value = minPlayers;
-        settings.set('minPlayers', minPlayers);
-      }
-      boundShowHideGameModes();
-    });
-    bkcMinSelect = list.parentElement.insertBefore(bkcMinSelect, list);
+  new MutationObserver(() => {
+    if (chatGpt.__vue__.messages.length > nerfChatLenght) chatGpt.__vue__.messages.splice(0, chatGpt.__vue__.messages.length - nerfChatLenght);
+  }).observe(chatGpt, {
+    childList: true,
+    subtree: true,
+    characterData: true,
+  });
 
-    new MutationObserver(() => {
-      boundShowHideGameModes();
-    }).observe(list, {
-      childList: true,
-      attributes: true,
-      subtree: true,
-      attributeOldValue: true,
-      characterData: true,
-      characterDataOldValue: true,
-    });
-
-    let chatGpt = document.querySelector('div.chat-cont > div.chat.chat > div.messages.messages-cont');
-    if (chatGpt) {
-      new MutationObserver(() => {
-        if (chatGpt.__vue__.messages.length > nerfChatLenght) chatGpt.__vue__.messages.splice(0, chatGpt.__vue__.messages.length - nerfChatLenght);
-      }).observe(chatGpt, {
-        childList: true,
-        subtree: true,
-        characterData: true,
-      });
-
-      let showTradeElement = document.createElement('div');
-      let chatInput = document.querySelector('#WMNn');
-      showTradeElement.style = `
+  let showTradeElement = document.createElement('div');
+  let chatInput = document.querySelector('#WMNn');
+  showTradeElement.style = `
       width: 100%;
       background: linear-gradient(103.28deg,#262f4b 7.06%,#202639 90.75%);
       height: fit-content;
@@ -1913,62 +1978,53 @@ function SetGameModesCheckBoxes() {
       transition: all 0.1s ease 0.2s;
       z-index: 999999;
       `;
-      showTradeElement.id = 'bkc-show-trade-element';
-      showTradeElement = chatInput.parentElement.insertBefore(showTradeElement, chatInput);
-      chatGpt.onmouseup = (e) => {
-        if (e.target.tagName !== 'BUTTON') {
-          for (let i = 0; i < e.path.length; i++) {
-            if (e.path[i].classList?.contains('message')) {
-              if (e.path[i].classList?.contains('trade')) {
-                let p = [...e.path[i].querySelectorAll('span')].filter((span) => span.innerText.startsWith('/trade'));
-                if (p.length > -1) {
-                  chatInput.value = p[0].innerText;
-                  showTradeElement.innerHTML = e.path[i].innerHTML;
-                  let Bouton = showTradeElement.querySelector('button');
-                  Bouton.parentElement.innerHTML = Bouton.innerText;
-                  showTradeElement.classList.add('show-trade-visible');
-                  let modalItems = [];
-                  let buttontxts = [];
-                  e.path[i].querySelectorAll('button').forEach((but) => buttontxts.push(but.__vue__.$slots.default[0].text));
-                  chatGpt.__vue__.messages
-                    .filter((mess) => mess.parts[1])
-                    .forEach((smallMess) => {
-                      smallMess.parts.filter((massiveMess) => buttontxts.includes(massiveMess.data.name) && !modalItems.includes(massiveMess.data) && modalItems.push(massiveMess.data));
-                    });
-                  showTradeElement.onmousedown = (ere) => {
-                    if (ere.target.tagName === 'BUTTON') {
-                      let chatblur = chatInput.onblur;
-                      let calzone = modalItems.findIndex((item) => item.name.toLowerCase() === ere.target.innerText.toLowerCase());
-                      if (calzone > -1) {
-                        chatInput.onblur = null;
-                        chatGpt.__vue__.openModalInspect(modalItems[calzone]);
-                        ere.target.focus();
-                        ere.target.onblur = () => {
-                          ere.target.onblur = null;
-                          chatInput.focus();
-                          chatInput.onblur = chatblur;
-                        };
-                      }
-                    }
-                  };
-                  chatInput.focus();
-                  chatInput.onblur = () => {
-                    chatInput.onblur = null;
-                    showTradeElement.classList.remove('show-trade-visible');
-                    if (chatInput.value === p[0].innerText) chatInput.value = '';
-                  };
-                  chatGpt.__vue__.resumeAutoScroll();
-                }
-              }
-              break;
-            }
-          }
+  showTradeElement.id = 'bkc-show-trade-element';
+  showTradeElement = chatInput.parentElement.insertBefore(showTradeElement, chatInput);
+  chatGpt.onmouseup = (e) => {
+    if (e.target.tagName === 'BUTTON') return;
+    for (let i = 0; i < e.path.length; i++) {
+      if (!e.path[i].classList?.contains('message')) continue;
+      if (!e.path[i].classList?.contains('trade')) break;
+      let p = [...e.path[i].querySelectorAll('span')].filter((span) => span.innerText.startsWith('/trade'));
+      if (p.length < 1) break;
+      chatInput.value = p[0].innerText;
+      showTradeElement.innerHTML = e.path[i].innerHTML;
+      let Bouton = showTradeElement.querySelector('button');
+      Bouton.parentElement.innerHTML = Bouton.innerText;
+      showTradeElement.classList.add('show-trade-visible');
+      let modalItems = [];
+      let buttontxts = [];
+      e.path[i].querySelectorAll('button').forEach((but) => buttontxts.push(but.__vue__.$slots.default[0].text));
+      chatGpt.__vue__.messages
+        .filter((mess) => mess.parts[1])
+        .forEach((smallMess) => {
+          smallMess.parts.filter((massiveMess) => buttontxts.includes(massiveMess.data.name) && !modalItems.includes(massiveMess.data) && modalItems.push(massiveMess.data));
+        });
+      showTradeElement.onmousedown = (ere) => {
+        if (ere.target.tagName !== 'BUTTON') return;
+        let chatblur = chatInput.onblur;
+        let calzone = modalItems.findIndex((item) => item.name.toLowerCase() === ere.target.innerText.toLowerCase());
+        if (calzone > -1) {
+          chatInput.onblur = null;
+          chatGpt.__vue__.openModalInspect(modalItems[calzone]);
+          ere.target.focus();
+          ere.target.onblur = () => {
+            ere.target.onblur = null;
+            chatInput.focus();
+            chatInput.onblur = chatblur;
+          };
         }
       };
-    } else {
-      console.debug('i guess no chat');
+      chatInput.focus();
+      chatInput.onblur = () => {
+        chatInput.onblur = null;
+        showTradeElement.classList.remove('show-trade-visible');
+        if (chatInput.value === p[0].innerText) chatInput.value = '';
+      };
+      chatGpt.__vue__.resumeAutoScroll();
+      break;
     }
-  }
+  };
 }
 
 function MoveTwitchMenu(TwitchHead) {
@@ -2032,16 +2088,28 @@ Tags:  ${twitchinfo?.tags ? twitchinfo.tags.toString() : ''}
 Language:  ${twitchinfo?.language ? twitchinfo.language : ''}
       𝙍𝙞𝙜𝙝𝙩 𝙘𝙡𝙞𝙘𝙠 𝙩𝙤 𝙘𝙤𝙥𝙮 𝙡𝙞𝙣𝙠 𝙩𝙤 𝙘𝙡𝙞𝙥𝙗𝙤𝙖𝙧𝙙 ⠀⠀
     `;
+
     item.innerHTML = `
-<img src="${data['data'][0].profile_image_url}" alt="avatar" class="avatar" style="height: 2.188rem;width: 2.188rem;margin-top: .3rem;border-radius: 20px;border: 2px solid #7235cb;"/>
-<div class="content" style="display: flex;flex-direction: column;align-items: flex-start;margin-left: .7rem;text-shadow: 0 2px 0 rgba(0,0,0,.5);">
-<div id="bkc-twitch-name" style="display: flex;flex-direction: row;flex-wrap: nowrap;align-content: center;justify-content: center;align-items: center;">  
-<div style="font-weight: 700;" class="name">${data['data'][0].display_name}</div>${data['data'][0].broadcaster_type === 'partner' ? '<svg width="16px" height="16px" version="1.1" viewBox="0 0 16 16" x="0px" y="0px" style="fill: rgb(191,148,255);"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.5 3.5L8 2L3.5 3.5L2 8L3.5 12.5L8 14L12.5 12.5L14 8L12.5 3.5ZM7.00008 11L11.5 6.5L10 5L7.00008 8L5.5 6.5L4 8L7.00008 11Z"></path></svg>' : ''}
-</div>
-<div class="count">${twitchinfo.title}</div>
-<div class="count">${viewers} • ${twitchinfo.time}</div>
-</div>
-`;
+    <img src="
+    ${data['data'][0].profile_image_url}"
+    alt="avatar" class="avatar" style="height: 2.188rem;width: 2.188rem;margin-top: .3rem;border-radius: 20px;border: 2px solid #7235cb;"/>
+    <div class="content" style="display: flex;flex-direction: column;align-items: flex-start;margin-left: .7rem;text-shadow: 0 2px 0 rgba(0,0,0,.5);">
+    <div id="bkc-twitch-name" style="display: flex;flex-direction: row;flex-wrap: nowrap;align-content: center;justify-content: center;align-items: center;">
+    <div style="font-weight: 700;" class="name">${data['data'][0].display_name}</div>
+    ${
+      data['data'][0].broadcaster_type === 'partner'
+        ? `
+      <svg width="16px" height="16px" version="1.1" viewBox="0 0 16 16" x="0px" y="0px" style="fill: rgb(191,148,255);">
+      <path fill-rule="evenodd" clip-rule="evenodd" 
+      d="M12.5 3.5L8 2L3.5 3.5L2 8L3.5 12.5L8 14L12.5 12.5L14 8L12.5 3.5ZM7.00008 11L11.5 6.5L10 5L7.00008 8L5.5 6.5L4 8L7.00008 11Z"></path>
+      </svg>`
+        : ''
+    }
+    </div>
+    <div class="count">${twitchinfo.title}</div>
+    <div class="count">${viewers} • ${twitchinfo.time}</div>
+    </div>`;
+
     item.onmouseup = (e) => {
       if (e.button === 0) shell.openExternal(`https://www.twitch.tv/${data['data'][0].display_name}`);
       else if (e.button === 2) {
@@ -2086,7 +2154,16 @@ function initTwitchMenu() {
       top:${TwitchTop};left:${TwitchLeft};--bkc-stremz-menu-width:${TwitchWidth};width:${TwitchWidth};height:${TwitchHeight};${ShowTwitch ? 'display:block!important;' : 'display:none!important;'}`;
       streamsmenu.id = 'live-streams-menu';
       streamsmenu.innerHTML = `
-      <div class="head" style="display: flex; align-items: center; font-size: 1.5rem; font-weight: 700; text-shadow: 0 3px 1px rgba(0, 0, 0, 0.5); border-bottom: 2px solid #191919; padding: 10px 10px 10px 1rem; background: var(--secondary-2)">
+      <div class="head" style="
+      display: flex;
+      align-items: center;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-shadow: 0 3px 1px rgba(0, 0, 0, 0.5);
+      border-bottom: 2px solid #191919;
+      padding: 10px 10px 10px 1rem;
+      background: var(--secondary-2)
+      ">
       LIVE STREAMS<svg style="fill: currentColor; height: 2.375rem; width: 2.063rem; margin-left: 1.125rem" xmlns="http://www.w3.org/2000/svg" class="icon-twitch svg-icon svg-icon--twitch">
         <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/img/icons.6e41b8dd.svg#twitch"></use>
       </svg>
@@ -2201,16 +2278,9 @@ function checkclaimQuest(type) {
   }
 }
 
-function clock() {
-  if (!clockInterval) {
-    clockInterval = setInterval(() => {
-      let titTok = document.querySelector('#free-clock');
-      if (titTok) titTok.innerHTML = new Date().toLocaleTimeString();
-    }, 1000);
-  }
-}
-
 async function getStats() {
+  if (typeof window.view.__vue__?.user !== 'object') return 'NAAHHHH AINTNOWAY';
+
   if (!id) {
     id = document.querySelector('.username')?.innerHTML.slice(1);
   }
@@ -2374,7 +2444,6 @@ function FavedButtonsHandler(e) {
     });
     favoriteSkins['Selected'].push(defaultskinName);
   }
-
   if (e.target?.className === 'bkc-fav-button') {
     let skintext = e.target.previousSibling?.innerText;
     let favedbutParent = e.target.parentElement.parentElement;
@@ -2388,25 +2457,18 @@ function FavedButtonsHandler(e) {
         settings.set('allFavoriteSkins', allFavoriteSkins);
       }
     }
-  } else if (e.target.innerText === ' TAKE ') {
+  } else if (e.target.innerText.trim().toUpperCase() === 'TAKE') {
     let skintext = e.target.nextElementSibling.innerText;
     let skin = getSkin(skintext);
     if (skin) {
       let theId = skin.item?.parent?.id || skin.item?.id;
       let shouldUpdateWeapon = window.app.__vue__.$store._modules.root.state.user.WwNMns.WEAPON_1.item.id === theId;
-      if (skin.item.type === 'BODY_SKIN' || shouldUpdateWeapon) {
-        if (skin.item.type === 'BODY_SKIN') {
-          playerUpdated = true;
-        } else if (shouldUpdateWeapon) {
-          if (defaultWeaponTextures.has(`_${skintext}`)) currentWeaponTexture = defaultWeaponTextures.get(`_${skintext}`).src;
-          else currentWeaponTexture = null;
-          weaponUpdated = true;
-        }
-        updateSkin(skin);
-        // ^ not my fault, game just doesnt do it
-        // thats why when you change weapon skins then close inventory and open it again its same skin
-        // this wont fix when you change weapons, but not my problem
+      if (shouldUpdateWeapon) {
+        if (defaultWeaponTextures.has(`_${skintext}`)) currentWeaponTexture = defaultWeaponTextures.get(`_${skintext}`);
+        else currentWeaponTexture = null;
+        weaponUpdated = true;
       }
+      updateSkin(skin);
     }
   }
 }
@@ -2421,18 +2483,22 @@ function getSkin(skin) {
 }
 
 function updateSkin(skin) {
-  let user = window.app.__vue__.$children[0]?.user || window.app.__vue__.$children[0].$children[0].user;
-  let activeSkin = skin.item.type === 'BODY_SKIN' ? user.activeBodySkin : user.activeWeapon1Skin;
-  if (skin.item?.parent) {
-    activeSkin.parent.id = skin.item.parent.id;
-    activeSkin.parent.name = skin.item.parent.name;
-    activeSkin.parent.rarity = skin.item.parent.rarity;
-    activeSkin.parent.type = skin.item.parent.type;
-  }
-  activeSkin.id = skin.item.id;
-  activeSkin.name = skin.item.name.replace(/^_/, '');
-  activeSkin.rarity = skin.item.rarity;
-  activeSkin.type = skin.item.type;
+  let user = window.view.__vue__?.$parent?.user || window.view.__vue__?.user;
+  if (!user) return BKC.tip('no user');
+  user[skin.item.type === 'BODY_SKIN' ? 'activeBodySkin' : 'activeWeapon1Skin'] = {
+    id: skin.item.id,
+    name: skin.item.name.replace(/^_/, ''),
+    rarity: skin.item.rarity,
+    type: skin.item.type,
+    parent: skin.item?.parent
+      ? {
+          id: skin.item.parent.id,
+          name: skin.item.parent.name,
+          rarity: skin.item.parent.rarity,
+          type: skin.item.parent.type,
+        }
+      : null,
+  };
 }
 
 async function applyRandomSkins(_currentWeaponSkin) {
@@ -2497,8 +2563,7 @@ async function applyRandomSkins(_currentWeaponSkin) {
             if (exist) {
               if (skin === _currentWeaponSkin) {
                 if (defaultWeaponTextures.has(exist.item.name)) {
-                  ++ignoreError;
-                  currentWeaponTexture = defaultWeaponTextures.get(exist.item.name).src;
+                  currentWeaponTexture = defaultWeaponTextures.get(exist.item.name);
                 } else {
                   currentWeaponTexture = null;
                 }
@@ -2510,11 +2575,7 @@ async function applyRandomSkins(_currentWeaponSkin) {
               // makes no difference if it throws or not though just get error notification popups
               await window.app.__vue__.$store._actions['user/takeItem'][0](exist);
               updateSkin(exist); // <-- fixes inventory + profile canvas
-              if (skin === _currentWeaponSkin) {
-                weaponUpdated = true;
-              } else {
-                playerUpdated = true;
-              }
+              if (skin === _currentWeaponSkin) weaponUpdated = true;
             }
           } else {
             let result = await fetch('https://api.kirka.io/api/inventory/take', {
@@ -2543,11 +2604,11 @@ async function applyRandomSkins(_currentWeaponSkin) {
 }
 
 const Questobserver = new MutationObserver(() => {
-  let remElement;
+  let hideMessages = ['You completed a quest', 'Take item failed', 'Rate limit exceeded', 'Failed to get notifications'];
   let notis = document.querySelectorAll('html body div#app div#notifications span div.vue-notification-wrapper div span.text');
   for (let i = 0; i < notis.length; i++) {
-    remElement = notis[i].parentElement.parentElement;
-    if ((notis[i]?.innerHTML === 'You completed a quest' || notis[i]?.innerHTML === 'Take item failed') && remElement.style.display !== 'none') {
+    let remElement = notis[i].parentElement.parentElement;
+    if (hideMessages.includes(notis[i]?.innerHTML) && remElement.style.display !== 'none') {
       remElement.setAttribute('style', 'display: none!important');
     } else if (/Failed to connect to the room/i.test(notis[i]?.innerHTML) && !window.location.href.startsWith('https://kirka.io/servers/') && remElement.style.display !== 'none') {
       remElement.setAttribute('style', 'display: none!important');
@@ -2585,7 +2646,9 @@ function moveTime() {
   // moves ingame time to tab button menu thing
   if (!timeContainer) {
     timeContainer = document.querySelector('#app > div.game-interface > div.desktop-game-interface > div.state-cont > div.left');
-    let tabInfo = document.querySelectorAll('#app > div.game-interface > div.desktop-game-interface > div.tab-info > div.head.text-2,#app > div.game-interface > div.desktop-game-interface > div.tab-parkour-info > div.head.text-2')[0];
+    let tabInfo = document.querySelectorAll(
+      '#app > div.game-interface > div.desktop-game-interface > div.tab-info > div.head.text-2,#app > div.game-interface > div.desktop-game-interface > div.tab-parkour-info > div.head.text-2'
+    )[0];
     let serverThing = tabInfo?.querySelectorAll('div.server-id,div.label.blue')[0];
     if (serverThing && timeContainer) {
       timeContainer = tabInfo.insertBefore(timeContainer, serverThing);
@@ -2636,7 +2699,7 @@ function playHoverAudio() {
 }
 
 function appendClanInvites() {
-  async function acceptRejectClanInvite(requestUrl, invId) {
+  async function acceptRejectClanInvite(requestUrl, clan) {
     let response = await fetch(requestUrl, {
       headers: {
         accept: 'application/json, text/plain, */*',
@@ -2649,40 +2712,62 @@ function appendClanInvites() {
       },
       referrer: 'https://kirka.io/',
       referrerPolicy: 'strict-origin-when-cross-origin',
-      body: `{"inviteId":"${invId}"}`,
+      body: `{"inviteId":"${clan.id}"}`,
       method: 'POST',
       mode: 'cors',
       credentials: 'include',
     });
     // eslint-disable-next-line no-useless-escape
-    if (!response.ok) console.count(console.log('   (｢•-•)｢ ʷʱʸ?   ', '   i dunno? ¯_(͡• ͜໒ ͡• )_/¯   '));
+    if (!response.ok) return console.count(console.log('   (｢•-•)｢ ʷʱʸ?   ', '   i dunno? ¯_(͡• ͜໒ ͡• )_/¯   '));
+
+    if (requestUrl !== 'https://api.kirka.io/api/clans/acceptInvite') return;
+    user.clan = clan.clan.name;
+    clanInviteCointainer.classList.add('bkc-hide-clan-accept');
   }
 
   function acceptRejectClanHandler(e) {
     if (e.target.tagName.toLowerCase() === 'button') {
-      let wrapper = document.querySelector('#app div.interface.text-2 div.vm--container').__vue__;
       if (e.target.classList.contains('accept')) {
-        acceptRejectClanInvite('https://api.kirka.io/api/clans/acceptInvite', this.clanId);
-        wrapper.close();
+        acceptRejectClanInvite('https://api.kirka.io/api/clans/acceptInvite', this.clan);
+        //wrapper.close();
       } else {
-        acceptRejectClanInvite('https://api.kirka.io/api/clans/cancelInvite', this.clanId);
+        acceptRejectClanInvite('https://api.kirka.io/api/clans/cancelInvite', this.clan);
       }
       clanInviteCointainer.removeChild(this.newdescription);
       clanInviteCointainer.removeChild(this.newbuttons);
-      if (clanInviteCointainer.childNodes.length <= 2) wrapper.close();
+      if (clanInviteCointainer.childNodes.length <= 4) wrapper.close();
     }
   }
 
-  let clanInviteCointainer = document.querySelector('html body div#app div.interface.text-2 div.vm--container div.vm--modal div.wrapper-modal div.container-card');
-  let description = document.querySelector('html body div#app div.interface.text-2 div.vm--container div.vm--modal div.wrapper-modal div.container-card div.description');
-  let buttons = document.querySelector('html body div#app div.interface.text-2 div.vm--container div.vm--modal div.wrapper-modal div.container-card div.btns');
-  if (description && buttons) {
-    if (!claninvites?.length) claninvites = document.querySelector('#view').__vue__.user?.clanInvites;
-    for (let i = 0; i < claninvites?.length; i++) {
-      if (!clanSelectors.has(claninvites[i].clan)) {
-        let newdescription = description.cloneNode(true);
-        let newbuttons = buttons.cloneNode(true);
-        newdescription.innerHTML = `
+  let wrap = document.querySelector('#app div.interface.text-2 div.vm--container');
+  let wrapper = wrap?.__vue__;
+  if (wrapper.isClosing) return;
+
+  if (!wrapper.closer && wrapper?.close) {
+    wrapper.closer = wrapper.close;
+    wrapper.close = function () {
+      wrapper.isClosing = true;
+      wrapper.closer.apply(this, arguments);
+      clanSelectors.clear();
+    };
+  }
+
+  let clanInviteCointainer = wrap?.querySelector('div.container-card');
+  let description = clanInviteCointainer?.querySelector('div.description');
+  let buttons = clanInviteCointainer?.querySelector('div.btns');
+  let user = window.view.__vue__?.user;
+  let claninvites = user?.clanInvites;
+  if (!claninvites || !description || !buttons) return;
+
+  if (user.clan && !clanInviteCointainer.classList.contains('bkc-hide-clan-accept')) {
+    clanInviteCointainer.classList.add('bkc-hide-clan-accept');
+  }
+
+  for (let i = 0; i < claninvites?.length; i++) {
+    if (clanSelectors.has(claninvites[i].clan.name)) return;
+    let newdescription = description.cloneNode(true);
+    let newbuttons = buttons.cloneNode(true);
+    newdescription.innerHTML = `
         You are invited to the ${claninvites[i].clan.name} clan!
         <br>
         clan scores: ${claninvites[i].clan.allScores}
@@ -2695,38 +2780,43 @@ function appendClanInvites() {
         ${
           claninvites[i].clan.discordLink !== null
             ? `<br>
-            <div data-v-21ec0da2="" class="discord-cont" style="display: flex;align-items: center;border-radius: 5px;background: #7289da;border: 2px solid #89a0ef;margin: 1.5rem auto auto auto;padding: 0 .8rem 0 .4rem;font-size: .875rem;font-weight: 700;cursor: pointer;transition: all .3s ease;width: max-content;height: 2.536rem;max-height: 2.536rem;"><svg style="height: 2.25rem;width: 2.25rem;" data-v-49b1054a="" data-v-21ec0da2="" xmlns="http://www.w3.org/2000/svg" class="discord-icon svg-icon svg-icon--discord-classic"><!----><use data-v-49b1054a="" xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/img/icons.366c992b.svg#discord-classic"></use></svg> DISCORD </div>`
+            <div data-v-031-May-26th-2022="" class="discord-cont">
+            <svg
+              style="height: 2.25rem; width: 2.25rem; fill: currentColor"
+              xmlns="http://www.w3.org/2000/svg"
+              class="discord-icon svg-icon svg-icon--discord-classic">
+              <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="/img/icons.366c992b.svg#discord-classic"></use>
+            </svg>
+            DISCORD
+          </div>
+            `
             : ''
         }
         `;
 
-        newdescription = clanInviteCointainer.appendChild(newdescription);
-        newbuttons = clanInviteCointainer.appendChild(newbuttons);
-        clanSelectors.set(claninvites[i].clan, {
-          newdescription,
-          newbuttons,
-          clanId: claninvites[i].id,
-        });
+    newdescription = clanInviteCointainer.appendChild(newdescription);
+    newbuttons = clanInviteCointainer.appendChild(newbuttons);
+    clanSelectors.set(claninvites[i].clan.name, {
+      newdescription,
+      newbuttons,
+      clan: claninvites[i],
+    });
 
-        newbuttons.onclick = (e) => acceptRejectClanHandler.call(clanSelectors.get(claninvites[i].clan), e);
-        if (claninvites[i].clan.discordLink) {
-          newdescription.onmouseup = (e) => {
-            if (e.target.className === 'discord-cont' || e.target.tagName === 'use') {
-              if (e.button === 0) shell.openExternal(claninvites[i].clan.discordLink);
-              else if (e.button === 2) {
-                clipboard.writeText(claninvites[i].clan.discordLink);
-                BKC.tip('Link Copied');
-              }
-            }
-          };
+    newbuttons.onclick = (e) => acceptRejectClanHandler.call(clanSelectors.get(claninvites[i].clan.name), e);
+    if (claninvites[i].clan.discordLink) {
+      newdescription.onmouseup = (e) => {
+        if (e.target.className === 'discord-cont' || e.target.tagName === 'use') {
+          if (e.button === 0) shell.openExternal(claninvites[i].clan.discordLink);
+          else if (e.button === 2) {
+            clipboard.writeText(claninvites[i].clan.discordLink);
+            BKC.tip('Link Copied');
+          }
         }
-      }
-    }
-    if ((clanInviteCointainer.childNodes.length - 4) / 2 === claninvites.length) {
-      clanInviteCointainer.removeChild(description);
-      clanInviteCointainer.removeChild(buttons);
+      };
     }
   }
+  description.style.display = 'none';
+  buttons.style.display = 'none';
 }
 
 function customMarketPrice(inventory) {
@@ -2750,7 +2840,9 @@ function customMarketPrice(inventory) {
     marketInputsWrapper = document.createElement('div');
     let marketIncrementSelect = marketInputsWrapper.appendChild(document.createElement('select'));
     let marketTextInput = marketInputsWrapper.appendChild(document.createElement('input'));
-    marketTextInput.style = [...[...document.styleSheets].find((e) => e.href?.startsWith('https://kirka.io/assets/css/app.')).cssRules].find((f) => f.selectorText?.startsWith('.input[')).style.cssText; // lol
+    marketTextInput.style = [...[...document.styleSheets].find((e) => e.href?.startsWith('https://kirka.io/assets/css/app.')).cssRules].find((f) =>
+      f.selectorText?.startsWith('.input[')
+    ).style.cssText; // lol
     marketIncrementSelect.style = marketTextInput.style.cssText;
     marketTextInput.value = inventory.__vue__.marketPrice;
     marketInputsWrapper.id = 'bkc-market-inputs-wrapper';
@@ -2812,83 +2904,464 @@ function customMarketPrice(inventory) {
 
 function sniperButton() {
   let game = document.querySelector('canvas#game');
-  let extraAdsZoomAmountElem = document.getElementById('extraAdsZoomAmount');
-  let extraAdsZoomAmountSpan = document.getElementById('extraAdsZoomAmountSpan');
   zooming = false;
-
-  function gameOnKeyButtonDown(e) {
-    if (inGame && window.mWnwM?.mWnwM?.room?.name !== 'MapEditorRoom') {
-      let eKey = e?.code || e.button;
-      if (eKey === extraAdsZoomKey) {
-        let s = window.mWnwM?.WMmNw._components[55];
-        let scoped = s.WNmnwM || s.WNmM || s.mwNMW;
-        let camera = window.mWnwM?.renderingSystem.camera.scale;
-        if (extraAdsZoomHold && camera) {
-          if (scoped) {
-            camera.z = extraAdsZoomAmount;
-            zooming = true;
-          } else {
-            camera.z = 1;
-            zooming = false;
-          }
-        }
-      }
-    }
-  }
-
-  function gameOnKeyButtonUp(e) {
-    if (inGame && window.mWnwM?.mWnwM?.room?.name !== 'MapEditorRoom') {
-      let eKey = e?.code || e.button;
-      let s = window.mWnwM.WMmNw._components[55];
-      let scoped = s.WNmnwM || s.WNmM || s.mwNMW;
-      let camera = window.mWnwM?.renderingSystem.camera.scale;
-      if (scoped) {
-        if (eKey === extraAdsZoomKey) {
-          if (extraAdsZoomHold) {
-            camera.z = 1;
-            zooming = false;
-          } else if (!zooming) {
-            camera.z = extraAdsZoomAmount;
-            zooming = true;
-          } else {
-            camera.z = 1;
-            zooming = false;
-          }
-        }
-      } else if (camera) {
-        camera.z = 1;
-        zooming = false;
-      }
-
-      if (eKey === 'Minus') {
-        extraAdsZoomAmount = Number((extraAdsZoomAmount -= 0.1).toFixed(1));
-        if (extraAdsZoomAmount < 1) extraAdsZoomAmount = 1;
-        camera.z = extraAdsZoomAmount;
-        extraAdsZoomAmountElem.value = extraAdsZoomAmount;
-        extraAdsZoomAmountSpan.innerText = extraAdsZoomAmount;
-        settings.set('extraAdsZoomAmount', extraAdsZoomAmount);
-      } else if (eKey === 'Equal') {
-        extraAdsZoomAmount = Number((extraAdsZoomAmount += 0.1).toFixed(1));
-        camera.z = extraAdsZoomAmount;
-        extraAdsZoomAmountElem.value = extraAdsZoomAmount;
-        extraAdsZoomAmountSpan.innerText = extraAdsZoomAmount;
-        settings.set('extraAdsZoomAmount', extraAdsZoomAmount);
-      }
-    }
-  }
-
   if (game) {
     game.onmousedown = gameOnKeyButtonDown;
-    document.addEventListener('keydown', function (e) {
-      gameOnKeyButtonDown(e);
-    });
-
     game.onmouseup = gameOnKeyButtonUp;
-    document.addEventListener('keyup', function (e) {
-      gameOnKeyButtonUp(e);
-    });
   }
 }
+
+function gameOnKeyButtonDown(e) {
+  if (!inGame || window.mWnwM?.mWnwM?.room?.name === 'MapEditorRoom') return;
+  let eKey = e?.code || e.button;
+  if (eKey !== extraAdsZoomKey) return;
+  let s = window.mWnwM?.WMmNw._components[55];
+  let scoped = s.WNmnwM || s.WNmM || s.mwNMW;
+  let camera = window.mWnwM?.renderingSystem.camera.scale;
+  if (!extraAdsZoomHold || !camera) return;
+  if (scoped) {
+    camera.z = extraAdsZoomAmount;
+    zooming = true;
+  } else {
+    camera.z = 1;
+    zooming = false;
+  }
+}
+
+function gameOnKeyButtonUp(e) {
+  if (inGame && window.mWnwM?.mWnwM?.room?.name !== 'MapEditorRoom') {
+    let eKey = e?.code || e.button;
+    let s = window.mWnwM.WMmNw._components[55];
+    let scoped = s.WNmnwM || s.WNmM || s.mwNMW;
+    let camera = window.mWnwM?.renderingSystem.camera.scale;
+    if (scoped) {
+      if (eKey === extraAdsZoomKey) {
+        if (extraAdsZoomHold) {
+          camera.z = 1;
+          zooming = false;
+        } else if (!zooming) {
+          camera.z = extraAdsZoomAmount;
+          zooming = true;
+        } else {
+          camera.z = 1;
+          zooming = false;
+        }
+      }
+    } else if (camera) {
+      camera.z = 1;
+      zooming = false;
+    }
+
+    if (eKey === 'Minus') {
+      extraAdsZoomAmount = Number((extraAdsZoomAmount -= 0.1).toFixed(1));
+      if (extraAdsZoomAmount < 1) extraAdsZoomAmount = 1;
+      camera.z = extraAdsZoomAmount;
+      extraAdsZoomAmountElem.value = extraAdsZoomAmount;
+      extraAdsZoomAmountSpan.innerText = extraAdsZoomAmount;
+      settings.set('extraAdsZoomAmount', extraAdsZoomAmount);
+    } else if (eKey === 'Equal') {
+      extraAdsZoomAmount = Number((extraAdsZoomAmount += 0.1).toFixed(1));
+      camera.z = extraAdsZoomAmount;
+      extraAdsZoomAmountElem.value = extraAdsZoomAmount;
+      extraAdsZoomAmountSpan.innerText = extraAdsZoomAmount;
+      settings.set('extraAdsZoomAmount', extraAdsZoomAmount);
+    }
+  }
+}
+
+let extraAdsZoomAmountElem = document.getElementById('extraAdsZoomAmount');
+let extraAdsZoomAmountSpan = document.getElementById('extraAdsZoomAmountSpan');
+
+document.addEventListener('keydown', gameOnKeyButtonDown, {
+  passive: true,
+});
+
+document.addEventListener('keyup', gameOnKeyButtonUp, {
+  passive: true,
+});
+
+//(function () {
+(function () {
+  if (window.crypto?.randomUUID) return;
+  window.crypto = window.crypto || {};
+
+  if (typeof require === 'function') {
+    window.cryptoManiac = require('crypto');
+    if (typeof window.cryptoManiac?.randomBytes === 'function')
+      return Object.defineProperty(window.crypto, 'randomUUID', {
+        value: () => [4, 2, 2, 2, 6].map((a) => window.cryptoManiac.randomBytes(a).toString('hex')).join('-'),
+      });
+  }
+
+  Object.defineProperty(window.crypto, 'randomUUID', {
+    value: () => {
+      let a = URL.createObjectURL(new Blob());
+      let p = a.split('/').reverse()[0];
+      URL.revokeObjectURL(a);
+      return p;
+    },
+  });
+})();
+
+let eventMap = new Map();
+Object.defineProperties(eventMap, {
+  removeListener: {
+    value() {
+      if (this.size)
+        this.forEach((arg, targ) => {
+          EventTarget.prototype.removeEventListener.call(targ, arg[0], arg[3] || arg[1], arg[2]);
+        });
+      this.clear();
+    },
+  },
+});
+
+let oldAddEventListener = EventTarget.prototype.addEventListener;
+EventTarget.prototype.addEventListener = function () {
+  if (arguments[0] === 'keydown' && arguments[2]?.capture === true && arguments[2]?.passive === false && /registerSystem.*registerSystem/s.test(new Error().stack)) {
+    if (!WebRocket.endListener && window.mWnwM?.leaveGame) {
+      WebRocket.endListener = window.mWnwM.leaveGame;
+      window.mWnwM.leaveGame = function () {
+        eventMap.removeListener();
+        WebRocket.endListener.apply(this, arguments);
+        WebRocket.removeListener();
+        WebRocket.clearAll();
+      };
+    }
+
+    if (WebRocket.connected && WebRocket.protocol !== WebRocket.socket.protocol) WebRocket.socket.close();
+    if (eventMap.size) eventMap.removeListener();
+
+    let eventFunc = function (e) {
+      if (!e.target.classList.contains('bkc-global-input')) {
+        eventMap.get(this)[1].apply(this, arguments);
+      }
+    };
+
+    eventMap.set(this, [...arguments, eventFunc]);
+    WebRocket.onMessage();
+
+    return oldAddEventListener.call(this, arguments[0], eventFunc, arguments[2]);
+  }
+  return oldAddEventListener.apply(this, arguments);
+};
+
+const WebRocket = {
+  messages: new WeakMap(),
+  trades: {
+    pool: [],
+    index: 0,
+    set(a) {
+      if (/\sis\soffering\stheir\s/.test(a)) {
+        this.pool.unshift(a.replace(/.*\*\*(.*?)\*\*.*/, '$1'));
+      }
+    },
+    clear() {
+      this.pool = [];
+      this.index = 0;
+    },
+    previous(a) {
+      return this.pool[this.pool[this.index + 1] ? ++this.index : this.index] || a;
+    },
+    next(a) {
+      return this.pool[this.pool[this.index - 1] ? --this.index : this.index] || a;
+    },
+  },
+  min: 1e3,
+  max: 3e4,
+  multiply: 1.5,
+  attempts: 0,
+  connected: false,
+  connecting: false,
+  reconnecting: null,
+  hasDisconnected: false,
+  custom: false,
+  socket: null,
+  endListener: null,
+  showLog: true,
+  keyDown: {
+    listening: false,
+    options: {
+      passive: false,
+    },
+  },
+  clearAll() {
+    this.trades.clear();
+    this.messages = new WeakMap();
+  },
+  clearTimer() {
+    this.reconnecting = this.reconnecting ? clearTimeout(this.reconnecting) : undefined;
+  },
+  interval() {
+    return Math.min(this.min * this.multiply ** this.attempts++, this.max);
+  },
+  reconnect() {
+    if (this.connecting || this.connected) return;
+    this.connecting = !this.connecting;
+    this.dispose();
+    this.clearTimer();
+    this.reconnecting = setTimeout(() => {
+      this.connecting = !this.connecting;
+      this.connect();
+    }, this.interval());
+  },
+  disconnect() {
+    this.socket.close(3210, '💀🤳');
+  },
+  dispose() {
+    this.socket = null;
+  },
+  connect() {
+    if (!this.protocol) return this.reconnect();
+    this.socket = new WebSocket(this.url, this.protocol);
+
+    this.socket.onopen = function () {
+      this.connected = true;
+      this.attempts = 0;
+      this.clearTimer();
+      this.socket.onmessage = this.onMessage.bind(this);
+      if (this.hasDisconnected) this.log('Websocket reconnected');
+    }.bind(this);
+
+    this.socket.onclose = function (e) {
+      this.connected = false;
+      this.hasDisconnected = true;
+      this.log('Websocket closed', e);
+      this.clearAll();
+      if (e.reason !== '💀🤳') return this.reconnect();
+      this.dispose();
+    }.bind(this);
+
+    this.socket.onerror = function (e) {
+      this.connected = false;
+      this.hasDisconnected = true;
+      this.log('Websocket error', e);
+      this.clearAll();
+      this.reconnect();
+    }.bind(this);
+  },
+  fix(thisThing) {
+    return thisThing.replace(/\[(.*?)\|.*?]/g, '[$1]').replace(/\s?\*\*/g, '');
+  },
+  setMessage(msg) {
+    let store = window.app.__vue__.$store;
+    let chat = store._modules.root.state.chat;
+    this.messages.set(msg);
+    if (!this.custom) return chat.messages.push(msg);
+    store._mutations['chat/setMessage'][0](msg);
+  },
+  processMessage(event) {
+    let newThread = JSON.parse(event.data);
+    if (newThread.type === 3) return;
+
+    let Thread32Next = newThread?.user || {
+      id: window.crypto.randomUUID(),
+    };
+
+    Thread32Next.lvl = Thread32Next.level || null;
+    Thread32Next.type = newThread.type;
+    Thread32Next.message = this.fix(newThread.message);
+
+    if (newThread.type === 13) {
+      Thread32Next.name = 'SERVER';
+      this.trades.set(newThread.message);
+    }
+
+    this.setMessage(Thread32Next);
+  },
+  clearMessages() {
+    let store = window.app.__vue__.$store;
+    store._modules.root.state.chat.messages.forEach((msg) => {
+      if (this.messages.has(msg)) store._mutations['chat/clearMessagesById'][0](msg.id);
+    });
+    this.trades.clear();
+  },
+  onMessage(event) {
+    let input = document.querySelector('div.desktop-game-interface > div.chat.chat-position > div.input-wrapper');
+    if (!input) return;
+    if (!document.querySelector('.bkc-global-input-wrapper')) {
+      this.custom = window.app.__vue__.$store._modules.root.state.game.metadata.custom;
+
+      if (!this.endListener && window.mWnwM?.leaveGame) {
+        this.endListener = window.mWnwM.leaveGame;
+        window.mWnwM.leaveGame = function () {
+          eventMap.removeListener();
+          WebRocket.endListener.apply(this, arguments);
+          WebRocket.removeListener();
+          WebRocket.clearAll();
+        };
+      }
+
+      if (typeof this.cant === 'undefined') {
+        window.app.__vue__.$router.options.routes
+          .find((a) => a?.name === 'servers')
+          .component()
+          .then((a) => {
+            this.viewAlert = a.default.computed.viewAlert;
+            Object.defineProperty(this, 'cant', {
+              get() {
+                return this.viewAlert.call(window.view.__vue__);
+              },
+            });
+          });
+      }
+
+      let glob = input.parentElement.appendChild(input.cloneNode(true));
+      glob.classList.add('bkc-global-input-wrapper');
+      glob.firstChild.classList.add('bkc-global-input');
+      glob.style.display = 'none';
+      glob.lastChild.style.background = 'red';
+      glob.lastChild.innerText = 'GLOBAL';
+      this.addListener();
+      this.setMessage({
+        id: window.crypto.randomUUID(),
+        role: 'CLIENT',
+        name: 'CLIENT',
+        lvl: '❗',
+        message: !globalChatVisible ? 'Global messages are hidden' : 'Global messages are visible',
+      });
+    }
+    if (event && globalChatVisible) this.processMessage(event);
+  },
+  listener(e) {
+    let inputWrapGame = document.querySelector('div.desktop-game-interface > div.chat.chat-position > div.input-wrapper');
+    let inputWrapGlobal = inputWrapGame?.nextSibling;
+    if (!inputWrapGame) return;
+    if (!inputWrapGlobal) return this.onMessage();
+    let inputGame = inputWrapGame.firstChild;
+    let inputGlobal = inputWrapGlobal.firstChild;
+
+    if (e.key === globalChatVisibleToggleKey) {
+      if (document.activeElement === inputGlobal || document.activeElement === inputGame) e.preventDefault();
+      globalChatVisible = !globalChatVisible;
+      if (!globalChatVisible) this.clearMessages();
+
+      if (typeof settings !== 'undefined' && typeof Store === 'function' && settings instanceof Store) {
+        settings.set('globalChatVisible', globalChatVisible);
+      }
+
+      return this.setMessage({
+        id: window.crypto.randomUUID(),
+        role: 'CLIENT',
+        name: 'CLIENT',
+        lvl: '❗',
+        message: !globalChatVisible ? 'Global chat messages hidden' : 'Global chat messages visible',
+      });
+    }
+
+    if (e.key === globalChatInputToggleKey) {
+      let shouldRefocus = e.target === inputGlobal ? inputGame : e.target === inputGame ? inputGlobal : null;
+      inputWrapGame.style.display = inputWrapGlobal.style.display;
+      inputWrapGlobal.style.display = inputWrapGlobal.style.display === 'none' ? 'flex' : 'none';
+      inputGame.value = '';
+      inputGlobal.value = '';
+
+      if (shouldRefocus) {
+        e.preventDefault();
+        shouldRefocus.focus();
+      }
+
+      return this.setMessage({
+        id: window.crypto.randomUUID(),
+        role: 'CLIENT',
+        name: 'CLIENT',
+        lvl: '❗',
+        message: inputWrapGlobal.style.display === 'flex' ? 'messages will be sent to GLOBAL chat' : 'messages will be sent to GAME chat',
+      });
+    }
+
+    if (e.key === 'Enter') {
+      if (e.target === inputGlobal) {
+        let msg = inputGlobal.value;
+        inputGlobal.value = '';
+        inputGlobal.blur();
+        if (!msg) return;
+        if (this.cant)
+          return this.setMessage({
+            id: window.crypto.randomUUID(),
+            role: 'xqcL',
+            name: 'CLIENT',
+            lvl: '❗',
+            message: this.cant,
+          });
+
+        return this.socket.send(msg);
+      }
+      if (inputWrapGlobal.style.display === 'flex') {
+        inputGlobal.focus();
+      }
+    }
+    if (e.target === inputGlobal) {
+      if (e.key === 'ArrowUp') return (inputGlobal.value = this.trades.previous(inputGlobal.value));
+      if (e.key === 'ArrowDown') return (inputGlobal.value = this.trades.next(inputGlobal.value));
+      if (e.key === 'Tab' || e.key.length === 1) {
+        e.preventDefault();
+        let g = inputGlobal;
+        let caretPos = ++g.selectionStart;
+        g.value = `${g.value.substring(0, g.selectionStart)}${e.key === 'Tab' ? '\t' : e.key}${g.value.substring(g.selectionEnd)}`;
+        g.selectionStart = caretPos;
+        g.selectionEnd = caretPos;
+      }
+    }
+  },
+  log() {
+    if (!this.showLog) return;
+    console.dir.apply(this, arguments);
+    if (typeof BKC !== 'undefined' && typeof BKC.tip === 'function') return BKC.tip(...arguments);
+    let gameTip = document.querySelector('#notifications')?.__vue__;
+    if (!gameTip) return;
+    let tid = gameTip.list.length + 1;
+    gameTip.list.push({
+      id: tid,
+      state: 0,
+      speed: 300,
+      data: '🍑',
+      title: '🌮',
+      type: 'alert bkc',
+      text: arguments[0],
+      length: 'length'.length,
+    });
+    setTimeout(() => gameTip.destroyById(tid), 10000);
+  },
+  addListener() {
+    if (this.keyDown.listening) return;
+    this.keyDown.listening = !this.keyDown.listening;
+    this.listener = this.listener.bind(this);
+    document.addEventListener('keydown', this.listener, this.keyDown.options);
+  },
+  removeListener() {
+    if (!this.keyDown.listening) return;
+    this.keyDown.listening = !this.keyDown.listening;
+    document.removeEventListener('keydown', this.listener, this.keyDown.options);
+  },
+};
+
+Object.defineProperties(WebRocket, {
+  url: {
+    get() {
+      return 'wss://chat.kirka.io/';
+    },
+  },
+  protocol: {
+    get() {
+      return window.localStorage.token;
+    },
+  },
+});
+
+Object.defineProperty(WebRocket.trades, 'size', {
+  get() {
+    return this.pool.length;
+  },
+});
+
+/*
+let globalChatVisible = true;
+let globalChatVisibleToggleKey = '8';
+let globalChatInputToggleKey = '7';
+*/
+WebRocket.connect();
+//})();
 
 function getBkcMinSelectInnerHtml() {
   return `

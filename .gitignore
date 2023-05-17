@@ -3,3 +3,4 @@ node_modules
 release
 src/preload/html/.prettierrc.js
 src/preload/css/.prettierrc.js
+src/preload/.prettierrc.js

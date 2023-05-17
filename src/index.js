@@ -109,6 +109,7 @@ if (fs.existsSync(dataPath)) {
     .filter((file) => file.startsWith('menuhover'))
     .forEach((file) => settings.set('MenuhoverAudio', `data:audio/wav;base64,${fs.readFileSync(`${dataPath}/${file}`, 'base64')}`));
 }
+settings.set('dirname', `${__dirname}/preload`);
 
 app.commandLine.appendSwitch('ignore-gpu-blacklist');
 setFlags();
@@ -178,6 +179,7 @@ const createWindow = () => {
 
   win.webContents.on('new-window', (e, urll) => {
     e.preventDefault();
+    if (urll.startsWith('https://kirka.io/games/')) return win.loadURL(urll);
     if (urll === 'https://client.kirka.io/') urll = 'https://github.com/42infi/better-kirka-client/releases';
     else if (urll === 'https://discord.gg/eWTWVSs94e') urll = 'https://discord.com/invite/cNwzjsFHpg';
     shell.openExternal(urll);
