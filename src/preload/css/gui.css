@@ -176,10 +176,6 @@ div.module label {
   height: 100%;
 }
 
-html > body > div#app > div#view {
-  user-select: text !important;
-}
-
 .loading-scene,
 #qc-cmp2-container,
 #cmpPersistentLink {
@@ -277,18 +273,6 @@ div#bkc-daily-stats-container > div.module > label {
   margin-left: 0;
 }
 
-.mods.tabmods {
-  border-left: solid 1px var(--secondary-1);
-  background-color: var(--secondary-2);
-  display: flex;
-  margin: auto;
-  flex-flow: row nowrap;
-  place-content: center space-evenly;
-  align-items: center;
-  width: 100%;
-  height: -webkit-fill-available;
-}
-
 .mods.tabmods div label.custom-checkbox.checkbox-size {
   display: flex;
   color: var(--white);
@@ -323,15 +307,6 @@ div#bkc-back-forward-button {
   justify-content: flex-start;
   width: max-content;
   background-color: var(--secondary-4);
-}
-
-#bkc-menu-forward-button,
-#bkc-menu-back-button {
-  cursor: pointer;
-  width: 2.563rem;
-  height: 2.188rem;
-  transition: background-color 0.3s ease;
-  border-right: 0.125rem solid #2f3957;
 }
 
 #bkc-menu-forward-button:hover,
@@ -392,16 +367,13 @@ a.bkc-fav-button:hover {
   user-select: none;
 }
 
-#view
-  > div
-  > div
-  > div.content
+div.content
   > div.inventory
   > div.content
   > div.subjects
   > div.subject
   > div.hover-btns-group
-  > button:nth-child(3) {
+  > button:nth-child(4) {
   margin-bottom: 2rem;
 }
 
@@ -500,14 +472,8 @@ html
   left: 0;
 }
 
-.map.text-1 {
-  text-overflow: ellipsis;
-  overflow: hidden;
-  max-width: 16.12rem;
-}
-
 .mods.tabmods > div {
-  margin: 0.5rem !important;
+  margin: 0.25rem !important;
 }
 
 div#bkc-minmax-selects {
@@ -516,7 +482,7 @@ div#bkc-minmax-selects {
   box-sizing: border-box;
   color: var(--gray-1);
   display: flex;
-  height: 2.3rem;
+  height: auto;
   width: 100%;
   border-top: 1px solid var(--secondary-1);
   flex-direction: row;
@@ -526,14 +492,65 @@ div#bkc-minmax-selects {
   align-items: center;
 }
 
-div.servers > div.container-games > div.list-cont > div.list {
-  padding-bottom: 7.5rem;
+.mods.tabmods {
+  border-left: solid 1px var(--secondary-1);
+  background-color: var(--secondary-2);
+  display: flex;
+  margin: auto;
+  flex-flow: row wrap;
+  place-content: center space-evenly;
+  align-items: center;
+  width: 100%;
+  justify-content: flex-start !important;
+}
+
+input#bkc-JWF-cb {
+  margin-right: 0.5rem;
+  margin-left: 0.5rem;
+  --hover-color: var(--primary-2);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  position: relative;
+  color: var(--white);
+  font-size: 1rem;
+  transition: all 0.3s ease 0s;
+  font-family: Rowdies;
+  padding: 0.9em 1.4em;
+  transform: skew(-10deg);
+  font-weight: 900;
+  overflow: hidden;
+  text-transform: uppercase;
+  border-radius: 0.2em;
+  outline: none;
+  text-shadow: rgb(0, 0, 0) 0px 0.1em 0px;
+  -webkit-text-stroke: 1px var(--black);
+  box-shadow: rgba(0, 0, 0, 0.314) 0px 0.15rem 0px;
+  cursor: pointer;
+}
+
+html
+  body
+  div#app
+  div#view
+  div
+  div
+  div.content
+  div
+  div
+  div.list-cont
+  div.list
+  div.server
+  div.right
+  div.online {
+  margin-right: 0.5rem;
+  font-size: 1rem !important;
 }
 
 #bkc-minmax-right,
 #bkc-minmax-left {
   display: flex;
-  width: fit-content;
   flex-direction: column;
   flex-wrap: wrap;
   align-content: center;
@@ -542,11 +559,128 @@ div.servers > div.container-games > div.list-cont > div.list {
   cursor: pointer;
   --bkc-real-hover-arrow: 0;
   background: var(--secondary-2);
+  align-self: stretch;
+  border-left: solid 1px var(--secondary-1) !important;
+}
+
+html
+  body
+  div#app
+  div#view
+  div
+  div
+  div.content
+  div
+  div
+  div.list-cont
+  div.list
+  div.server
+  div.left
+  div.map.text-1 {
+  font-size: 1rem !important;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 8.12rem !important;
+}
+
+html
+  body
+  div#app
+  div#view
+  div
+  div
+  div.content
+  div
+  div
+  div.list-cont
+  div.list
+  div.server
+  div.left
+  div.key {
+  display: none !important;
+}
+
+div.servers > div.container-games > div.list-cont > div.list {
+  padding-bottom: 5rem;
+}
+
+.servers {
+  overflow-y: hidden !important;
+}
+
+#bkc-menu-forward-button,
+#bkc-menu-back-button {
+  cursor: pointer;
+  width: 2.563rem;
+  height: 2.188rem;
+  transition: background-color 0.3s ease;
+  border-right: 0.125rem solid #2f3957;
+}
+
+@media (max-width: 1000px) {
+  #bkc-menu-forward-button,
+  #bkc-menu-back-button {
+    width: 4rem;
+    height: 3.4rem;
+  }
+}
+
+@media (max-width: 1280px) {
+  .mods.tabmods > div {
+    margin: 0.5rem !important;
+  }
+
+  input#bkc-JWF-cb {
+    margin-left: 1rem;
+  }
+
+  html
+    body
+    div#app
+    div#view
+    div
+    div
+    div.content
+    div
+    div
+    div.list-cont
+    div.list
+    div.server
+    div.left
+    div.map.text-1 {
+    font-size: 1.25rem !important;
+    max-width: 16.12rem !important;
+  }
+
+  html
+    body
+    div#app
+    div#view
+    div
+    div
+    div.content
+    div
+    div
+    div.list-cont
+    div.list
+    div.server
+    div.right
+    div.online {
+    margin-right: 1rem;
+  }
+
+  div.servers > div.container-games > div.list-cont > div.list {
+    padding-bottom: 7.5rem;
+  }
+
+  .levels.bkc-timeline {
+    height: 37rem;
+    width: 100%;
+  }
 }
 
 #bkc-minmax-right:hover,
 #bkc-minmax-left:hover {
-  --bkc-real-hover-arrow: 1 !important;
   background: var(--secondary-4);
 }
 
@@ -570,8 +704,6 @@ label#bkkc {
   justify-content: space-evenly;
   align-items: center;
   --bkc-hover-arrow: var(--bkc-real-hover-arrow);
-  border-left: solid 1px var(--secondary-1) !important;
-  overflow: hidden;
   pointer-events: none;
 }
 
@@ -584,6 +716,7 @@ label#bkkc > svg {
 }
 
 div#bkc-drop-arrow {
+  display: none;
   position: absolute;
   transform: scaleX(1.5);
   top: 4rem;
@@ -607,13 +740,13 @@ div#bkc-drop-arrow {
   align-content: flex-start;
   justify-content: flex-end;
   align-items: flex-start;
-  margin-top: 0.5rem;
   position: absolute;
   top: 4.14rem;
   box-shadow: 2px 4px 6px rgb(0 0 0 / 25%);
   background: var(--secondary-1);
   background-color: var(--secondary-2);
   z-index: 99999;
+  border: solid 1px var(--secondary-1) !important;
 }
 
 .bkc-options-wrapper {
@@ -691,7 +824,7 @@ input.bkc-min-players-time-text {
   cursor: pointer;
   padding: 1px 2px !important;
   user-select: none;
-  font-size: 14px !important;
+  font-size: inherit !important;
   font-weight: 500;
   font-family: "Exo 2";
 }
@@ -703,7 +836,6 @@ div#bkc-gamemodes-filter-options-wrapper {
   align-content: center;
   justify-content: flex-start;
   align-items: center;
-  height: 2.2rem;
   margin-left: 0.8rem;
 }
 
@@ -914,10 +1046,6 @@ div#bkc-show-trade-element > span > button {
 }
 
 @media (max-height: 380px) {
-  .bkc-gamemodes-players-dropdown {
-    top: 4.73rem;
-  }
-
   input.bkc-min-players-time-text {
     font-size: 7px !important;
   }
@@ -958,7 +1086,12 @@ select#bkc-incrementSlider {
   cursor: pointer;
 }
 
-.hover-btns-group {
+div.content
+  > div.inventory
+  > div.content
+  > div.subjects
+  > div.subject
+  > .hover-btns-group {
   justify-content: flex-start !important;
 }
 
@@ -1219,4 +1352,308 @@ div.container-card.bkc-hide-clan-accept > div.btns > :last-child {
   width: max-content;
   height: 2.536rem;
   max-height: 2.536rem;
+}
+
+div#Bkc-levels-rewards {
+  display: none;
+  flex-direction: row;
+  align-content: flex-start;
+  align-items: center;
+  justify-content: flex-start;
+  white-space: nowrap;
+  padding: 2rem 0rem;
+  position: relative !important;
+  height: 30rem;
+  top: 4.2rem;
+  z-index: 9;
+  width: 100%;
+}
+
+div#Bkc-levels-rewards > div {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-content: center;
+  justify-content: center;
+  align-items: center;
+  padding: 0.5rem 0;
+  outline: none;
+  width: 100%;
+  height: 3rem;
+  box-sizing: border-box;
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--gray-1);
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) 28%,
+    rgb(255, 185, 20) 31%,
+    rgb(255 186 20) 50%,
+    rgb(255 133 20) 69%,
+    rgba(0, 0, 0, 0) 72%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+div#Bkc-levels-rewards > div.no-act {
+  background: linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) 28%,
+    rgb(51, 63, 68) 31%,
+    rgb(51, 63, 68) 50%,
+    rgb(33 39 42) 50%,
+    rgb(33 39 42) 69%,
+    rgba(0, 0, 0, 0) 72%,
+    rgba(0, 0, 0, 0) 100%
+  );
+}
+
+div#Bkc-levels-rewards > :first-child {
+  padding-left: 0.5rem !important;
+}
+
+div#Bkc-levels-rewards > div:last-child {
+  padding-right: 1.6rem !important;
+}
+
+div#Bkc-levels-rewards span {
+  margin: 0 0.5rem;
+  padding: 0.5rem;
+  min-width: 9.2663rem;
+  z-index: 2;
+}
+
+div#Bkc-levels-rewards div.lvl {
+  background: #ff8d14;
+  border-radius: 50%;
+  min-width: 2.4rem;
+  min-height: 2.4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 900;
+  filter: drop-shadow(0 0 0.25rem rgba(0, 0, 0, 0.5));
+  z-index: 2;
+}
+
+div#Bkc-levels-rewards div.lvl.no-active {
+  background: rgb(33 39 42) !important;
+}
+
+button#Bkc-levels-rewards-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.8rem;
+  text-transform: lowercase;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  outline: none;
+  margin: auto;
+  color: hsla(0, 0%, 83.9%, 0.3);
+  background: #1c2533;
+  border: 0.125rem solid #333f44;
+  width: 14rem;
+  border-bottom-left-radius: 0.25rem;
+  border-bottom-right-radius: 0.25rem;
+  margin-top: -0.25rem;
+  user-select: none;
+}
+
+button#Bkc-levels-rewards-button:hover {
+  color: var(--primary-1);
+  background-color: var(--secondary-4);
+}
+
+div#Bkc-levels-rewards img.bg {
+  width: 150%;
+  height: 130%;
+  position: absolute;
+}
+
+div#Bkc-levels-rewards .box-border {
+  border: 0.188rem solid #43aefb;
+  border-radius: 0.313rem;
+  height: 8.5rem;
+  width: 8.5rem;
+  position: absolute;
+}
+
+div#Bkc-levels-rewards .label {
+  font-weight: 700;
+  position: absolute;
+  bottom: 0.7rem;
+  left: 0.7rem;
+}
+
+div#Bkc-levels-rewards .content {
+  z-index: 2;
+}
+
+div#Bkc-levels-rewards img.item-img {
+  max-width: 8rem;
+}
+
+div#Bkc-levels-rewards .level-bottom {
+  margin: 0;
+  position: absolute;
+  box-shadow: none;
+}
+
+#Bkc-levels-rewards .disable {
+  position: absolute;
+  height: calc(100% + 0.25rem);
+  width: calc(100% + 0.25rem);
+  border: 0.25rem solid #0b1f32;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 0.313rem;
+  color: var(--primary-1);
+  letter-spacing: 0.115em;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+div#Bkc-levels-rewards .level-card.text-1 {
+  transform: skew(-4deg);
+  width: 10rem;
+  height: 10rem;
+  border-radius: 0.313rem;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: rgb(6, 81, 117) 0.25rem 0.25rem 0px;
+  background-image: radial-gradient(
+    70% 54.3% at 53.89% 50.33%,
+    rgb(109, 231, 254) 0%,
+    rgb(30, 131, 250) 100%
+  );
+}
+
+div#Bkc-levels-rewards .level-card.text-1.disable-shadow {
+  box-shadow: 0.25rem 0.25rem 0 #07131f !important;
+}
+
+button#Bkc-levels-rewards-button .bkc-loader {
+  --bkc-spin-size: 1rem;
+  display: inline-block;
+  width: var(--bkc-spin-size);
+  height: var(--bkc-spin-size);
+}
+
+button#Bkc-levels-rewards-button .bkc-loader:after {
+  content: " ";
+  display: block;
+  border-radius: 50%;
+  width: calc(var(--bkc-spin-size) * 0.8);
+  height: calc(var(--bkc-spin-size) * 0.8);
+  border: calc(var(--bkc-spin-size) * 0.075) solid currentColor;
+  border-color: currentColor #00000000 currentColor #00000000;
+  animation: bkc-loader-spin 1.2s linear infinite;
+}
+
+@keyframes bkc-loader-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.levels.bkc-timeline {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  color: var(--white);
+  margin: auto;
+  overflow-x: scroll !important;
+}
+
+.levels.bkc-timeline > .content {
+  display: none;
+}
+
+.levels.bkc-timeline > div#Bkc-levels-rewards {
+  display: flex;
+}
+
+div.levels > div.level-head .description {
+  z-index: 0;
+}
+
+div.levels.bkc-timeline > div.level-head {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  left: 30.4rem;
+  z-index: 10;
+}
+
+span#bkc-reward-spacer-progress {
+  position: absolute;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0) 0%,
+    rgba(0, 0, 0, 0) 28%,
+    rgb(255, 185, 20) 31%,
+    rgb(255 186 20) 50%,
+    rgb(255 133 20) 69%,
+    rgba(0, 0, 0, 0) 72%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  min-width: unset !important;
+  height: 3rem;
+  padding: 0.5rem 0 !important;
+  margin: 0 !important;
+  z-index: 1 !important;
+}
+
+div.content
+  > div.inventory
+  > div.content
+  > div.subjects
+  > div.subject
+  .hover-btns-group
+  button.button.bottom-inv.rectangle {
+  max-height: 1.4rem;
+  margin: 0.15rem;
+}
+
+button.button.bottom-inv.inspect-btn.rectangle {
+  margin-top: 0.5rem !important;
+}
+
+div.content > div.inventory > div.content > div.subjects > div.subject {
+  height: 9rem !important;
+}
+
+.bkc-searching {
+  user-select: text !important;
+}
+
+.bkc-searching ::selection {
+  background-color: red;
+}
+
+div#view
+  div
+  div
+  div.content
+  > div.inventory
+  div.left
+  div.bottom
+  div.gun
+  div.name-gun {
+  margin-left: 0rem;
+  padding-left: 1rem;
 }
