@@ -84,23 +84,6 @@ if (typeof settings.get('pendingImport') !== 'undefined') {
   window.location.reload();
 }
 
-let gigaJSONParse = function () {
-  let data = boringJSONParse.apply(this, arguments);
-  if (typeof data[0]?.metadata?.serverName !== 'undefined') {
-    for (let key in data) {
-      let timeLeft =
-        data[key].metadata.inWarmup === true
-          ? 'In Warmup'
-          : Math.ceil((60 * (data[key].metadata.minutes ? data[key].metadata.minutes : 8) - (Date.now() - Date.parse(data[key].createdAt)) / 1e3) / 60);
-      data[key]['metadata'].shortMinutesLeft = timeLeft > 0 ? `${timeLeft} ${timeLeft !== 1 ? 'mins' : 'min'}` : timeLeft === 'In Warmup' ? 'warmup' : 'finished';
-      if (data[key].clients < minPlayers || (timeLeft !== 'In Warmup' && timeLeft < minTime) || data[key]['metadata'].shortMinutesLeft === 'finished') data[key].locked = true;
-    }
-  }
-  return data;
-};
-let boringJSONParse = window.JSON.parse;
-window.JSON.parse = gigaJSONParse;
-
 let ogStringify = window.JSON.stringify;
 let gigafydStringify = function () {
   if (marketPrice && arguments[0].price) {
@@ -120,18 +103,18 @@ function gigaInfiRequest() {
         this.onreadystatechange = (...args) => {
           if (this.readyState === 4 && this.status === 200) {
             if (this.responseURL === 'https://api.kirka.io/api/user') {
-              let data = boringJSONParse(this.response);
+              let data = JSON.parse(this.response);
               id = data.shortId;
             } else if (this.responseURL === 'https://api.twitch.tv/helix/streams?first=10&game_id=356609813') {
-              stremzInfo = boringJSONParse(this.response);
+              stremzInfo = JSON.parse(this.response);
               initTwitchMenu();
             } else if (new URL(this.responseURL).pathname === '/helix/users') {
-              let stremzNew = boringJSONParse(this.response);
+              let stremzNew = JSON.parse(this.response);
               if (initTwitchMenu()) {
                 newStremz(stremzNew);
               }
             } else if (this.responseURL === 'https://api.kirka.io/api/notification' && this.response !== '[]') {
-              let data = boringJSONParse(this.response);
+              let data = JSON.parse(this.response);
               if (Object.keys(data).filter((key) => data[key].object?.message === 'You completed a quest').length > 0) {
                 if (!claimedQuest) {
                   claimedQuest = true;
@@ -139,7 +122,7 @@ function gigaInfiRequest() {
                 }
               }
             } else if (this.responseURL === 'https://api.kirka.io/api/inventory') {
-              skinzInfo = boringJSONParse(this.response);
+              skinzInfo = JSON.parse(this.response);
             }
           }
           if (oldChange) oldChange.apply(this, ...args);
@@ -370,9 +353,10 @@ const SomeObserver = new MutationObserver(() => {
           appendFavedButtons();
         }
 
+        let tabs = document.querySelectorAll('.tab-bar .tab');
         subjects.onclick = FavedButtonsHandler.bind(invDiv);
-        subjects.previousSibling.firstChild.onclick = window.app.__vue__.$store._actions['user/getInventory'][0];
-        subjects.previousSibling.firstChild.nextSibling.nextSibling.onclick = window.app.__vue__.$store._actions['user/getInventory'][0];
+        tabs[0].onclick = window.app.__vue__.$store._actions['user/getInventory'][0];
+        tabs[2].onclick = window.app.__vue__.$store._actions['user/getInventory'][0];
 
         if (!invDiv.__vue__.openModalInspect) {
           invDiv.__vue__.openModalInspect = true;
@@ -404,28 +388,6 @@ const SomeObserver = new MutationObserver(() => {
         subjects.onclick = null;
       }
       if (marketModaling) customMarketPrice(invDiv);
-    } else if (current?.name === 'settings-mods') {
-      let inputLabels = document.querySelectorAll('.wrapper-input.wWmMn[placeholder="Paste image url..."]');
-      if (inputLabels?.length === 9) {
-        inputLabels.forEach((label, index) => {
-          let input = label?.querySelector('input');
-          if (input && !label?.querySelector('.bkc-textures')) {
-            let inputImageCache = typeof settings.get('inputImageCache') === 'undefined' ? [[], [], [], [], [], [], [], [], []] : settings.get('inputImageCache');
-            let inputDatalist = document.createElement('datalist');
-            let names = `bkc-textures${index}`;
-            input.onmousedown = clearInputImage;
-            input.onblur = fillInputImage;
-            input.name = names;
-            input.setAttribute('list', names);
-            inputDatalist.id = names;
-            inputDatalist.className = 'bkc-textures';
-            inputDatalist.innerHTML = inputImageCache[index].toString().split(',').join('');
-            inputDatalist = label.appendChild(inputDatalist);
-            input.oninput = () => checkInputImage(input, inputDatalist, index);
-            if (input.value) checkInputImage(input, inputDatalist, index);
-          }
-        });
-      }
     } else if (
       current.matched[0]?.name === 'servers' &&
       !document.querySelector('#view > div > div > div.content > div.servers > div > div.list-cont > div#bkc-minmax-selects > div.mods.tabmods')
@@ -546,6 +508,30 @@ const SomeObserver = new MutationObserver(() => {
 
   let modal = document.querySelector('div.vm--container');
   let modalName = modal?.__vue__?.name;
+
+  if (modalName === 'settings') {
+    let inputLabels = modal.querySelectorAll('.wrapper-input.wWmMn[placeholder="Paste image url..."]');
+    if (inputLabels?.length === 9) {
+      inputLabels.forEach((label, index) => {
+        let input = label?.querySelector('input');
+        if (input && !label?.querySelector('.bkc-textures')) {
+          let inputImageCache = typeof settings.get('inputImageCache') === 'undefined' ? [[], [], [], [], [], [], [], [], []] : settings.get('inputImageCache');
+          let inputDatalist = document.createElement('datalist');
+          let names = `bkc-textures${index}`;
+          input.onmousedown = clearInputImage;
+          input.onblur = fillInputImage;
+          input.name = names;
+          input.setAttribute('list', names);
+          inputDatalist.id = names;
+          inputDatalist.className = 'bkc-textures';
+          inputDatalist.innerHTML = inputImageCache[index].toString().split(',').join('');
+          inputDatalist = label.appendChild(inputDatalist);
+          input.oninput = () => checkInputImage(input, inputDatalist, index);
+          if (input.value) checkInputImage(input, inputDatalist, index);
+        }
+      });
+    }
+  }
 
   if (modalName === 'level-up' || (modalName === 'clan-invitation' && !showClanInvites)) {
     modal = modal.parentElement.removeChild(modal);
@@ -711,13 +697,11 @@ const MainObserverr = new MutationObserver(() => {
   let endmodal = document.querySelector('.end-modal');
   if (!inGame && /kirka[.]io[/]game/.test(window.location.href) && !endmodal) {
     inGame = true;
-    window.JSON.parse = boringJSONParse;
     window.JSON.stringify = ogStringify;
     window.XMLHttpRequest = boringXMLHttpRequest;
     if (TwitchResizeObserver) TwitchResizeObserver.disconnect();
     if (clockInterval) clockInterval = clearInterval(clockInterval);
     if (timeContainer && seenSkinsListener()) SomeObserver.disconnect();
-    //skinzInfo = null;
     stremzInfo = null;
     lobbyAnimating = cancelAnimationFrame(lobbyAnimating);
     if (!animating) animating = window.requestAnimationFrame(animate);
@@ -726,7 +710,6 @@ const MainObserverr = new MutationObserver(() => {
     inGame = false;
     animating = cancelAnimationFrame(animating);
     window.XMLHttpRequest = gigaXMLHttpRequest;
-    window.JSON.parse = gigaJSONParse;
     SomeObserver.observe(document, { childList: true, subtree: true });
     claimedQuest = false;
     claimedReward = false;
@@ -1732,10 +1715,12 @@ function SetGameModesCheckBoxes() {
 
       if (this.p.style.display !== 'flex') {
         this.p.style.display = 'flex';
-        this.p.style.top = bkcMinSelect.offsetHeight + bkcMinSelect.offsetTop + 'px';
-        let left = this.g.offsetLeft;
-        if (this.g === bkcMinTime) ++left;
-        this.p.style.left = left + 'px';
+        if (bkcRegion !== e.target) {
+          let left = this.g.offsetLeft;
+          if (this.g === bkcMinTime) ++left;
+          this.p.style.left = left + 'px';
+          this.p.style.top = bkcMinSelect.offsetHeight + bkcMinSelect.offsetTop + 'px';
+        }
       } else {
         this.p.style.display = 'none';
         document.onmousedown = null;
@@ -1746,7 +1731,10 @@ function SetGameModesCheckBoxes() {
 
   function ShowHideGameModes() {
     let servers = document.querySelector('div#view > div.background > div.container > div.content > div.servers').__vue__;
-    document.querySelectorAll('div.servers div.container-games div.list-cont div.list div.server').forEach((map, indexfoxx) => {
+    let rooms = window.app.__vue__.$store._modules.root.state.game.rooms;
+    document.querySelectorAll('div.servers div.container-games div.list-cont div.list div.server .map').forEach((map, _indexfoxx) => {
+      let mapText = map.innerText;
+      map = map.parentElement.parentElement;
       function getsessionid() {
         if (currentRoom.metadata.custom === true) {
           let s = left?.querySelector('#bkc-session-id');
@@ -1773,35 +1761,26 @@ function SetGameModesCheckBoxes() {
         }
       }
 
-      let currentRoom = servers.rooms[indexfoxx];
       let right = map?.querySelector('div.right');
       let left = map?.querySelector('div.left');
+      let q = left.querySelector('div.session-id')?.innerHTML;
+      let currentRoom = !servers.activeTab ? rooms.find((a) => a.roomId === q) : rooms.find((a) => a?.metadata?.serverName?.trim() === mapText);
+      if (!currentRoom) return;
       let bkcJwfCheckBox = right?.querySelector('#bkc-JWF-cb');
       let playerCnt = right?.querySelector('div.online');
       let timesSpan = left?.querySelector('span#bkc-map-time');
       let sessionIdDiv = getsessionid();
       let ThisIdd = sessionIdDiv?.innerHTML;
-      let shortMins = currentRoom.metadata?.shortMinutesLeft;
+      let mins = servers.minutesLeft(currentRoom);
+      let milliMins = mins.split(' ')[0];
+      let longMins = !Number.isNaN(milliMins) ? Number(milliMins) : mins;
+      let shortMins = longMins > 0 ? `${longMins} ${longMins !== 1 ? 'mins' : 'min'}` : longMins === 'In Warmup' ? 'warmup' : 'finished';
 
-      if (typeof GameModes[currentRoom.metadata.mod] !== 'undefined') {
-        map.style.display = GameModes[currentRoom.metadata.mod] === true ? 'flex' : 'none';
-      } else {
-        map.style.display = 'flex';
-        if (currentRoom.metadata.mod !== 'P') {
-          GameModes[currentRoom.metadata.mod] = true;
-          let modesCont = document.querySelector('.mods.tabmods');
-          let moddiv = document.createElement('div');
-          moddiv.className = currentRoom.metadata.mod;
-          moddiv.innerHTML = `
-          <label for="${currentRoom.metadata.mod}" class="custom-checkbox checkbox-size">
-          <input name="${currentRoom.metadata.mod}" id="${currentRoom.metadata.mod}" type="checkbox" class="${currentRoom.metadata.mod}-checkbox">
-          <span> ${currentRoom.metadata.mod} </span>
-          </label>`;
-          moddiv = modesCont.appendChild(moddiv);
-          modesCont.getElementsByClassName(`${currentRoom.metadata.mod}-checkbox`)[0].checked = GameModes[currentRoom.metadata.mod];
-          settings.set('GameModes', GameModes);
-        }
+      if ((currentRoom.clients < minPlayers || (longMins !== 'In Warmup' && longMins < minTime) || shortMins === 'finished') && currentRoom.locked !== true) {
+        currentRoom.locked = true;
+        rooms.push(rooms.splice(rooms.indexOf(currentRoom), 1)[0]);
       }
+
       if (!Number.isNaN(currentRoom.clients + currentRoom.maxClients)) {
         if (currentRoom.clients >= minPlayers && currentRoom.clients < currentRoom.maxClients && !currentRoom.locked) {
           if (playerCnt.style.color !== 'var(--green-1)') playerCnt.style.color = 'var(--green-1)';
@@ -1854,7 +1833,9 @@ function SetGameModesCheckBoxes() {
       this.p.className = `server-${servers.selectedRegion}`;
     }
   }
-  let list = document.querySelector('#view div.background div.container div.content div.servers div.container-games div.list-cont div.list');
+
+  let server = document.querySelector('#view div.background div.container div.content div.servers');
+  let list = server?.querySelector('div.container-games div.list-cont div.list');
   if (!list || document.querySelector('#bkc-minmax-selects')) return;
 
   let app = document.querySelector('#app');
@@ -1886,12 +1867,18 @@ function SetGameModesCheckBoxes() {
   bkcMinSelect.id = 'bkc-minmax-selects';
   bkcMinSelect.innerHTML = getBkcMinSelectInnerHtml();
 
-  if (typeof GameModes['P'] !== 'undefined') {
-    delete GameModes['P'];
-    settings.set('GameModes', GameModes);
+  let currentModes = server.__vue__.defaultModeOptions.map((a) => a.value);
+
+  function updateModes() {
+    server.__vue__.WnMNwes = Object.keys(GameModes).filter((a) => GameModes[a]);
   }
 
+  currentModes.forEach((a) => {
+    if (typeof GameModes[a] === 'undefined') GameModes[a] = true;
+  });
+
   Object.keys(GameModes).forEach((mode) => {
+    if (!currentModes.includes(mode)) return delete GameModes[mode];
     let moddiv = document.createElement('div');
     moddiv.className = mode;
     moddiv.innerHTML = `
@@ -1903,7 +1890,25 @@ function SetGameModesCheckBoxes() {
     moddiv = modesCont.appendChild(moddiv);
     modesCont.getElementsByClassName(`${mode}-checkbox`)[0].checked = GameModes[mode];
   });
-  bkcRegion = document.querySelector('#view > div > div > div.content > div > div > div.list-cont > div.tabs').appendChild(bkcRegion);
+
+  settings.set('GameModes', GameModes);
+  updateModes();
+
+  let tabs = list.parentElement.querySelector('.tabs');
+  let filters = document.querySelector('.filters');
+  let filtersLabel = filters.querySelector('.filter-name label');
+  let filtersInput = filters.querySelector('.filter-name input');
+  let dataV = tabs.firstChild.getAttributeNames().join('').split('class').join('');
+  Object.keys(filtersInput.dataset).forEach((a) => filtersInput.removeAttribute(`data-${a}`));
+  Object.keys(filtersLabel.dataset).forEach((a) => filtersLabel.removeAttribute(`data-${a}`));
+  filtersLabel.setAttribute(dataV, '');
+  filtersInput.setAttribute(dataV, '');
+  filtersLabel.classList.add('tab');
+  filtersInput.classList.add('text-2');
+  filters.removeChild(filters.lastChild);
+  bkcRegion = tabs.appendChild(bkcRegion);
+  tabs.appendChild(filtersLabel);
+
   modesCont = bkcMinSelect.appendChild(modesCont);
 
   let bkcMinPlayers = bkcMinSelect.querySelector('#bkc-minmax-left');
@@ -1978,6 +1983,7 @@ function SetGameModesCheckBoxes() {
     if (event.target?.name && typeof GameModes[event.target.name] !== 'undefined') {
       GameModes[event.target.name] = event.target.checked;
       settings.set('GameModes', GameModes);
+      updateModes();
     } else if (event.target.id === 'bkc-min-time') {
       minTime = Math.ceil(event.target.value);
       bkcMinTimeValueInput.value = minTime;
@@ -1989,7 +1995,7 @@ function SetGameModesCheckBoxes() {
     }
     boundShowHideGameModes();
   });
-  bkcMinSelect = list.parentElement.insertBefore(bkcMinSelect, list);
+  bkcMinSelect = filters.parentElement.insertBefore(bkcMinSelect, filters);
 
   new MutationObserver(() => {
     boundShowHideGameModes();
@@ -2729,7 +2735,7 @@ function fillInputImage(e) {
 
 function playHoverAudio() {
   let uiVol = window.localStorage['mwNMWn/SOUND/VOLUME_UI'];
-  if (uiVol) uiVol = boringJSONParse(uiVol);
+  if (uiVol) uiVol = JSON.parse(uiVol);
   let Bark = window.Howl.prototype.init({
     src: 'data:audio/mpeg;base64,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',
     name: 'hover',
@@ -3042,6 +3048,12 @@ document.addEventListener('keyup', gameOnKeyButtonUp, {
     },
   });
 })();
+
+Object.defineProperty(window, 'mWnwM', {
+  get() {
+    return window?.app?.__vue__.$store.state.game?.mWnwM;
+  },
+});
 
 let eventMap = new Map();
 Object.defineProperties(eventMap, {

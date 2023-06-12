@@ -1657,3 +1657,27 @@ div#view
   margin-left: 0rem;
   padding-left: 1rem;
 }
+
+.tabs label.wrapper-input.search-map-input.tab,
+.tabs label.wrapper-input.search-map-input.tab input.text-2 {
+  width: inherit;
+}
+
+.tabs label.wrapper-input.search-map-input.tab input.text-2 {
+  border: none;
+  background: inherit;
+  text-transform: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  color: currentColor;
+}
+
+.tabs
+  label.wrapper-input.search-map-input.tab
+  input.text-2::-webkit-input-placeholder {
+  color: currentColor;
+}
+
+.tabs label.wrapper-input.search-map-input.tab input.text-2:focus {
+  outline: none;
+}
